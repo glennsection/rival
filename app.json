@@ -1,0 +1,11 @@
+{
+  "name": "Blood Tales",
+  "description": "Blood Tales",
+  "keywords": [
+    "bloodtales"
+  ],
+  "image": "heroku/go:1.6",
+  "mount_dir": "src/bloodtales",
+  "website": "http://github.com/sectionstudios/bloodtales",
+  "repository": "http://github.com/sectionstudios/bloodtales"
+}
