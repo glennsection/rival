@@ -13,9 +13,9 @@ const userCollectionName = "users"
 
 type User struct {
 	ID       bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	Email    string        `bson:"em" json:"email"`
 	Username string        `bson:"un" json:"username"`
 	Password []byte        `bson:"ps" json:"-"`
+	Email    string        `bson:"em,omitempty" json:"email"`
 	Inserted time.Time     `bson:"ti" json:"inserted"`
 	Login    time.Time     `bson:"tl" json:"login"`
 }
@@ -30,21 +30,37 @@ func (user *User) HashPassword(password string) {
 	user.Password = hash
 }
 
-func InsertUser(database *mgo.Database, user *User) error {
+func InsertUser(database *mgo.Database, username string, password string) (err error) {
+	// check existing user
+	var user *User
+	user, err = GetUserByUsername(database, username)
+	if user != nil {
+		panic(fmt.Sprintf("User already exists with username: %s", username))
+	}
+	if err != nil {
+		panic(fmt.Sprintf("Failed to access user database: %v", err))
+	}
+
+	// create user
+	user = &User {
+		Username: username,
+	}
+	user.HashPassword(password)
+
 	user.ID = bson.NewObjectId()
 	user.Inserted = time.Now()
 	user.Login = time.Now()
 	return database.C(userCollectionName).Insert(user)
 }
 
-func GetUserByEmail(database *mgo.Database, email string) (user *User, err error) {
-	err = database.C(userCollectionName).Find(bson.M { "em": email } ).One(&user)
-	return;
+func GetUserByUsername(database *mgo.Database, username string) (user *User, err error) {
+	err = database.C(userCollectionName).Find(bson.M { "un": username } ).One(&user)
+	return
 }
 
-func LoginUser(database *mgo.Database, email string, password string) (user *User, err error) {
+func LoginUser(database *mgo.Database, username string, password string) (user *User, err error) {
 	// get user
-	user, err = GetUserByEmail(database, email)
+	user, err = GetUserByUsername(database, username)
 	if user == nil || err != nil {
 		return
 	}

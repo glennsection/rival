@@ -2,6 +2,7 @@ package system
 
 import (
 	"os"
+	"time"
 	"fmt"
 	"net/http"
 	"log"
@@ -10,8 +11,8 @@ import (
 )
 
 type Application struct {
-	DBSession *mgo.Session
-	DB        *mgo.Database
+	DBSession        *mgo.Session
+	DB               *mgo.Database
 }
 
 func GetEnv(name string, defaultValue string) string {
@@ -34,26 +35,21 @@ func GetRequiredEnv(name string) string {
 	return value
 }
 
-func HandleErrors() {
+func (application *Application) handleErrors() {
 	// handle any panic errors
 	if err := recover(); err != nil {
-		message := fmt.Sprintf("Error occurred during execution: %v", err)
-		log.Println(message)
+		log.Printf("Error occurred during execution: %v", err)
 	}
 }
 
-func HandleRequestErrors(w http.ResponseWriter, r *http.Request) {
-	// handle any panic errors during request
-	if err := recover(); err != nil {
-		message := fmt.Sprintf("Error occurred during request: %v", err)
-		log.Println(message)
-		fmt.Fprint(w, message)
-	}
+func (application *Application) handleProfiler(name string, elapsedTime time.Duration) {
+	// application profiling handler
+	log.Printf("Profiling: %s took %v", name, elapsedTime)
 }
 
 func (application *Application) Init() {
-	// TODO - do I need to do this...?
-	//gob.Register(bson.ObjectId(""))
+	// init profiling
+	HandleProfiling(application.handleProfiler)
 
 	// connect database session
 	uri := GetRequiredEnv("MONGODB_URI")
@@ -67,10 +63,14 @@ func (application *Application) Init() {
 	// get default database
 	dbname := GetRequiredEnv("MONGODB_DB")
 	application.DB = application.DBSession.DB(dbname)
+
+	// init analytics tracking
+	StartTracking(application.DB)
 }
 
 func (application *Application) Close() {
-	defer HandleErrors()
+	// handle any remaining application errors
+	defer application.handleErrors()
 
 	// cleanup database connection
 	if application.DBSession != nil {
@@ -78,11 +78,26 @@ func (application *Application) Close() {
 	}
 }
 
-func (application *Application) Handle(pattern string, handler func(http.ResponseWriter, *http.Request, *Application)) {
+func (application *Application) Handle(pattern string, authType AuthenticationType, handler func(*Session)) {
+	// all requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		defer HandleRequestErrors(w, r)
+		// prepare profiling request
+		defer Profile("Request", time.Now())
 
-		handler(w, r, application)
+		// prepare session
+		session := CreateSession(application, w, r)
+
+		// prepare request response
+		defer session.Respond()
+
+		// authentication
+		err := application.authenticate(session, authType)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to authenticate user: %v", err))
+		}
+
+		// handle request
+		handler(session)
 	})
 }
 

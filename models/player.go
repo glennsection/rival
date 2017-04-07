@@ -1,9 +1,13 @@
 package models
 
 import (
+	"encoding/json"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
+
+const playerCollectionName = "players"
 
 type Player struct {
 	ID               bson.ObjectId `bson:"_id,omitempty" json:"id"`
@@ -16,12 +20,33 @@ type Player struct {
 	CurrentDeck      int           `bson:"dc" json:"currentDeck"`
 }
 
-func InsertPlayer(database *mgo.Database, player *Player) error {
-	player.ID = bson.NewObjectId()
-	return database.C("players").Insert(player)
+func ParsePlayer(data string) (player *Player, err error) {
+	player = &Player {}
+
+	// parse json data
+	err = json.Unmarshal([]byte(data), &player)
+	if err != nil {
+		panic(err)
+	}
+
+	return
+}
+
+func SetPlayer(database *mgo.Database, player *Player) (err error) {
+	// collection := database.C(playerCollectionName)
+	// previousPlayer, _ := GetPlayerByUser(database, player.UserID)
+
+	// if previousPlayer != nil {
+	// 	collection.
+	// } else {
+	// 	player.ID = bson.NewObjectId()
+	// 	return collection.Insert(player)
+	// }
+	_, err = database.C(playerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
+	return
 }
 
 func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Player, err error) {
-	err = database.C("players").Find(bson.M { "us": userId } ).One(&player)
-	return;
+	err = database.C(playerCollectionName).Find(bson.M { "us": userId } ).One(&player)
+	return
 }
