@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"log"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -10,8 +11,8 @@ import (
 const playerCollectionName = "players"
 
 type Player struct {
-	ID               bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	UserID           bson.ObjectId `bson:"us" json:"userId"`
+	ID               bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	UserID           bson.ObjectId `bson:"us" json:"-"`
 	StandardCurrency int           `bson:"cs" json:"standardCurrency"`
 	PremiumCurrency  int           `bson:"cp" json:"premiumCurrency"`
 	XP               int           `bson:"xp" json:"xp"`
@@ -20,33 +21,36 @@ type Player struct {
 	CurrentDeck      int           `bson:"dc" json:"currentDeck"`
 }
 
-func ParsePlayer(data string) (player *Player, err error) {
-	player = &Player {}
-
-	// parse json data
+func UpdatePlayer(database *mgo.Database, userId bson.ObjectId, data string) (err error) {
+	// find existing player data
+	player, err := GetPlayerByUser(database, userId)
+	if err != nil {
+		log.Println(err)
+	}
+	
+	// initialize new player if none exists
+	if player == nil {
+		player = &Player {}
+		player.Initialize()
+		player.ID = bson.NewObjectId()
+		player.UserID = userId
+		
+		err = nil
+	}
+	
+	// parse updated data
 	err = json.Unmarshal([]byte(data), &player)
 	if err != nil {
 		panic(err)
 	}
-
-	return
-}
-
-func SetPlayer(database *mgo.Database, player *Player) (err error) {
-	// collection := database.C(playerCollectionName)
-	// previousPlayer, _ := GetPlayerByUser(database, player.UserID)
-
-	// if previousPlayer != nil {
-	// 	collection.
-	// } else {
-	// 	player.ID = bson.NewObjectId()
-	// 	return collection.Insert(player)
-	// }
+	
+	// update database
 	_, err = database.C(playerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
 	return
 }
 
 func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Player, err error) {
+	// find player data by user ID
 	err = database.C(playerCollectionName).Find(bson.M { "us": userId } ).One(&player)
 	return
 }

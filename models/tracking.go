@@ -10,7 +10,8 @@ import (
 const trackingCollectionName = "trackings"
 
 type Tracking struct {
-	UserID         bson.ObjectId `bson:"us" json:"userId"`
+	ID             bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	UserID         bson.ObjectId `bson:"us" json:"-"`
 	Time           time.Time     `bson:"ti" json:"time"`
 	Message        string        `bson:"ms" json:"message"`
 	Data           bson.M        `bson:"dt,omitempty" json:"data"`

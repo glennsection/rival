@@ -12,7 +12,7 @@ import (
 const userCollectionName = "users"
 
 type User struct {
-	ID       bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	ID       bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	Username string        `bson:"un" json:"username"`
 	Password []byte        `bson:"ps" json:"-"`
 	Email    string        `bson:"em,omitempty" json:"email"`

@@ -14,7 +14,7 @@ var profiler *Profiler = nil
 func HandleProfiling(handler func(string, time.Duration)) {
 	if profiler == nil {
 		// create singleton
-		profiler = &Profiler{}
+		profiler = &Profiler {}
 	}
 	profiler.Handler = handler
 }

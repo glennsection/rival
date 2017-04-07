@@ -9,32 +9,23 @@ import (
 
 func SetPlayer(session *system.Session) {
 	// parse parameters
-	//data := session.GetRequiredParameter("data")
-	// HACK !!!!!!!!!!!!!!!!!!!
-	data := "{\"standardCurrency\"=100}"
+	data := session.GetRequiredParameter("data")
 
-	// parse data
-	player, err := models.ParsePlayer(data)
-	if err != nil {
+	// update data
+	if err := models.UpdatePlayer(session.Application.DB, session.User.ID, data); err != nil {
 		panic(err)
 	}
 
-	// bind to user
-	player.UserID = session.User.ID
-
-	// set data
-	if err = models.SetPlayer(session.Application.DB, player); err != nil {
-		panic(err)
-	}
-
-	session.Message("Player set successfully")
+	session.Message("Player updated successfully")
 }
 
 func GetPlayer(session *system.Session) {
 	// get player
 	player, _ := models.GetPlayerByUser(session.Application.DB, session.User.ID)
 	if player != nil {
+		// set successful response
 		session.Message("Found player")
+		session.Data = player
 	} else {
 		panic(fmt.Sprintf("Failed to find player for username: %v", session.User.Username))
 	}

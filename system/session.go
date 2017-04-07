@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"encoding/json"
+	"runtime/debug"
 
 	"bloodtales/models"
 )
@@ -18,6 +19,7 @@ type Session struct {
 	Token       string               `json:"token"`
 	Success     bool                 `json:"success"`
 	Messages    []string             `json:"messages"`
+	Data        interface{}          `json:"data"`
 }
 
 func CreateSession(application *Application, w http.ResponseWriter, r *http.Request) *Session {
@@ -29,7 +31,6 @@ func CreateSession(application *Application, w http.ResponseWriter, r *http.Requ
 		User: nil,
 		Token: "",
 		Success: true,
-		//Messages: make([]string, 0)
 	}
 }
 
@@ -63,12 +64,13 @@ func (session *Session) Respond() {
 	// handle any panic errors during request
 	if err := recover(); err != nil {
 		log.Printf("Error occurred during request: %v", err)
+		debug.PrintStack()
 
 		// update session for failure
-		session.Fail(err.(string))
+		session.Fail(fmt.Sprintf("%v", err))
 	}
 
-	// serialize to json
+	// serialize response to json
 	responseString, err := json.Marshal(session)
 	if err != nil {
 		responseString = []byte(fmt.Sprintf("Error marshalling response: %v", err))
@@ -76,5 +78,6 @@ func (session *Session) Respond() {
 		log.Println(responseString)
 	}
 
+	// write response to stream
 	fmt.Fprint(session.Response, string(responseString))
 }

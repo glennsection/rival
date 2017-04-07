@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"net/http"
 	"log"
+	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
+	
+	"bloodtales/data"
 )
 
 type Application struct {
@@ -15,7 +18,7 @@ type Application struct {
 	DB               *mgo.Database
 }
 
-func GetEnv(name string, defaultValue string) string {
+func (application *Application) GetEnv(name string, defaultValue string) string {
 	// get environment variable or default value
 	value := os.Getenv(name)
 	if value == "" {
@@ -25,7 +28,7 @@ func GetEnv(name string, defaultValue string) string {
 	return value
 }
 
-func GetRequiredEnv(name string) string {
+func (application *Application) GetRequiredEnv(name string) string {
 	// get required environment variable
 	value := os.Getenv(name)
 	if value == "" {
@@ -39,6 +42,7 @@ func (application *Application) handleErrors() {
 	// handle any panic errors
 	if err := recover(); err != nil {
 		log.Printf("Error occurred during execution: %v", err)
+		debug.PrintStack()
 	}
 }
 
@@ -47,12 +51,12 @@ func (application *Application) handleProfiler(name string, elapsedTime time.Dur
 	log.Printf("Profiling: %s took %v", name, elapsedTime)
 }
 
-func (application *Application) Init() {
+func (application *Application) Initialize() {
 	// init profiling
 	HandleProfiling(application.handleProfiler)
-
+	
 	// connect database session
-	uri := GetRequiredEnv("MONGODB_URI")
+	uri := application.GetRequiredEnv("MONGODB_URI")
 	var err error
 	application.DBSession, err = mgo.Dial(uri)
 	if err != nil {
@@ -61,11 +65,14 @@ func (application *Application) Init() {
 	application.DBSession.SetSafe(&mgo.Safe{})
 
 	// get default database
-	dbname := GetRequiredEnv("MONGODB_DB")
+	dbname := application.GetRequiredEnv("MONGODB_DB")
 	application.DB = application.DBSession.DB(dbname)
 
 	// init analytics tracking
 	StartTracking(application.DB)
+	
+	// load data
+	data.Load()
 }
 
 func (application *Application) Close() {
@@ -101,9 +108,15 @@ func (application *Application) Handle(pattern string, authType AuthenticationTy
 	})
 }
 
+func (application *Application) Ignore(pattern string) {
+	// ignore these requests
+	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+	})
+}
+
 func (application *Application) Serve() {
 	// start serving on port
-	port := GetRequiredEnv("PORT")
+	port := application.GetRequiredEnv("PORT")
 
 	err := http.ListenAndServe(":" + port, nil)
 	if err != nil {

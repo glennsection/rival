@@ -9,11 +9,12 @@ func main() {
 	// init application
 	var application = &system.Application {}
 	defer application.Close()
-	application.Init()
+	application.Initialize()
 
 	// -------- Routes --------
 
-	application.Handle("/", system.NoAuthentication, root)
+	application.Ignore("/")
+	application.Ignore("/favicon.ico")
 
 	application.Handle("/register", system.NoAuthentication, controllers.RegisterUser)
 	application.Handle("/login", system.PasswordAuthentication, controllers.LoginUser)
