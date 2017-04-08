@@ -48,7 +48,7 @@ func (application *Application) handleErrors() {
 
 func (application *Application) handleProfiler(name string, elapsedTime time.Duration) {
 	// application profiling handler
-	log.Printf("Profiling: %s took %v", name, elapsedTime)
+	log.Printf("%s [%v]", name, elapsedTime)
 }
 
 func (application *Application) Initialize() {
@@ -89,7 +89,7 @@ func (application *Application) Handle(pattern string, authType AuthenticationTy
 	// all requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// prepare profiling request
-		defer Profile("Request", time.Now())
+		defer Profile(fmt.Sprintf("Request: %v/%v", r.Host, r.URL.Path), time.Now())
 
 		// prepare session
 		session := CreateSession(application, w, r)

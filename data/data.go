@@ -4,58 +4,40 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"log"
 )
 
+// server-side data ID
 type DataId uint32
 
+// base data interface
 type Data interface {
 	GetDataName() string
 }
 
-type DataMap struct {
-	Table map[DataId]Data
-}
+// mapping from server to client IDs
+var dataIdMap map[DataId]string
 
-var dataMap *DataMap = nil
-
-func GetDataId(name string) DataId {
+// convert client to server ID
+func ToDataId(name string) DataId {
 	h := fnv.New32a()
 	h.Write([]byte(name))
 	return DataId(h.Sum32())
 }
 
-func Load() {
-	dataMap = &DataMap {
-		Table: map[DataId]Data {},
-	}
-	
-	// HACK
-	AddData(CardData { Name: "CARD_1" })
-	AddData(CardData { Name: "CARD_2" })
-	AddData(CardData { Name: "CARD_3" })
+// convert server to client ID
+func ToDataName(id DataId) string {
+	return dataIdMap[id]
 }
 
-func AddData(data Data) (err error) {
-	name := data.GetDataName()
-	id := GetDataId(name)
+// add ID mapping to system
+func mapDataName(name string) (id DataId, err error) {
+	id = ToDataId(name)
 	
-	if collision, ok := dataMap.Table[id]; ok {
-		collisionName := collision.GetDataName()
-		err = errors.New(fmt.Sprintf("Collision occurred adding data to map: %v (collided with %v)", name, collisionName))
+	if collision, ok := dataIdMap[id]; ok {
+		err = errors.New(fmt.Sprintf("Collision occurred adding data to map: '%v' (collided with '%v')", name, collision))
 		return
 	}
 	
-	log.Printf("Adding data: %v", id) // DEBUG
-	dataMap.Table[id] = data
+	dataIdMap[id] = name
 	return
-}
-
-func GetDataById(id DataId) Data {
-	return dataMap.Table[id]
-}
-
-func GetDataByName(name string) Data {
-	id := GetDataId(name)
-	return GetDataById(id)
 }
