@@ -11,7 +11,7 @@ import (
 	"bloodtales/models"
 )
 
-const authTokenSecret string = "5UP3R-53CR3T-T0K3N"
+const authTokenSecret string = "5UP3R-53CR3T-T0K3N" // TODO - move this to a config
 
 type AuthenticationType int
 
@@ -21,6 +21,9 @@ const (
 	PasswordAuthentication
 	TokenAuthentication
 )
+
+func (application *Application) initializeAuthentication() {
+}
 
 func (application *Application) authenticate(session *Session, authType AuthenticationType) (err error) {
 	// check auth type

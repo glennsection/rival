@@ -25,8 +25,12 @@ func ToDataId(name string) DataId {
 }
 
 // convert server to client ID
-func ToDataName(id DataId) string {
-	return dataIdMap[id]
+func ToDataName(id DataId) (name string) {
+	name = dataIdMap[id]
+	if name == "" {
+		name = "INVALID"
+	}
+	return
 }
 
 // add ID mapping to system

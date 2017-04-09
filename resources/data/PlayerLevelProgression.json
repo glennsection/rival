@@ -1,0 +1,44 @@
+{ "PlayerLevelProgression":
+[
+  {
+    "id": "1",
+    "xpRequired": "0"
+  },
+  {
+    "id": "2",
+    "xpRequired": "300"
+  },
+  {
+    "id": "3",
+    "xpRequired": "900"
+  },
+  {
+    "id": "4",
+    "xpRequired": "2700"
+  },
+  {
+    "id": "5",
+    "xpRequired": "6500"
+  },
+  {
+    "id": "6",
+    "xpRequired": "14000"
+  },
+  {
+    "id": "7",
+    "xpRequired": "23000"
+  },
+  {
+    "id": "8",
+    "xpRequired": "34000"
+  },
+  {
+    "id": "9",
+    "xpRequired": "48000"
+  },
+  {
+    "id": "10",
+    "xpRequired": "64000"
+  }
+]
+}

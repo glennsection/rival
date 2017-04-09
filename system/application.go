@@ -70,6 +70,9 @@ func (application *Application) Initialize() {
 
 	// init analytics tracking
 	StartTracking(application.DB)
+
+	// init auth
+	application.initializeAuthentication()
 	
 	// load data
 	data.Load()
@@ -88,14 +91,11 @@ func (application *Application) Close() {
 func (application *Application) Handle(pattern string, authType AuthenticationType, handler func(*Session)) {
 	// all requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		// prepare profiling request
-		defer Profile(fmt.Sprintf("Request: %v/%v", r.Host, r.URL.Path), time.Now())
-
 		// prepare session
 		session := CreateSession(application, w, r)
 
 		// prepare request response
-		defer session.Respond()
+		defer session.Respond(time.Now())
 
 		// authentication
 		err := application.authenticate(session, authType)

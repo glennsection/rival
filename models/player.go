@@ -19,6 +19,7 @@ type Player struct {
 	Cards            []Card        `bson:"cd" json:"cards"`
 	Decks            []Deck        `bson:"ds" json:"decks"`
 	CurrentDeck      int           `bson:"dc" json:"currentDeck"`
+	Tomes            []Tome        `bson:"tm" json:"tomes"`
 }
 
 func UpdatePlayer(database *mgo.Database, userId bson.ObjectId, data string) (err error) {

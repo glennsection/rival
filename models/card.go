@@ -6,6 +6,7 @@ import (
 	"bloodtales/data"
 )
 
+// server model
 type Card struct {
 	DataID         data.DataId   `bson:"id" json:"cardId"`
 	Level          int           `bson:"lv" json:"level"`
@@ -14,44 +15,40 @@ type Card struct {
 	LeaderWinCount int           `bson:"wl" json:"leaderWinCount"`
 }
 
+// client model
+type CardClientAlias Card
+type CardClient struct {
+	DataID         string        `json:"cardId"`
+
+	*CardClientAlias
+}
+
 // custom marshalling
 func (card *Card) MarshalJSON() ([]byte, error) {
-	type Alias Card
-	
-	// convert to client data names
-	var cardName string = data.ToDataName(card.DataID)
-	if cardName == "" {
-		cardName = "UNKNOWN"
+	// create client model
+	client := &CardClient {
+		DataID: data.ToDataName(card.DataID),
+		CardClientAlias: (*CardClientAlias)(card),
 	}
 	
-	// marshal with client values
-	return json.Marshal(&struct {
-		DataID string `json:"cardId"`
-		*Alias
-	}{
-		DataID: cardName,
-		Alias: (*Alias)(card),
-	})
+	// marshal with client model
+	return json.Marshal(client)
 }
 
 // custom unmarshalling
 func (card *Card) UnmarshalJSON(raw []byte) error {
-	type Alias Card
-
-	// temp struct
-	aux := &struct {
-		DataID string `json:"cardId"`
-		*Alias
-	}{
-		Alias: (*Alias)(card),
+	// create client model
+	client := &CardClient {
+		CardClientAlias: (*CardClientAlias)(card),
 	}
 
-	if err := json.Unmarshal(raw, &aux); err != nil {
+	// unmarshal to client model
+	if err := json.Unmarshal(raw, &client); err != nil {
 		return err
 	}
 
-	// convert to server values
-	card.DataID = data.ToDataId(aux.DataID)
+	// server data ID
+	card.DataID = data.ToDataId(client.DataID)
 
 	return nil
 }

@@ -17,6 +17,7 @@ func Load() {
 	// load all data files
 	// ------------------------------------------
 	loadDataFile("Cards", LoadCards)
+	loadDataFile("Tomes", LoadTomes)
 	// ------------------------------------------
 }
 

@@ -3,6 +3,7 @@ package system
 import (
 	"fmt"
 	"log"
+	"time"
 	"net/http"
 	"encoding/json"
 	"runtime/debug"
@@ -60,24 +61,30 @@ func (session *Session) Fail(message string) {
 	session.Message(message)
 }
 
-func (session *Session) Respond() {
+func (session *Session) Respond(startTime time.Time) {
 	// handle any panic errors during request
-	if err := recover(); err != nil {
-		log.Printf("Error occurred during request: %v", err)
-		debug.PrintStack()
-
+	var err interface{}
+	if err = recover(); err != nil {
 		// update session for failure
 		session.Fail(fmt.Sprintf("%v", err))
 	}
 
 	// serialize response to json
-	responseString, err := json.Marshal(session)
-	if err != nil {
-		responseString = []byte(fmt.Sprintf("Error marshalling response: %v", err))
+	responseString, marshalErr := json.Marshal(session)
+	if marshalErr != nil {
+		responseString = []byte(fmt.Sprintf("Error marshalling response: %v", marshalErr))
 
 		log.Println(responseString)
 	}
 
 	// write response to stream
 	fmt.Fprint(session.Response, string(responseString))
+
+	// show profiling info
+	Profile(fmt.Sprintf("Request: %v/%v", session.Request.Host, session.Request.URL.Path), startTime)
+
+	if err != nil {
+		log.Printf("Error occurred during last request: %v", err)
+		debug.PrintStack()
+	}
 }
