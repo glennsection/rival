@@ -54,7 +54,7 @@ func (application *Application) authenticate(session *Session, authType Authenti
 			})
 
 			// analytics tracking (TODO - integrate with session)
-			//system.Track("Login", bson.M { "mood": "happy" })
+			//session.Track("Login", bson.M { "mood": "happy" })
 
 			// sign and get the complete encoded token as string
 			session.Token, err = token.SignedString([]byte(authTokenSecret))

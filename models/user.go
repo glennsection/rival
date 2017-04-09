@@ -20,6 +20,23 @@ type User struct {
 	Login    time.Time     `bson:"tl" json:"login"`
 }
 
+func ensureIndexUser(database *mgo.Database) {
+	c := database.C(userCollectionName)
+
+	index := mgo.Index {
+		Key:        []string { "Username" },
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func (user *User) HashPassword(password string) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 

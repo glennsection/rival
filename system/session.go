@@ -35,6 +35,11 @@ func CreateSession(application *Application, w http.ResponseWriter, r *http.Requ
 	}
 }
 
+func (session *Session) GetPlayer() (player *models.Player) {
+	player, _ = models.GetPlayerByUser(session.Application.DB, session.User.ID)
+	return
+}
+
 func (session *Session) GetParameter(name string) string {
 	return session.Request.FormValue(name)
 }

@@ -22,6 +22,23 @@ type Player struct {
 	Tomes            []Tome        `bson:"tm" json:"tomes"`
 }
 
+func ensureIndexPlayer(database *mgo.Database) {
+	c := database.C(playerCollectionName)
+
+	index := mgo.Index {
+		Key:        []string { "UserID" },
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func UpdatePlayer(database *mgo.Database, userId bson.ObjectId, data string) (err error) {
 	// find existing player data
 	player, err := GetPlayerByUser(database, userId)

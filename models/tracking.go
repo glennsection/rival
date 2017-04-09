@@ -13,8 +13,27 @@ type Tracking struct {
 	ID             bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	UserID         bson.ObjectId `bson:"us" json:"-"`
 	Time           time.Time     `bson:"ti" json:"time"`
+	Lifetime       time.Duration `bson:"ex" json:"expires"`
 	Message        string        `bson:"ms" json:"message"`
 	Data           bson.M        `bson:"dt,omitempty" json:"data"`
+}
+
+func ensureIndexTracking(database *mgo.Database) {
+	c := database.C(trackingCollectionName)
+
+	index := mgo.Index {
+		Key:          []string { "UserID" },
+		Unique:       false,
+		DropDups:     false,
+		Background:   true,
+		Sparse:       true,
+		//ExpiresAfter: time.Duration { ... },
+	}
+
+	err := c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func InsertTracking(database *mgo.Database, tracking *Tracking) error {

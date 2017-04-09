@@ -21,7 +21,7 @@ func SetPlayer(session *system.Session) {
 
 func GetPlayer(session *system.Session) {
 	// get player
-	player, _ := models.GetPlayerByUser(session.Application.DB, session.User.ID)
+	player := session.GetPlayer()
 	if player != nil {
 		// set successful response
 		session.Message("Found player")

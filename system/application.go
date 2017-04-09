@@ -11,6 +11,7 @@ import (
 	"gopkg.in/mgo.v2"
 	
 	"bloodtales/data"
+	"bloodtales/models"
 )
 
 type Application struct {
@@ -68,8 +69,10 @@ func (application *Application) Initialize() {
 	dbname := application.GetRequiredEnv("MONGODB_DB")
 	application.DB = application.DBSession.DB(dbname)
 
-	// init analytics tracking
-	StartTracking(application.DB)
+	// init models (FIXME - do we need to copy the session here?)
+	tempSession := application.DBSession.Copy()
+	defer tempSession.Close()
+	models.Initialize(tempSession.DB(dbname))
 
 	// init auth
 	application.initializeAuthentication()
