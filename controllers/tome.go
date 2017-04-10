@@ -6,10 +6,10 @@ import (
 
 func UnlockTome(session *system.Session) {
 	// parse parameters
-	tomeId := session.GetRequiredParameter("tomeId")
+	//tomeId := session.GetRequiredParameter("tomeId")
 
 	// get player
-	player := session.GetPlayer()
+	//player := session.GetPlayer()
 
 	// TODO - start unlock...
 }

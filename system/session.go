@@ -1,9 +1,9 @@
 package system
 
 import (
+	"time"
 	"fmt"
 	"log"
-	"time"
 	"net/http"
 	"encoding/json"
 	"runtime/debug"
@@ -13,26 +13,38 @@ import (
 
 type Session struct {
 	Application *Application         `json:"-"`
-	Response    http.ResponseWriter  `json:"-"`
 	Request     *http.Request        `json:"-"`
-
 	User		*models.User         `json:"-"`
+
 	Token       string               `json:"token"`
 	Success     bool                 `json:"success"`
 	Messages    []string             `json:"messages"`
 	Data        interface{}          `json:"data"`
+	Template    string               `json:"-"`
+
+	// internal
+	responseWriter  http.ResponseWriter
+	responseWritten bool
 }
 
 func CreateSession(application *Application, w http.ResponseWriter, r *http.Request) *Session {
 	return &Session {
 		Application: application,
-		Response: w,
 		Request: r,
+
+		// internal
+		responseWriter: w,
 
 		User: nil,
 		Token: "",
 		Success: true,
 	}
+}
+
+func (session *Session) Write(p []byte) (n int, err error) {
+	// remember custom was response written
+	session.responseWritten = true
+	return session.responseWriter.Write(p)
 }
 
 func (session *Session) GetPlayer() (player *models.Player) {
@@ -68,28 +80,52 @@ func (session *Session) Fail(message string) {
 
 func (session *Session) Respond(startTime time.Time) {
 	// handle any panic errors during request
-	var err interface{}
-	if err = recover(); err != nil {
+	var caughtErr interface{}
+	if caughtErr = recover(); caughtErr != nil {
 		// update session for failure
-		session.Fail(fmt.Sprintf("%v", err))
+		session.Fail(fmt.Sprintf("%v", caughtErr))
 	}
 
-	// serialize response to json
-	responseString, marshalErr := json.Marshal(session)
-	if marshalErr != nil {
-		responseString = []byte(fmt.Sprintf("Error marshalling response: %v", marshalErr))
+	// check if any custom response was written
+	if session.responseWritten {
+		// nothing left to do...
+	} else if session.Template != "" {
+		// default data
+		if session.Data == nil {
+			session.Data = "" // TODO - find better value?
+		}
 
-		log.Println(responseString)
+		// render template
+		err := session.Application.templates.ExecuteTemplate(session, session.Template, session.Data)
+		if err != nil {
+			responseString := fmt.Sprintf("ERROR processing template (%v): %v", session.Template, err)
+
+			log.Println(responseString)
+
+			// write error response to stream
+			fmt.Fprint(session.responseWriter, responseString)
+		}
+	} else {
+		// serialize response to json
+		var responseString string
+		raw, err := json.Marshal(session)
+		if err == nil {
+			responseString = string(raw)
+		} else {
+			responseString = fmt.Sprintf("ERROR marshalling response: %v", err)
+
+			log.Println(responseString)
+		}
+
+		// write response to stream
+		fmt.Fprint(session.responseWriter, responseString)
 	}
-
-	// write response to stream
-	fmt.Fprint(session.Response, string(responseString))
 
 	// show profiling info
 	Profile(fmt.Sprintf("Request: %v/%v", session.Request.Host, session.Request.URL.Path), startTime)
 
-	if err != nil {
-		log.Printf("Error occurred during last request: %v", err)
+	if caughtErr != nil {
+		log.Printf("ERROR occurred during last request: %v", caughtErr)
 		debug.PrintStack()
 	}
 }

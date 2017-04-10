@@ -18,7 +18,7 @@ const (
 )
 
 func (application *Application) initializeAuthentication() {
-	log.Printf("DEBUG - Build has authentication disabled")
+	log.Printf("DEBUG - Build has disabled authentication")
 }
 
 func (application *Application) authenticate(session *Session, authType AuthenticationType) (err error) {

@@ -7,23 +7,23 @@ import (
 	"bloodtales/models"
 )
 
-func RegisterUser(session *system.Session) {
+func UserRegister(session *system.Session) {
 	// parse parameters
 	username, password := session.GetRequiredParameter("username"), session.GetRequiredParameter("password")
 
 	// insert user
-	if err := models.InsertUser(session.Application.DB, username, password); err != nil {
+	if err := models.InsertUser(session.Application.DB, username, password, false); err != nil {
 		panic(err)
 	}
 
 	session.Message("User registered successfully")
 }
 
-func LoginUser(session *system.Session) {
+func UserLogin(session *system.Session) {
 	session.Message("User logged in successfully")
 }
 
-func LogoutUser(session *system.Session) {
+func UserLogout(session *system.Session) {
 	// TODO - clear token?
 
 	session.Message("User logged out successfully")

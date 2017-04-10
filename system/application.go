@@ -4,8 +4,9 @@ import (
 	"os"
 	"time"
 	"fmt"
-	"net/http"
 	"log"
+	"net/http"
+	"html/template"
 	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
@@ -17,6 +18,8 @@ import (
 type Application struct {
 	DBSession        *mgo.Session
 	DB               *mgo.Database
+
+	templates        *template.Template
 }
 
 func (application *Application) GetEnv(name string, defaultValue string) string {
@@ -55,6 +58,9 @@ func (application *Application) handleProfiler(name string, elapsedTime time.Dur
 func (application *Application) Initialize() {
 	// init profiling
 	HandleProfiling(application.handleProfiler)
+
+	// init templates
+	application.templates = template.Must(template.ParseGlob("templates/*.tmpl.html"))
 	
 	// connect database session
 	uri := application.GetRequiredEnv("MONGODB_URI")
@@ -76,7 +82,7 @@ func (application *Application) Initialize() {
 
 	// init auth
 	application.initializeAuthentication()
-	
+
 	// load data
 	data.Load()
 }

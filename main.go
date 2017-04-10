@@ -3,6 +3,7 @@ package main
 import (
 	"bloodtales/system"
 	"bloodtales/controllers"
+	"bloodtales/admin"
 )
 
 func main() {
@@ -16,9 +17,11 @@ func main() {
 	application.Ignore("/")
 	application.Ignore("/favicon.ico")
 
-	application.Handle("/register", system.NoAuthentication, controllers.RegisterUser)
-	application.Handle("/login", system.PasswordAuthentication, controllers.LoginUser)
-	application.Handle("/logout", system.TokenAuthentication, controllers.LogoutUser)
+	application.Handle("/admin", system.NoAuthentication, admin.Home)
+
+	application.Handle("/register", system.NoAuthentication, controllers.UserRegister)
+	application.Handle("/login", system.PasswordAuthentication, controllers.UserLogin)
+	application.Handle("/logout", system.TokenAuthentication, controllers.UserLogout)
 	//application.Handle("/user/get", controllers.GetUser)
 
 	application.Handle("/player/set", system.TokenAuthentication, controllers.SetPlayer)

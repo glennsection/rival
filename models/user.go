@@ -13,9 +13,10 @@ const userCollectionName = "users"
 
 type User struct {
 	ID       bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	Admin    bool          `bson:"ad" json:"admin"`
 	Username string        `bson:"un" json:"username"`
 	Password []byte        `bson:"ps" json:"-"`
-	Email    string        `bson:"em,omitempty" json:"email"`
+	Email    string        `bson:"em,omitempty" json:"email,omitempty"`
 	Inserted time.Time     `bson:"ti" json:"inserted"`
 	Login    time.Time     `bson:"tl" json:"login"`
 }
@@ -47,7 +48,7 @@ func (user *User) HashPassword(password string) {
 	user.Password = hash
 }
 
-func InsertUser(database *mgo.Database, username string, password string) (err error) {
+func InsertUser(database *mgo.Database, username string, password string, admin bool) (err error) {
 	// check existing user
 	var user *User
 	user, err = GetUserByUsername(database, username)
@@ -60,13 +61,14 @@ func InsertUser(database *mgo.Database, username string, password string) (err e
 
 	// create user
 	user = &User {
+		ID: bson.NewObjectId(),
 		Username: username,
+		Admin: admin,
+		Inserted: time.Now(),
+		Login: time.Now(),
 	}
 	user.HashPassword(password)
 
-	user.ID = bson.NewObjectId()
-	user.Inserted = time.Now()
-	user.Login = time.Now()
 	return database.C(userCollectionName).Insert(user)
 }
 
