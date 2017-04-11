@@ -7,8 +7,12 @@ import (
 	//"bloodtales/models"
 )
 
+func HandleAdmin(application *system.Application) {
+	application.Handle("/admin", system.NoAuthentication, Home)
+}
+
 func Home(session *system.Session) {
-	session.Template = "index.tmpl.html"
+	session.Template = "dashboard.tmpl.html"
 }
 
 func Login(session *system.Session) {
