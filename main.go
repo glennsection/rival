@@ -24,8 +24,8 @@ func main() {
 	controllers.HandlePlayer(application)
 	controllers.HandleTome(application)
 
-	application.Handle("/player/tome/unlock", system.TokenAuthentication, controllers.UnlockTome)
-	application.Handle("/player/tome/open", system.TokenAuthentication, controllers.OpenTome)
+	application.HandleAPI("/player/tome/unlock", system.TokenAuthentication, controllers.UnlockTome)
+	application.HandleAPI("/player/tome/open", system.TokenAuthentication, controllers.OpenTome)
 	// ------------------------
 
 	// deliver response
