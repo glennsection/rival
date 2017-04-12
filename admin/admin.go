@@ -1,18 +1,21 @@
 package admin
 
 import (
-	//"log"
-
 	"bloodtales/system"
-	//"bloodtales/models"
 )
 
+var DefaultPageSize int = 20
+
 func HandleAdmin(application *system.Application) {
-	application.Handle("/admin", system.NoAuthentication, Home)
+	application.HandleTemplate("/admin", system.NoAuthentication, Home, "dashboard.tmpl.html")
+	application.HandleTemplate("/admin/login", system.PasswordAuthentication, Login, "dashboard.tmpl.html")
+	application.HandleTemplate("/admin/logout", system.NoAuthentication, Logout, "dashboard.tmpl.html")
+
+	application.HandleTemplate("/admin/players", system.TokenAuthentication, ShowPlayers, "players.tmpl.html")
+	application.HandleTemplate("/admin/player", system.TokenAuthentication, ShowPlayer, "player.tmpl.html")
 }
 
 func Home(session *system.Session) {
-	session.Template = "dashboard.tmpl.html"
 }
 
 func Login(session *system.Session) {
@@ -20,7 +23,7 @@ func Login(session *system.Session) {
 }
 
 func Logout(session *system.Session) {
-	// TODO - clear token?
+	// TODO - clear cookie?
 
 	session.Message("User logged out successfully")
 }

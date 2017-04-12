@@ -123,14 +123,22 @@ func (application *Application) Close() {
 	}
 }
 
-func (application *Application) Handle(pattern string, authType AuthenticationType, handler func(*Session)) {
-	// all requests start here
+func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*Session)) {
+	application.handle(pattern, authType, handler, "")
+}
+
+func (application *Application) HandleTemplate(pattern string, authType AuthenticationType, handler func(*Session), template string) {
+	application.handle(pattern, authType, handler, template)
+}
+
+func (application *Application) handle(pattern string, authType AuthenticationType, handler func(*Session), template string) {
+	// all template requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// prepare session
 		session := CreateSession(application, w, r)
 
 		// prepare request response
-		defer session.Respond(time.Now())
+		defer session.Respond(time.Now(), template)
 
 		// authentication
 		err := application.authenticate(session, authType)

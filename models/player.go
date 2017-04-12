@@ -8,7 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const playerCollectionName = "players"
+const PlayerCollectionName = "players"
 
 type Player struct {
 	ID               bson.ObjectId `bson:"_id,omitempty" json:"-"`
@@ -23,7 +23,7 @@ type Player struct {
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
-	c := database.C(playerCollectionName)
+	c := database.C(PlayerCollectionName)
 
 	index := mgo.Index {
 		Key:        []string { "UserID" },
@@ -63,12 +63,18 @@ func UpdatePlayer(database *mgo.Database, userId bson.ObjectId, data string) (er
 	}
 	
 	// update database
-	_, err = database.C(playerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
+	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
+	return
+}
+
+func GetPlayerById(database *mgo.Database, id bson.ObjectId) (player *Player, err error) {
+	// find player data by user ID
+	err = database.C(PlayerCollectionName).Find(bson.M { "_id": id } ).One(&player)
 	return
 }
 
 func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
-	err = database.C(playerCollectionName).Find(bson.M { "us": userId } ).One(&player)
+	err = database.C(PlayerCollectionName).Find(bson.M { "us": userId } ).One(&player)
 	return
 }

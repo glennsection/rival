@@ -5,7 +5,7 @@ import (
 )
 
 func HandleTome(application *system.Application) {
-	//application.Handle("/tome/unlock", system.TokenAuthentication, UnlockTome)
+	//application.HandleAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
 }
 
 func UnlockTome(session *system.Session) {

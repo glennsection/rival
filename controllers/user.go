@@ -8,10 +8,10 @@ import (
 )
 
 func HandleUser(application *system.Application) {
-	application.Handle("/register", system.NoAuthentication, UserRegister)
-	application.Handle("/login", system.PasswordAuthentication, UserLogin)
-	application.Handle("/logout", system.TokenAuthentication, UserLogout)
-	//application.Handle("/user/get", GetUser)
+	application.HandleAPI("/register", system.NoAuthentication, UserRegister)
+	application.HandleAPI("/login", system.PasswordAuthentication, UserLogin)
+	application.HandleAPI("/logout", system.TokenAuthentication, UserLogout)
+	//application.HandleAPI("/user/get", GetUser)
 }
 
 func UserRegister(session *system.Session) {

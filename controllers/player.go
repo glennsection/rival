@@ -8,8 +8,8 @@ import (
 )
 
 func HandlePlayer(application *system.Application) {
-	application.Handle("/player/set", system.TokenAuthentication, SetPlayer)
-	application.Handle("/player/get", system.TokenAuthentication, GetPlayer)
+	application.HandleAPI("/player/set", system.TokenAuthentication, SetPlayer)
+	application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
 }
 
 func SetPlayer(session *system.Session) {
