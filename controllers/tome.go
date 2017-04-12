@@ -2,12 +2,15 @@ package controllers
 
 import (
 	"strconv"
+	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/system"
 )
 
 func HandleTome(application *system.Application) {
-	//application.HandleAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
+	application.HandleAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
+	application.HandleAPI("/tome/open", system.TokenAuthentication, OpenTome)
+	application.HandleAPI("/tome/rush", system.TokenAuthentication, RushTome)
 }
 
 func UnlockTome(session *system.Session) {
@@ -66,7 +69,34 @@ func OpenTome(session *system.Session) {
 		return
 	}
 
-	session.Data = player
+	session.Data = &player.Tomes[index]
+}
+
+func RushTome(session *system.Session) {
+	//Validate the request
+	index, player, valid := ValidateTomeRequest(session)
+	if !valid {
+		return
+	}
+
+	cost := data.GetTome(player.Tomes[index].DataID).GemsToUnlock
+
+	// check to see if the player has enough premium currency
+	if cost > player.PremiumCurrency {
+		session.Fail("Not enough premium currency")
+		return
+	}
+
+	player.PremiumCurrency -= cost
+	(player.Tomes[index]).OpenTome()
+
+	err := player.Update(session.Application.DB)
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	session.Data = &player.Tomes[index]
 }
 
 func ValidateTomeRequest(session *system.Session) (index int, player *models.Player, success bool) {

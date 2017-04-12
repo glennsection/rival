@@ -23,9 +23,6 @@ func main() {
 	controllers.HandleUser(application)
 	controllers.HandlePlayer(application)
 	controllers.HandleTome(application)
-
-	application.HandleAPI("/player/tome/unlock", system.TokenAuthentication, controllers.UnlockTome)
-	application.HandleAPI("/player/tome/open", system.TokenAuthentication, controllers.OpenTome)
 	// ------------------------
 
 	// deliver response
