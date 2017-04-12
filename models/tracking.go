@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-const trackingCollectionName = "trackings"
+const TrackingCollectionName = "trackings"
 
 type Tracking struct {
 	ID             bson.ObjectId `bson:"_id,omitempty" json:"-"`
@@ -19,7 +19,7 @@ type Tracking struct {
 }
 
 func ensureIndexTracking(database *mgo.Database) {
-	c := database.C(trackingCollectionName)
+	c := database.C(TrackingCollectionName)
 
 	index := mgo.Index {
 		Key:          []string { "UserID" },
@@ -38,10 +38,10 @@ func ensureIndexTracking(database *mgo.Database) {
 
 func InsertTracking(database *mgo.Database, tracking *Tracking) error {
 	tracking.Time = time.Now()
-	return database.C(trackingCollectionName).Insert(tracking)
+	return database.C(TrackingCollectionName).Insert(tracking)
 }
 
 func GetTrackings(database *mgo.Database, userId bson.ObjectId) (trackings *[]Tracking, err error) {
-	err = database.C(trackingCollectionName).Find(bson.M { "us": userId } ).Sort("ti").All(&trackings)
+	err = database.C(TrackingCollectionName).Find(bson.M { "us": userId } ).Sort("ti").All(&trackings)
 	return
 }

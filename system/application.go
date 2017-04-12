@@ -3,8 +3,10 @@ package system
 import (
 	"os"
 	"time"
+	"strings"
 	"fmt"
 	"log"
+	"path/filepath"
 	"net/http"
 	"html/template"
 	"runtime/debug"
@@ -60,11 +62,14 @@ func (application *Application) Initialize() {
 	HandleProfiling(application.handleProfiler)
 
 	// init templates
-	application.templates = template.Must(template.ParseGlob("templates/*.tmpl.html"))
+	//application.templates = template.Must(template.ParseGlob("templates/admin/*.tmpl.html"))
+	err := application.LoadTemplates()
+	if err != nil {
+		panic(err)
+	}
 	
 	// connect database session
 	uri := application.GetRequiredEnv("MONGODB_URI")
-	var err error
 	application.DBSession, err = mgo.Dial(uri)
 	if err != nil {
 		panic(err)
@@ -87,6 +92,27 @@ func (application *Application) Initialize() {
 	data.Load()
 }
 
+func (application *Application) LoadTemplates() error {
+	var templates []string
+
+	// gather all HTML templates
+	fn := func(path string, f os.FileInfo, err error) error {
+		if f.IsDir() != true && strings.HasSuffix(f.Name(), ".html") {
+			templates = append(templates, path)
+		}
+		return nil
+	}
+
+	err := filepath.Walk("templates", fn)
+	if err != nil {
+		return err
+	}
+
+	// preload all HTML templates
+	application.templates = template.Must(template.ParseFiles(templates...))
+	return nil
+}
+
 func (application *Application) Close() {
 	// handle any remaining application errors
 	defer application.handleErrors()
@@ -97,14 +123,22 @@ func (application *Application) Close() {
 	}
 }
 
-func (application *Application) Handle(pattern string, authType AuthenticationType, handler func(*Session)) {
-	// all requests start here
+func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*Session)) {
+	application.handle(pattern, authType, handler, "")
+}
+
+func (application *Application) HandleTemplate(pattern string, authType AuthenticationType, handler func(*Session), template string) {
+	application.handle(pattern, authType, handler, template)
+}
+
+func (application *Application) handle(pattern string, authType AuthenticationType, handler func(*Session), template string) {
+	// all template requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// prepare session
 		session := CreateSession(application, w, r)
 
 		// prepare request response
-		defer session.Respond(time.Now())
+		defer session.Respond(time.Now(), template)
 
 		// authentication
 		err := application.authenticate(session, authType)
@@ -115,6 +149,19 @@ func (application *Application) Handle(pattern string, authType AuthenticationTy
 		// handle request
 		handler(session)
 	})
+}
+
+func (application *Application) Static(pattern string, path string) {
+	// get static files directory
+	fs := http.FileServer(http.Dir(path))
+
+	// fix pattern
+	if pattern[len(pattern) - 1] != '/' {
+		pattern = fmt.Sprintf("%v/", pattern)
+	}
+
+	// server static files from directory
+	http.Handle(pattern, http.StripPrefix(pattern, fs))
 }
 
 func (application *Application) Ignore(pattern string) {

@@ -7,6 +7,11 @@ import (
 	"bloodtales/models"
 )
 
+func HandlePlayer(application *system.Application) {
+	application.HandleAPI("/player/set", system.TokenAuthentication, SetPlayer)
+	application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
+}
+
 func SetPlayer(session *system.Session) {
 	// parse parameters
 	data := session.GetRequiredParameter("data")

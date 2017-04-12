@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const userCollectionName = "users"
+const UserCollectionName = "users"
 
 type User struct {
 	ID       bson.ObjectId `bson:"_id,omitempty" json:"-"`
@@ -22,7 +22,7 @@ type User struct {
 }
 
 func ensureIndexUser(database *mgo.Database) {
-	c := database.C(userCollectionName)
+	c := database.C(UserCollectionName)
 
 	index := mgo.Index {
 		Key:        []string { "Username" },
@@ -69,11 +69,11 @@ func InsertUser(database *mgo.Database, username string, password string, admin 
 	}
 	user.HashPassword(password)
 
-	return database.C(userCollectionName).Insert(user)
+	return database.C(UserCollectionName).Insert(user)
 }
 
 func GetUserByUsername(database *mgo.Database, username string) (user *User, err error) {
-	err = database.C(userCollectionName).Find(bson.M { "un": username } ).One(&user)
+	err = database.C(UserCollectionName).Find(bson.M { "un": username } ).One(&user)
 	return
 }
 

@@ -34,7 +34,7 @@ func (application *Application) authenticate(session *Session, authType Authenti
 	allowPassword := (authType == AnyAuthentication || authType == PasswordAuthentication)
 
 	// check for token paremeter
-	unparsedToken := session.GetParameter("token")
+	unparsedToken := session.GetParameter("token", "")
 
 	if unparsedToken == "" {
 		if allowPassword {

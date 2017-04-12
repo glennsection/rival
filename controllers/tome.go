@@ -6,6 +6,10 @@ import (
 	"bloodtales/system"
 )
 
+func HandleTome(application *system.Application) {
+	//application.HandleAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
+}
+
 func UnlockTome(session *system.Session) {
 	//Validate the request
 	index, player, valid := ValidateTomeRequest(session)

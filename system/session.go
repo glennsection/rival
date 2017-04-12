@@ -4,6 +4,7 @@ import (
 	"time"
 	"fmt"
 	"log"
+	"strconv"
 	"net/http"
 	"encoding/json"
 	"runtime/debug"
@@ -20,7 +21,6 @@ type Session struct {
 	Success     bool                 `json:"success"`
 	Messages    []string             `json:"messages"`
 	Data        interface{}          `json:"data"`
-	Template    string               `json:"-"`
 
 	// internal
 	responseWriter  http.ResponseWriter
@@ -47,22 +47,105 @@ func (session *Session) Write(p []byte) (n int, err error) {
 	return session.responseWriter.Write(p)
 }
 
-func (session *Session) GetPlayer() (player *models.Player) {
-	player, _ = models.GetPlayerByUser(session.Application.DB, session.User.ID)
-	return
+func (session *Session) GetParameter(name string, defaultValue string) string {
+	value := session.Request.FormValue(name)
+	if value == "" {
+		value = defaultValue
+	}
+
+	return value
 }
 
-func (session *Session) GetParameter(name string) string {
-	return session.Request.FormValue(name)
+func (session *Session) GetBoolParameter(name string, defaultValue bool) bool {
+	value := session.Request.FormValue(name)
+	if value != "" {
+		result, err := strconv.ParseBool(value)
+		if err == nil {
+			return result
+		}
+	}
+
+	return defaultValue
+}
+
+func (session *Session) GetIntParameter(name string, defaultValue int) int {
+	value := session.Request.FormValue(name)
+	if value != "" {
+		result, err := strconv.Atoi(value)
+		if err == nil {
+			return result
+		}
+	}
+
+	return defaultValue
+}
+
+func (session *Session) GetFloatParameter(name string, defaultValue float64) float64 {
+	value := session.Request.FormValue(name)
+	if value != "" {
+		result, err := strconv.ParseFloat(value, 64)
+		if err == nil {
+			return result
+		}
+	}
+
+	return defaultValue
 }
 
 func (session *Session) GetRequiredParameter(name string) string {
-	value := session.GetParameter(name)
+	value := session.Request.FormValue(name)
 	if value == "" {
 		panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
 	}
 
 	return value
+}
+
+func (session *Session) GetRequiredBoolParameter(name string) bool {
+	value := session.Request.FormValue(name)
+	if value != "" {
+		result, err := strconv.ParseBool(value)
+		if err == nil {
+			return result
+		} else {
+			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+		}
+	}
+
+	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+}
+
+func (session *Session) GetRequiredIntParameter(name string) int {
+	value := session.Request.FormValue(name)
+	if value != "" {
+		result, err := strconv.Atoi(value)
+		if err == nil {
+			return result
+		} else {
+			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+		}
+	}
+
+	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+}
+
+func (session *Session) GetRequiredFloatParameter(name string) float64 {
+	value := session.Request.FormValue(name)
+	if value != "" {
+		result, err := strconv.ParseFloat(value, 64)
+		if err == nil {
+			return result
+		} else {
+			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+		}
+	}
+
+	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+}
+
+func (session *Session) GetPlayer() (player *models.Player) {
+	player, _ = models.GetPlayerByUser(session.Application.DB, session.User.ID)
+	return
 }
 
 func (session *Session) Message(message string) {
@@ -78,7 +161,7 @@ func (session *Session) Fail(message string) {
 	session.Message(message)
 }
 
-func (session *Session) Respond(startTime time.Time) {
+func (session *Session) Respond(startTime time.Time, template string) {
 	// handle any panic errors during request
 	var caughtErr interface{}
 	if caughtErr = recover(); caughtErr != nil {
@@ -89,16 +172,18 @@ func (session *Session) Respond(startTime time.Time) {
 	// check if any custom response was written
 	if session.responseWritten {
 		// nothing left to do...
-	} else if session.Template != "" {
+	} else if template != "" {
 		// default data
 		if session.Data == nil {
 			session.Data = "" // TODO - find better value?
 		}
 
+		// TODO - should show caughtErr in the resulting HTML somewhere...
+
 		// render template
-		err := session.Application.templates.ExecuteTemplate(session, session.Template, session.Data)
+		err := session.Application.templates.ExecuteTemplate(session, template, session.Data)
 		if err != nil {
-			responseString := fmt.Sprintf("ERROR processing template (%v): %v", session.Template, err)
+			responseString := fmt.Sprintf("ERROR processing template (%v): %v", template, err)
 
 			log.Println(responseString)
 

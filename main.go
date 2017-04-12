@@ -16,16 +16,13 @@ func main() {
 
 	application.Ignore("/")
 	application.Ignore("/favicon.ico")
+	application.Static("/static", "static")
 
-	application.Handle("/admin", system.NoAuthentication, admin.Home)
+	admin.HandleAdmin(application)
 
-	application.Handle("/register", system.NoAuthentication, controllers.UserRegister)
-	application.Handle("/login", system.PasswordAuthentication, controllers.UserLogin)
-	application.Handle("/logout", system.TokenAuthentication, controllers.UserLogout)
-	//application.Handle("/user/get", controllers.GetUser)
-
-	application.Handle("/player/set", system.TokenAuthentication, controllers.SetPlayer)
-	application.Handle("/player/get", system.TokenAuthentication, controllers.GetPlayer)
+	controllers.HandleUser(application)
+	controllers.HandlePlayer(application)
+	controllers.HandleTome(application)
 
 	application.Handle("/player/tome/unlock", system.TokenAuthentication, controllers.UnlockTome)
 	application.Handle("/player/tome/open", system.TokenAuthentication, controllers.OpenTome)

@@ -7,6 +7,13 @@ import (
 	"bloodtales/models"
 )
 
+func HandleUser(application *system.Application) {
+	application.HandleAPI("/register", system.NoAuthentication, UserRegister)
+	application.HandleAPI("/login", system.PasswordAuthentication, UserLogin)
+	application.HandleAPI("/logout", system.TokenAuthentication, UserLogout)
+	//application.HandleAPI("/user/get", GetUser)
+}
+
 func UserRegister(session *system.Session) {
 	// parse parameters
 	username, password := session.GetRequiredParameter("username"), session.GetRequiredParameter("password")
