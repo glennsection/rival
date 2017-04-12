@@ -3,14 +3,14 @@ package models
 import (
 	"time"
 	"encoding/json"
-
 	"bloodtales/data"
 )
 
 // tome state
 type TomeState int
 const (
-	TomeLocked TomeState = iota
+	TomeEmpty TomeState = iota
+	TomeLocked
 	TomeUnlocking
 	TomeUnlocked
 )
@@ -69,18 +69,39 @@ func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	// server data ID
 	tome.DataID = data.ToDataId(client.DataID)
 
-	// server tome state
-	switch client.State {
-	case "Unlocking":
-		tome.State = TomeUnlocking
-	case "Unlocked":
-		tome.State = TomeUnlocked
-	default:
-		tome.State = TomeLocked
+	if client.DataID == "" {
+		tome.State = TomeEmpty
+	} else {
+		// server tome state
+		switch client.State {
+		case "Unlocking":
+			tome.State = TomeUnlocking
+		case "Unlocked":
+			tome.State = TomeUnlocked
+		default:
+			tome.State = TomeLocked
+		}
 	}
 
 	// server unlock time
 	tome.UnlockTime = data.TicksToTime(client.UnlockTime)
 
 	return nil
+}
+
+func (tome *Tome) StartUnlocking() {
+	tome.State = TomeUnlocking
+	tome.UnlockTime = time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second)
+}
+
+func (tome *Tome) OpenTome() {
+	tome.DataID = data.ToDataId("")
+	tome.State = TomeEmpty
+	tome.UnlockTime = data.TicksToTime(0)
+}
+
+func (tome *Tome) UpdateTome() {
+	if tome.State == TomeUnlocking && time.Now().After(tome.UnlockTime) {
+		tome.State = TomeUnlocked
+	} 
 }

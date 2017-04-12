@@ -5,17 +5,16 @@ import (
 )
 
 type TomeData struct {
-	// TODO ?->  ID int `json:"databaseId"`
 	Name                    string        `json:"id"`
 	Rarity                  string        `json:"rarity"`
-	Tier                    int           `json:"tier"`
-	Type                    string        `json:"type"`
-	Units                   []string      `json:"units"`
-	UnitCount               int           `json:"numUnits"`
-	ManaCost                int           `json:"manaCost"`
-	Cooldown                int           `json:"cooldown"`
-	AwakenGamesNeeded       int           `json:"awakenGamesNeeded"`
-	AwakenLeaderGamesNeeded int           `json:"awakenLeaderGamesNeeded"`
+	TimeToUnlock			int 		  `json:"timeToUnlock,string"`
+	GemsToUnlock			int 		  `json:"gemsToUnlock,string"`
+	MinPremiumReward		int 		  `json:"minGemReward,string"`
+	MaxPremiumReward		int 		  `json:"maxGemReward,string"`
+	MinStandardReward		int 		  `json:"minGoldReward,string"`
+	MaxStandardReward		int 		  `json:"maxGoldReward,string"`
+	GuaranteedRarities		[]int		  `json:"guaranteedRarities,string"`
+	CardsRewarded			[]int		  `json:"cardsRewarded,string"`
 }
 
 // data map

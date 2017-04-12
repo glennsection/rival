@@ -27,6 +27,8 @@ func main() {
 	application.Handle("/player/set", system.TokenAuthentication, controllers.SetPlayer)
 	application.Handle("/player/get", system.TokenAuthentication, controllers.GetPlayer)
 
+	application.Handle("/player/tome/unlock", system.TokenAuthentication, controllers.UnlockTome)
+	application.Handle("/player/tome/open", system.TokenAuthentication, controllers.OpenTome)
 	// ------------------------
 
 	// deliver response

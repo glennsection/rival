@@ -8,11 +8,11 @@ import (
 
 // server model
 type Card struct {
-	DataID         data.DataId   `bson:"id" json:"cardId"`
-	Level          int           `bson:"lv" json:"level"`
-	CardCount      int           `bson:"nm" json:"cardCount"`
-	WinCount       int           `bson:"wc" json:"winCount"`
-	LeaderWinCount int           `bson:"wl" json:"leaderWinCount"`
+	DataID         			data.DataId   `bson:"id" json:"cardId"`
+	Level          			int           `bson:"lv" json:"level"`
+	CardCount      			int           `bson:"nm" json:"cardCount"`
+	WinCount       			int           `bson:"wc" json:"winCount"`
+	LeaderWinCount 			int           `bson:"wl" json:"leaderWinCount"`
 }
 
 // client model

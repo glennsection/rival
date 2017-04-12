@@ -67,6 +67,12 @@ func UpdatePlayer(database *mgo.Database, userId bson.ObjectId, data string) (er
 	return
 }
 
+func (player *Player) Update(database *mgo.Database) (err error) {
+	// update database
+	_, err = database.C(playerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
+	return
+}
+
 func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
 	err = database.C(playerCollectionName).Find(bson.M { "us": userId } ).One(&player)
