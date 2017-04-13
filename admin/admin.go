@@ -14,8 +14,8 @@ func HandleAdmin(application *system.Application) {
 	handleAdminTemplate(application, "/admin/login", system.PasswordAuthentication, Login, "dashboard.tmpl.html")
 	handleAdminTemplate(application, "/admin/logout", system.NoAuthentication, Logout, "dashboard.tmpl.html")
 
-	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
-	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, ShowUser, "user.tmpl.html")
+	handleAdminUsers(application)
+	handleAdminAnalytics(application)
 }
 
 func handleAdminTemplate(application *system.Application, pattern string, authType system.AuthenticationType, handler func(*system.Context), template string) {
@@ -42,6 +42,11 @@ func initializeAdmin(context *system.Context) {
 			Name: "Players",
 			URL: "/admin/users",
 			Icon: "pe-7s-users",
+		},
+		{
+			Name: "Leaderboard",
+			URL: "/admin/leaderboard",
+			Icon: "pe-7s-cup",
 		},
 		{
 			Name: "Events",

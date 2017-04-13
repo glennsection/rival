@@ -7,18 +7,23 @@ import (
 	"bloodtales/models"
 )
 
+func handleAdminUsers(application *system.Application) {
+	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
+	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, ShowUser, "user.tmpl.html")
+}
+
 func ShowUsers(context *system.Context) {
 	// parse parameters
 	page := context.GetIntParameter("page", 1)
 
 	// paginate users query
-	var users []models.User
 	query, pages, err := models.Paginate(context.Application.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}
 
 	// get resulting users
+	var users []models.User
 	err = query.All(&users)
 	if err != nil {
 		panic(err)

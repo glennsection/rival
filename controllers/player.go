@@ -17,7 +17,7 @@ func SetPlayer(context *system.Context) {
 	data := context.GetRequiredParameter("data")
 
 	// update data
-	if err := models.UpdatePlayer(context.Application.DB, context.User.ID, data); err != nil {
+	if err := models.UpdatePlayer(context.Application.DB, context.User, data); err != nil {
 		panic(err)
 	}
 

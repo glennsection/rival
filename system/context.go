@@ -147,6 +147,19 @@ func (context *Context) GetRequiredFloatParameter(name string) float64 {
 	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
 }
 
+func (context *Context) GetRequiredJSONParameter(name string, result interface{}) {
+	value := context.Request.FormValue(name)
+	if value != "" {
+		raw := []byte(value)
+		err := json.Unmarshal(raw, result)
+		if err != nil {
+			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+		}
+	} else {
+		panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+	}
+}
+
 func (context *Context) Set(key string, value interface{}) string {
 	context.mutex.Lock()
 	defer context.mutex.Unlock()

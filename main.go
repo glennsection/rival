@@ -23,6 +23,7 @@ func main() {
 	controllers.HandleUser(application)
 	controllers.HandlePlayer(application)
 	controllers.HandleTome(application)
+	controllers.HandleMatch(application)
 	// ------------------------
 
 	// deliver response
