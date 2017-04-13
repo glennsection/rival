@@ -72,6 +72,11 @@ func InsertUser(database *mgo.Database, username string, password string, admin 
 	return database.C(UserCollectionName).Insert(user)
 }
 
+func GetUserById(database *mgo.Database, id bson.ObjectId) (user *User, err error) {
+	err = database.C(UserCollectionName).Find(bson.M { "_id": id } ).One(&user)
+	return
+}
+
 func GetUserByUsername(database *mgo.Database, username string) (user *User, err error) {
 	err = database.C(UserCollectionName).Find(bson.M { "un": username } ).One(&user)
 	return

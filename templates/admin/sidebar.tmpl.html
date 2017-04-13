@@ -1,0 +1,24 @@
+<div class="sidebar" data-color="blue" data-image="/static/img/sidebar-5.jpg">
+	<div class="sidebar-wrapper">
+		<div class="logo">
+			<a href="http://www.sectionstudios.com" class="simple-text">
+				Section Studios
+			</a>
+		</div>
+
+		<ul class="nav">
+			{{ range $index, $element := .Get "links" }}
+				{{ if $element.Active }}
+					<li class="active">
+				{{ else }}
+					<li>
+				{{ end }}
+					<a href="{{ $element.URL }}">
+						<i class="{{ $element.Icon }}"></i>
+						<p>{{ $element.Name }}</p>
+					</a>
+				</li>
+			{{ end }}
+		</ul>
+	</div>
+</div>

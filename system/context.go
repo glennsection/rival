@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"sync"
 	"net/http"
 	"encoding/json"
 	"runtime/debug"
@@ -12,7 +13,7 @@ import (
 	"bloodtales/models"
 )
 
-type Session struct {
+type Context struct {
 	Application *Application         `json:"-"`
 	Request     *http.Request        `json:"-"`
 	User		*models.User         `json:"-"`
@@ -25,15 +26,18 @@ type Session struct {
 	// internal
 	responseWriter  http.ResponseWriter
 	responseWritten bool
+	bindings        map[string]interface{}
+	mutex           sync.RWMutex
 }
 
-func CreateSession(application *Application, w http.ResponseWriter, r *http.Request) *Session {
-	return &Session {
+func CreateContext(application *Application, w http.ResponseWriter, r *http.Request) *Context {
+	return &Context {
 		Application: application,
 		Request: r,
 
 		// internal
 		responseWriter: w,
+		bindings: map[string]interface{} {},
 
 		User: nil,
 		Token: "",
@@ -41,14 +45,14 @@ func CreateSession(application *Application, w http.ResponseWriter, r *http.Requ
 	}
 }
 
-func (session *Session) Write(p []byte) (n int, err error) {
+func (context *Context) Write(p []byte) (n int, err error) {
 	// remember custom was response written
-	session.responseWritten = true
-	return session.responseWriter.Write(p)
+	context.responseWritten = true
+	return context.responseWriter.Write(p)
 }
 
-func (session *Session) GetParameter(name string, defaultValue string) string {
-	value := session.Request.FormValue(name)
+func (context *Context) GetParameter(name string, defaultValue string) string {
+	value := context.Request.FormValue(name)
 	if value == "" {
 		value = defaultValue
 	}
@@ -56,8 +60,8 @@ func (session *Session) GetParameter(name string, defaultValue string) string {
 	return value
 }
 
-func (session *Session) GetBoolParameter(name string, defaultValue bool) bool {
-	value := session.Request.FormValue(name)
+func (context *Context) GetBoolParameter(name string, defaultValue bool) bool {
+	value := context.Request.FormValue(name)
 	if value != "" {
 		result, err := strconv.ParseBool(value)
 		if err == nil {
@@ -68,8 +72,8 @@ func (session *Session) GetBoolParameter(name string, defaultValue bool) bool {
 	return defaultValue
 }
 
-func (session *Session) GetIntParameter(name string, defaultValue int) int {
-	value := session.Request.FormValue(name)
+func (context *Context) GetIntParameter(name string, defaultValue int) int {
+	value := context.Request.FormValue(name)
 	if value != "" {
 		result, err := strconv.Atoi(value)
 		if err == nil {
@@ -80,8 +84,8 @@ func (session *Session) GetIntParameter(name string, defaultValue int) int {
 	return defaultValue
 }
 
-func (session *Session) GetFloatParameter(name string, defaultValue float64) float64 {
-	value := session.Request.FormValue(name)
+func (context *Context) GetFloatParameter(name string, defaultValue float64) float64 {
+	value := context.Request.FormValue(name)
 	if value != "" {
 		result, err := strconv.ParseFloat(value, 64)
 		if err == nil {
@@ -92,8 +96,8 @@ func (session *Session) GetFloatParameter(name string, defaultValue float64) flo
 	return defaultValue
 }
 
-func (session *Session) GetRequiredParameter(name string) string {
-	value := session.Request.FormValue(name)
+func (context *Context) GetRequiredParameter(name string) string {
+	value := context.Request.FormValue(name)
 	if value == "" {
 		panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
 	}
@@ -101,8 +105,8 @@ func (session *Session) GetRequiredParameter(name string) string {
 	return value
 }
 
-func (session *Session) GetRequiredBoolParameter(name string) bool {
-	value := session.Request.FormValue(name)
+func (context *Context) GetRequiredBoolParameter(name string) bool {
+	value := context.Request.FormValue(name)
 	if value != "" {
 		result, err := strconv.ParseBool(value)
 		if err == nil {
@@ -115,8 +119,8 @@ func (session *Session) GetRequiredBoolParameter(name string) bool {
 	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
 }
 
-func (session *Session) GetRequiredIntParameter(name string) int {
-	value := session.Request.FormValue(name)
+func (context *Context) GetRequiredIntParameter(name string) int {
+	value := context.Request.FormValue(name)
 	if value != "" {
 		result, err := strconv.Atoi(value)
 		if err == nil {
@@ -129,8 +133,8 @@ func (session *Session) GetRequiredIntParameter(name string) int {
 	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
 }
 
-func (session *Session) GetRequiredFloatParameter(name string) float64 {
-	value := session.Request.FormValue(name)
+func (context *Context) GetRequiredFloatParameter(name string) float64 {
+	value := context.Request.FormValue(name)
 	if value != "" {
 		result, err := strconv.ParseFloat(value, 64)
 		if err == nil {
@@ -143,57 +147,72 @@ func (session *Session) GetRequiredFloatParameter(name string) float64 {
 	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
 }
 
-func (session *Session) GetPlayer() (player *models.Player) {
-	player, _ = models.GetPlayerByUser(session.Application.DB, session.User.ID)
+func (context *Context) Set(key string, value interface{}) string {
+	context.mutex.Lock()
+	defer context.mutex.Unlock()
+	context.bindings[key] = value
+	return ""
+}
+
+func (context *Context) Get(key string) interface{} {
+	context.mutex.RLock()
+	defer context.mutex.RUnlock()
+	val := context.bindings[key]
+	return val
+}
+
+func (context *Context) GetPlayer() (player *models.Player) {
+	player, _ = models.GetPlayerByUser(context.Application.DB, context.User.ID)
 	return
 }
 
-func (session *Session) Message(message string) {
-	session.Messages = append(session.Messages, message)
+func (context *Context) Message(message string) {
+	context.Messages = append(context.Messages, message)
 }
 
-func (session *Session) Messagef(message string, params ...interface{}) {
-	session.Messages = append(session.Messages, fmt.Sprintf(message, params...))
+func (context *Context) Messagef(message string, params ...interface{}) {
+	context.Messages = append(context.Messages, fmt.Sprintf(message, params...))
 }
 
-func (session *Session) Fail(message string) {
-	session.Success = false
-	session.Message(message)
+func (context *Context) Fail(message string) {
+	context.Success = false
+	context.Message(message)
 }
 
-func (session *Session) Respond(startTime time.Time, template string) {
+func (context *Context) Respond(startTime time.Time, template string) {
 	// handle any panic errors during request
 	var caughtErr interface{}
 	if caughtErr = recover(); caughtErr != nil {
-		// update session for failure
-		session.Fail(fmt.Sprintf("%v", caughtErr))
+		// update context for failure
+		context.Fail(fmt.Sprintf("%v", caughtErr))
 	}
 
 	// check if any custom response was written
-	if session.responseWritten {
+	if context.responseWritten {
 		// nothing left to do...
 	} else if template != "" {
 		// default data
-		if session.Data == nil {
-			session.Data = "" // TODO - find better value?
+		if context.Data == nil {
+			context.Data = "" // TODO - find better value?
 		}
 
 		// TODO - should show caughtErr in the resulting HTML somewhere...
+		//context.Set("error", caughtErr)
 
 		// render template
-		err := session.Application.templates.ExecuteTemplate(session, template, session.Data)
+		err := context.Application.templates.ExecuteTemplate(context, template, context)
 		if err != nil {
 			responseString := fmt.Sprintf("ERROR processing template (%v): %v", template, err)
 
 			log.Println(responseString)
 
 			// write error response to stream
-			fmt.Fprint(session.responseWriter, responseString)
+			fmt.Fprint(context.responseWriter, responseString)
 		}
 	} else {
 		// serialize response to json
 		var responseString string
-		raw, err := json.Marshal(session)
+		raw, err := json.Marshal(context)
 		if err == nil {
 			responseString = string(raw)
 		} else {
@@ -203,11 +222,11 @@ func (session *Session) Respond(startTime time.Time, template string) {
 		}
 
 		// write response to stream
-		fmt.Fprint(session.responseWriter, responseString)
+		fmt.Fprint(context.responseWriter, responseString)
 	}
 
 	// show profiling info
-	Profile(fmt.Sprintf("Request: %v/%v", session.Request.Host, session.Request.URL.Path), startTime)
+	Profile(fmt.Sprintf("Request: %v/%v", context.Request.Host, context.Request.URL.Path), startTime)
 
 	if caughtErr != nil {
 		log.Printf("ERROR occurred during last request: %v", caughtErr)

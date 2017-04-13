@@ -29,7 +29,7 @@ func main() {
 	application.Serve()
 }
 
-func root(session *system.Session) {
+func root(context *system.Context) {
 	// root is invalid for now
-	session.Fail("Invalid request")
+	context.Fail("Invalid request")
 }

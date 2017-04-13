@@ -12,26 +12,26 @@ func HandlePlayer(application *system.Application) {
 	application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
 }
 
-func SetPlayer(session *system.Session) {
+func SetPlayer(context *system.Context) {
 	// parse parameters
-	data := session.GetRequiredParameter("data")
+	data := context.GetRequiredParameter("data")
 
 	// update data
-	if err := models.UpdatePlayer(session.Application.DB, session.User.ID, data); err != nil {
+	if err := models.UpdatePlayer(context.Application.DB, context.User.ID, data); err != nil {
 		panic(err)
 	}
 
-	session.Message("Player updated successfully")
+	context.Message("Player updated successfully")
 }
 
-func GetPlayer(session *system.Session) {
+func GetPlayer(context *system.Context) {
 	// get player
-	player := session.GetPlayer()
+	player := context.GetPlayer()
 	if player != nil {
 		// set successful response
-		session.Message("Found player")
-		session.Data = player
+		context.Message("Found player")
+		context.Data = player
 	} else {
-		panic(fmt.Sprintf("Failed to find player for username: %v", session.User.Username))
+		panic(fmt.Sprintf("Failed to find player for username: %v", context.User.Username))
 	}
 }

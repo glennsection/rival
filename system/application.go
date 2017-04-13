@@ -68,7 +68,7 @@ func (application *Application) Initialize() {
 		panic(err)
 	}
 	
-	// connect database session
+	// connect database context
 	uri := application.GetRequiredEnv("MONGODB_URI")
 	application.DBSession, err = mgo.Dial(uri)
 	if err != nil {
@@ -80,10 +80,10 @@ func (application *Application) Initialize() {
 	dbname := application.GetRequiredEnv("MONGODB_DB")
 	application.DB = application.DBSession.DB(dbname)
 
-	// init models (FIXME - do we need to copy the session here?)
-	tempSession := application.DBSession.Copy()
-	defer tempSession.Close()
-	models.Initialize(tempSession.DB(dbname))
+	// init models (FIXME - do we need to copy the context here?)
+	tempContext := application.DBSession.Copy()
+	defer tempContext.Close()
+	models.Initialize(tempContext.DB(dbname))
 
 	// init auth
 	application.initializeAuthentication()
@@ -123,31 +123,31 @@ func (application *Application) Close() {
 	}
 }
 
-func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*Session)) {
+func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*Context)) {
 	application.handle(pattern, authType, handler, "")
 }
 
-func (application *Application) HandleTemplate(pattern string, authType AuthenticationType, handler func(*Session), template string) {
+func (application *Application) HandleTemplate(pattern string, authType AuthenticationType, handler func(*Context), template string) {
 	application.handle(pattern, authType, handler, template)
 }
 
-func (application *Application) handle(pattern string, authType AuthenticationType, handler func(*Session), template string) {
+func (application *Application) handle(pattern string, authType AuthenticationType, handler func(*Context), template string) {
 	// all template requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		// prepare session
-		session := CreateSession(application, w, r)
+		// prepare context
+		context := CreateContext(application, w, r)
 
 		// prepare request response
-		defer session.Respond(time.Now(), template)
+		defer context.Respond(time.Now(), template)
 
 		// authentication
-		err := application.authenticate(session, authType)
+		err := application.authenticate(context, authType)
 		if err != nil {
 			panic(fmt.Sprintf("Failed to authenticate user: %v", err))
 		}
 
 		// handle request
-		handler(session)
+		handler(context)
 	})
 }
 
@@ -162,6 +162,13 @@ func (application *Application) Static(pattern string, path string) {
 
 	// server static files from directory
 	http.Handle(pattern, http.StripPrefix(pattern, fs))
+}
+
+func (application *Application) Redirect(pattern string, url string) {
+	// redirect these requests
+	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, url, 302)
+	})
 }
 
 func (application *Application) Ignore(pattern string) {

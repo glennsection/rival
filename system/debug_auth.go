@@ -21,13 +21,13 @@ func (application *Application) initializeAuthentication() {
 	log.Printf("DEBUG - Build has disabled authentication")
 }
 
-func (application *Application) authenticate(session *Session, authType AuthenticationType) (err error) {
+func (application *Application) authenticate(context *Context, authType AuthenticationType) (err error) {
 	// find debug user instead of authenticating
 	debugUser := application.GetEnv("DEBUG_USER", "")
 	if debugUser != "" {
-		session.User, err = models.GetUserByUsername(application.DB, debugUser)
+		context.User, err = models.GetUserByUsername(application.DB, debugUser)
 		
-		if session.User != nil {
+		if context.User != nil {
 			log.Printf("DEBUG - Authentication disabled, using debug user: %v", debugUser)
 			return
 		}

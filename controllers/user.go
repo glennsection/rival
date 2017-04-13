@@ -14,36 +14,36 @@ func HandleUser(application *system.Application) {
 	//application.HandleAPI("/user/get", GetUser)
 }
 
-func UserRegister(session *system.Session) {
+func UserRegister(context *system.Context) {
 	// parse parameters
-	username, password := session.GetRequiredParameter("username"), session.GetRequiredParameter("password")
+	username, password := context.GetRequiredParameter("username"), context.GetRequiredParameter("password")
 
 	// insert user
-	if err := models.InsertUser(session.Application.DB, username, password, false); err != nil {
+	if err := models.InsertUser(context.Application.DB, username, password, false); err != nil {
 		panic(err)
 	}
 
-	session.Message("User registered successfully")
+	context.Message("User registered successfully")
 }
 
-func UserLogin(session *system.Session) {
-	session.Message("User logged in successfully")
+func UserLogin(context *system.Context) {
+	context.Message("User logged in successfully")
 }
 
-func UserLogout(session *system.Session) {
+func UserLogout(context *system.Context) {
 	// TODO - clear token?
 
-	session.Message("User logged out successfully")
+	context.Message("User logged out successfully")
 }
 
-func GetUser(session *system.Session) {
+func GetUser(context *system.Context) {
 	// parse parameters
-	username := session.GetRequiredParameter("username")
+	username := context.GetRequiredParameter("username")
 
 	// get user
-	user, _ := models.GetUserByUsername(session.Application.DB, username)
+	user, _ := models.GetUserByUsername(context.Application.DB, username)
 	if user != nil {
-		session.Messagef("Found user: %v", user.Username)
+		context.Messagef("Found user: %v", user.Username)
 	} else {
 		panic(fmt.Sprintf("Failed to find User with username: %v", username))
 	}

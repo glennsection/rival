@@ -8,17 +8,17 @@ import (
 	"bloodtales/models"
 )
 
-func (session *Session) Track(message string, data bson.M, lifetime time.Duration) {
+func (context *Context) Track(message string, data bson.M, lifetime time.Duration) {
 	// create tracking
 	tracking := &models.Tracking {
-		UserID:   session.User.ID,
+		UserID:   context.User.ID,
 		Lifetime: lifetime,
 		Message:  message,
 		Data:     data,
 	}
 
 	// insert tracking
-	if err := models.InsertTracking(session.Application.DB, tracking); err != nil {
+	if err := models.InsertTracking(context.Application.DB, tracking); err != nil {
 		panic(err)
 	}
 }

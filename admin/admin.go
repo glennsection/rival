@@ -1,29 +1,77 @@
 package admin
 
 import (
+	"strings"
+
 	"bloodtales/system"
 )
 
 var DefaultPageSize int = 20
 
 func HandleAdmin(application *system.Application) {
-	application.HandleTemplate("/admin", system.NoAuthentication, Home, "dashboard.tmpl.html")
-	application.HandleTemplate("/admin/login", system.PasswordAuthentication, Login, "dashboard.tmpl.html")
-	application.HandleTemplate("/admin/logout", system.NoAuthentication, Logout, "dashboard.tmpl.html")
+	application.Redirect("/admin", "/admin/home")
+	handleAdminTemplate(application, "/admin/home", system.NoAuthentication, Home, "dashboard.tmpl.html")
+	handleAdminTemplate(application, "/admin/login", system.PasswordAuthentication, Login, "dashboard.tmpl.html")
+	handleAdminTemplate(application, "/admin/logout", system.NoAuthentication, Logout, "dashboard.tmpl.html")
 
-	application.HandleTemplate("/admin/players", system.TokenAuthentication, ShowPlayers, "players.tmpl.html")
-	application.HandleTemplate("/admin/player", system.TokenAuthentication, ShowPlayer, "player.tmpl.html")
+	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
+	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, ShowUser, "user.tmpl.html")
 }
 
-func Home(session *system.Session) {
+func handleAdminTemplate(application *system.Application, pattern string, authType system.AuthenticationType, handler func(*system.Context), template string) {
+	application.HandleTemplate(pattern, authType, func(context *system.Context) {
+		initializeAdmin(context)
+		handler(context)
+	}, template)
 }
 
-func Login(session *system.Session) {
-	session.Message("User logged in successfully")
+func initializeAdmin(context *system.Context) {
+	// sidebar links
+	links := []struct {
+		Name string
+		URL string
+		Icon string
+		Active bool
+	} {
+		{
+			Name: "Dashboard",
+			URL: "/admin/home",
+			Icon: "pe-7s-graph2",
+		},
+		{
+			Name: "Players",
+			URL: "/admin/users",
+			Icon: "pe-7s-users",
+		},
+		{
+			Name: "Events",
+			URL: "/admin/events",
+			Icon: "pe-7s-timer",
+		},
+		{
+			Name: "Content",
+			URL: "/admin/content",
+			Icon: "pe-7s-gift",
+		},
+	}
+
+	for i, link := range links {
+		if strings.HasPrefix(context.Request.URL.Path, link.URL) {
+			links[i].Active = true
+		}
+	}
+
+	context.Set("links", links)
 }
 
-func Logout(session *system.Session) {
+func Home(context *system.Context) {
+}
+
+func Login(context *system.Context) {
+	context.Message("User logged in successfully")
+}
+
+func Logout(context *system.Context) {
 	// TODO - clear cookie?
-
-	session.Message("User logged out successfully")
+	context.Message("User logged out successfully")
 }

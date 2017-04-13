@@ -25,7 +25,7 @@ const (
 func (application *Application) initializeAuthentication() {
 }
 
-func (application *Application) authenticate(session *Session, authType AuthenticationType) (err error) {
+func (application *Application) authenticate(context *Context, authType AuthenticationType) (err error) {
 	// check auth type
 	if authType == NoAuthentication {
 		return
@@ -34,16 +34,16 @@ func (application *Application) authenticate(session *Session, authType Authenti
 	allowPassword := (authType == AnyAuthentication || authType == PasswordAuthentication)
 
 	// check for token paremeter
-	unparsedToken := session.GetParameter("token", "")
+	unparsedToken := context.GetParameter("token", "")
 
 	if unparsedToken == "" {
 		if allowPassword {
 			// parse login parameters
-			username, password := session.GetRequiredParameter("username"), session.GetRequiredParameter("password")
+			username, password := context.GetRequiredParameter("username"), context.GetRequiredParameter("password")
 
 			// authenticate user
-			session.User, err = models.LoginUser(session.Application.DB, username, password)
-			if session.User == nil {
+			context.User, err = models.LoginUser(context.Application.DB, username, password)
+			if context.User == nil {
 				panic(fmt.Sprintf("Invalid authentication information for username: %v (%v)", username, err))
 			}
 
@@ -53,18 +53,18 @@ func (application *Application) authenticate(session *Session, authType Authenti
 				"exp": time.Now().Add(time.Hour).Unix(),
 			})
 
-			// analytics tracking (TODO - integrate with session)
-			//session.Track("Login", bson.M { "mood": "happy" })
+			// analytics tracking (TODO - integrate with context)
+			//context.Track("Login", bson.M { "mood": "happy" })
 
 			// sign and get the complete encoded token as string
-			session.Token, err = token.SignedString([]byte(authTokenSecret))
+			context.Token, err = token.SignedString([]byte(authTokenSecret))
 		} else {
 			panic("Invalid authentication method")
 		}
 	} else {
 		if allowToken {
-			// keep token in session
-			session.Token = unparsedToken
+			// keep token in context
+			context.Token = unparsedToken
 
 			// parse token parameter
 			var token *jwt.Token
@@ -82,8 +82,8 @@ func (application *Application) authenticate(session *Session, authType Authenti
 			if err == nil && token.Valid {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok {
 					if username, ok := claims["username"].(string); ok {
-						session.User, err = models.GetUserByUsername(application.DB, username)
-						if session.User == nil {
+						context.User, err = models.GetUserByUsername(application.DB, username)
+						if context.User == nil {
 							panic(fmt.Sprintf("Failed to find user indicated by authentication token: %v (%v)", username, err))
 						}
 					}

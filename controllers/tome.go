@@ -13,9 +13,9 @@ func HandleTome(application *system.Application) {
 	application.HandleAPI("/tome/rush", system.TokenAuthentication, RushTome)
 }
 
-func UnlockTome(session *system.Session) {
+func UnlockTome(context *system.Context) {
 	//Validate the request
-	index, player, valid := ValidateTomeRequest(session)
+	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
 		return
 	}
@@ -32,7 +32,7 @@ func UnlockTome(session *system.Session) {
 	if !busy {
 		(&player.Tomes[index]).StartUnlocking()
 
-		err := player.Update(session.Application.DB)
+		err := player.Update(context.Application.DB)
 		if err != nil {
 			panic(err)
 			return
@@ -40,15 +40,15 @@ func UnlockTome(session *system.Session) {
 
 		var data *models.Tome 
 		data = &player.Tomes[index]
-		session.Data = data
+		context.Data = data
 	} else {
-		session.Fail("Already unlocking a tome.")
+		context.Fail("Already unlocking a tome.")
 	}
 }
 
-func OpenTome(session *system.Session) {
+func OpenTome(context *system.Context) {
 	//Validate the request
-	index, player, valid := ValidateTomeRequest(session)
+	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
 		return
 	}
@@ -56,25 +56,25 @@ func OpenTome(session *system.Session) {
 	// check to see if the tome is ready to open
 	(&player.Tomes[index]).UpdateTome()
 	if player.Tomes[index].State != models.TomeUnlocked {
-		session.Fail("Tome not ready")
+		context.Fail("Tome not ready")
 		return
 	}
 
-	// TODO add cards recieved from tome to session data
+	// TODO add cards recieved from tome to context data
 	(&player.Tomes[index]).OpenTome()
 
-	err := player.Update(session.Application.DB)
+	err := player.Update(context.Application.DB)
 	if err != nil {
 		panic(err)
 		return
 	}
 
-	session.Data = &player.Tomes[index]
+	context.Data = &player.Tomes[index]
 }
 
-func RushTome(session *system.Session) {
+func RushTome(context *system.Context) {
 	//Validate the request
-	index, player, valid := ValidateTomeRequest(session)
+	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
 		return
 	}
@@ -83,30 +83,30 @@ func RushTome(session *system.Session) {
 
 	// check to see if the player has enough premium currency
 	if cost > player.PremiumCurrency {
-		session.Fail("Not enough premium currency")
+		context.Fail("Not enough premium currency")
 		return
 	}
 
 	player.PremiumCurrency -= cost
 	(player.Tomes[index]).OpenTome()
 
-	err := player.Update(session.Application.DB)
+	err := player.Update(context.Application.DB)
 	if err != nil {
 		panic(err)
 		return
 	}
 
-	session.Data = &player.Tomes[index]
+	context.Data = &player.Tomes[index]
 }
 
-func ValidateTomeRequest(session *system.Session) (index int, player *models.Player, success bool) {
+func ValidateTomeRequest(context *system.Context) (index int, player *models.Player, success bool) {
 	// initialize values
 	index = -1
-	player = session.GetPlayer()
+	player = context.GetPlayer()
 	success = false
 
 	// parse parameters
-	tomeId := session.GetRequiredParameter("tomeId")
+	tomeId := context.GetRequiredParameter("tomeId")
 	
 	index, err := strconv.Atoi(tomeId)
 	if err != nil {
@@ -116,7 +116,7 @@ func ValidateTomeRequest(session *system.Session) (index int, player *models.Pla
 
 	// make sure the tome exists
 	if index >= len(player.Tomes) || index < 0 || player.Tomes[index].State == models.TomeEmpty {
-		session.Fail("Tome does not exist")
+		context.Fail("Tome does not exist")
 		return 
 	}
 
