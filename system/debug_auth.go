@@ -25,7 +25,7 @@ func (application *Application) authenticate(context *Context, authType Authenti
 	// find debug user instead of authenticating
 	debugUser := application.GetEnv("DEBUG_USER", "")
 	if debugUser != "" {
-		context.User, err = models.GetUserByUsername(application.DB, debugUser)
+		context.User, err = models.GetUserByUsername(context.DB, debugUser)
 		
 		if context.User != nil {
 			log.Printf("DEBUG - Authentication disabled, using debug user: %v", debugUser)

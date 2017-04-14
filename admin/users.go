@@ -17,7 +17,7 @@ func ShowUsers(context *system.Context) {
 	page := context.GetIntParameter("page", 1)
 
 	// paginate users query
-	query, pages, err := models.Paginate(context.Application.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
+	query, pages, err := models.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}
@@ -39,12 +39,12 @@ func EditUser(context *system.Context) {
 	// parse parameters
 	userId := bson.ObjectIdHex(context.GetRequiredParameter("userId"))
 
-	user, err := models.GetUserById(context.Application.DB, userId)
+	user, err := models.GetUserById(context.DB, userId)
 	if err != nil {
 		panic(err)
 	}
 
-	player, err := models.GetPlayerByUser(context.Application.DB, userId)
+	player, err := models.GetPlayerByUser(context.DB, userId)
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,7 @@ func EditUser(context *system.Context) {
 		email := context.GetParameter("email", "")
 		if email != "" {
 			user.Email = email
-			user.Update(context.Application.DB)
+			user.Update(context.DB)
 		}
 
 		name := context.GetParameter("name", "")
@@ -88,7 +88,7 @@ func EditUser(context *system.Context) {
 			player.Stars = stars
 		}
 
-		player.Update(context.Application.DB)
+		player.Update(context.DB)
 	}
 	
 	// set template bindings

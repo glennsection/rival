@@ -73,11 +73,11 @@ func GetKFactor(playerRating int, opponentRating int) float64 {
 
 func ProcessMatchResults(context *system.Context, match *models.Match) {
 	// get players
-	player, err := match.GetPlayer(context.Application.DB)
+	player, err := match.GetPlayer(context.DB)
 	if err != nil {
 		panic(err)
 	}
-	opponent, err := match.GetOpponent(context.Application.DB)
+	opponent, err := match.GetOpponent(context.DB)
 	if err != nil {
 		panic(err)
 	}
@@ -119,6 +119,6 @@ func ProcessMatchResults(context *system.Context, match *models.Match) {
 	}
 
 	// update database
-	player.Update(context.Application.DB)
-	opponent.Update(context.Application.DB)
+	player.Update(context.DB)
+	opponent.Update(context.DB)
 }

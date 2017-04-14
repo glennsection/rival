@@ -42,7 +42,7 @@ func (application *Application) authenticate(context *Context, authType Authenti
 			username, password := context.GetRequiredParameter("username"), context.GetRequiredParameter("password")
 
 			// authenticate user
-			context.User, err = models.LoginUser(context.Application.DB, username, password)
+			context.User, err = models.LoginUser(context.DB, username, password)
 			if context.User == nil {
 				panic(fmt.Sprintf("Invalid authentication information for username: %v (%v)", username, err))
 			}
@@ -82,7 +82,7 @@ func (application *Application) authenticate(context *Context, authType Authenti
 			if err == nil && token.Valid {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok {
 					if username, ok := claims["username"].(string); ok {
-						context.User, err = models.GetUserByUsername(application.DB, username)
+						context.User, err = models.GetUserByUsername(context.DB, username)
 						if context.User == nil {
 							panic(fmt.Sprintf("Failed to find user indicated by authentication token: %v (%v)", username, err))
 						}

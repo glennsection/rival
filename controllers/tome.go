@@ -32,7 +32,7 @@ func UnlockTome(context *system.Context) {
 	if !busy {
 		(&player.Tomes[index]).StartUnlocking()
 
-		err := player.Update(context.Application.DB)
+		err := player.Update(context.DB)
 		if err != nil {
 			panic(err)
 			return
@@ -63,7 +63,7 @@ func OpenTome(context *system.Context) {
 	// TODO add cards recieved from tome to context data
 	(&player.Tomes[index]).OpenTome()
 
-	err := player.Update(context.Application.DB)
+	err := player.Update(context.DB)
 	if err != nil {
 		panic(err)
 		return
@@ -90,7 +90,7 @@ func RushTome(context *system.Context) {
 	player.PremiumCurrency -= cost
 	(player.Tomes[index]).OpenTome()
 
-	err := player.Update(context.Application.DB)
+	err := player.Update(context.DB)
 	if err != nil {
 		panic(err)
 		return

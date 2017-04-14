@@ -12,11 +12,15 @@ import (
 	"encoding/json"
 	"runtime/debug"
 
+	"gopkg.in/mgo.v2"
+
 	"bloodtales/models"
 )
 
 type Context struct {
 	Application *Application         `json:"-"`
+	DBSession   *mgo.Session         `json:"-"`
+	DB          *mgo.Database        `json:"-"`
 	Request     *http.Request        `json:"-"`
 	User		*models.User         `json:"-"`
 
@@ -33,8 +37,14 @@ type Context struct {
 }
 
 func CreateContext(application *Application, w http.ResponseWriter, r *http.Request) *Context {
+	// create concurrent database session
+	contextDBSession := application.dbSession.Copy()
+	contextDB := application.db.With(contextDBSession)
+
 	return &Context {
 		Application: application,
+		DBSession: contextDBSession,
+		DB: contextDB,
 		Request: r,
 
 		// internal
@@ -177,7 +187,7 @@ func (context *Context) Get(key string) interface{} {
 }
 
 func (context *Context) GetPlayer() (player *models.Player) {
-	player, _ = models.GetPlayerByUser(context.Application.DB, context.User.ID)
+	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
 	return
 }
 

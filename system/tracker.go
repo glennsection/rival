@@ -18,7 +18,7 @@ func (context *Context) Track(message string, data bson.M, lifetime time.Duratio
 	}
 
 	// insert tracking
-	if err := models.InsertTracking(context.Application.DB, tracking); err != nil {
+	if err := models.InsertTracking(context.DB, tracking); err != nil {
 		panic(err)
 	}
 }

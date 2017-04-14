@@ -18,9 +18,9 @@ import (
 )
 
 type Application struct {
-	DBSession        *mgo.Session
-	DB               *mgo.Database
-
+	// internal
+	dbSession        *mgo.Session
+	db               *mgo.Database
 	templates        *template.Template
 }
 
@@ -70,20 +70,20 @@ func (application *Application) Initialize() {
 	
 	// connect database context
 	uri := application.GetRequiredEnv("MONGODB_URI")
-	application.DBSession, err = mgo.Dial(uri)
+	application.dbSession, err = mgo.Dial(uri)
 	if err != nil {
 		panic(err)
 	}
-	application.DBSession.SetSafe(&mgo.Safe{})
+	application.dbSession.SetSafe(&mgo.Safe {})
 
 	// get default database
 	dbname := application.GetRequiredEnv("MONGODB_DB")
-	application.DB = application.DBSession.DB(dbname)
+	application.db = application.dbSession.DB(dbname)
 
-	// init models (FIXME - do we need to copy the context here?)
-	tempContext := application.DBSession.Copy()
-	defer tempContext.Close()
-	models.Initialize(tempContext.DB(dbname))
+	// init models using concurrent session
+	tempSession := application.dbSession.Copy()
+	defer tempSession.Close()
+	models.Initialize(tempSession.DB(dbname))
 
 	// init auth
 	application.initializeAuthentication()
@@ -118,8 +118,8 @@ func (application *Application) Close() {
 	defer application.handleErrors()
 
 	// cleanup database connection
-	if application.DBSession != nil {
-		application.DBSession.Close()
+	if application.dbSession != nil {
+		application.dbSession.Close()
 	}
 }
 

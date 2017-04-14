@@ -19,7 +19,7 @@ func UserRegister(context *system.Context) {
 	username, password := context.GetRequiredParameter("username"), context.GetRequiredParameter("password")
 
 	// insert user
-	if err := models.InsertUser(context.Application.DB, username, password, false); err != nil {
+	if err := models.InsertUser(context.DB, username, password, false); err != nil {
 		panic(err)
 	}
 
@@ -41,7 +41,7 @@ func GetUser(context *system.Context) {
 	username := context.GetRequiredParameter("username")
 
 	// get user
-	user, _ := models.GetUserByUsername(context.Application.DB, username)
+	user, _ := models.GetUserByUsername(context.DB, username)
 	if user != nil {
 		context.Messagef("Found user: %v", user.Username)
 	} else {
