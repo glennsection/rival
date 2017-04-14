@@ -1,12 +1,14 @@
 package system
 
 import (
+	"bytes"
 	"time"
 	"fmt"
 	"log"
 	"strconv"
 	"sync"
 	"net/http"
+	"html"
 	"encoding/json"
 	"runtime/debug"
 
@@ -204,24 +206,28 @@ func (context *Context) Respond(startTime time.Time, template string) {
 	if context.responseWritten {
 		// nothing left to do...
 	} else if template != "" {
-		// default data
-		if context.Data == nil {
-			context.Data = "" // TODO - find better value?
+		// HTML escape messages
+		for i, message := range context.Messages {
+			context.Messages[i] = html.EscapeString(message)
 		}
 
-		// TODO - should show caughtErr in the resulting HTML somewhere...
-		//context.Set("error", caughtErr)
+		// render template to buffer
+		var output bytes.Buffer
+		err := context.Application.templates.ExecuteTemplate(&output, template, context)
 
-		// render template
-		err := context.Application.templates.ExecuteTemplate(context, template, context)
-		if err != nil {
-			responseString := fmt.Sprintf("ERROR processing template (%v): %v", template, err)
-
+		var responseString string
+		if err == nil {
+			// convert template output to string
+			responseString = output.String()
+		} else {
+			// respond with error
+			responseString = fmt.Sprintf("ERROR processing template (%v): %v", template, err)
 			log.Println(responseString)
-
-			// write error response to stream
-			fmt.Fprint(context.responseWriter, responseString)
+			//responseString = html.EscapeString(responseString)
 		}
+
+		// write response to stream
+		fmt.Fprint(context.responseWriter, responseString)
 	} else {
 		// serialize response to json
 		var responseString string

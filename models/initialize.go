@@ -16,7 +16,7 @@ func (player *Player) Initialize() {
 	player.StandardCurrency = 1000
 	player.PremiumCurrency = 10
 	player.Rating = 1200 // FIXME?
-	player.XP = 0
+	player.Level = 1
 	player.Cards = nil
 	player.Decks = nil
 	player.CurrentDeck = 0

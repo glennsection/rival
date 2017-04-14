@@ -27,12 +27,12 @@
 										<th></th>
 									</thead>
 									<tbody>
-										{{ range $index, $element := .Data }}
+										{{ range $index, $user := .Data }}
 										<tr>
-											<td>{{ $element.ID.Hex }}</td>
-											<td>{{ $element.Username }}</td>
-											<td>{{ $element.Login }}</td>
-											<td><a href="/admin/users/edit?userId={{ $element.ID.Hex }}">View</a></td>
+											<td>{{ $user.ID.Hex }}</td>
+											<td>{{ $user.Username }}</td>
+											<td>{{ $user.Login }}</td>
+											<td><a href="/admin/users/edit?userId={{ $user.ID.Hex }}">View</a></td>
 										</tr>
 										{{ end }}
 									</tbody>

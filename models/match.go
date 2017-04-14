@@ -2,12 +2,12 @@ package models
 
 import (
 	"time"
-	"encoding/json"
+	// "encoding/json"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"bloodtales/data"
+	// "bloodtales/data"
 )
 
 const MatchCollectionName = "players"
@@ -28,6 +28,7 @@ type Match struct {
 	Time			time.Time     `bson:"ti" json:"time"`
 }
 
+/* FIXME - this shouldn't be needed if Time is just set by the API call
 // client model
 type MatchClientAlias Match
 type MatchClient struct {
@@ -66,6 +67,7 @@ func (match *Match) UnmarshalJSON(raw []byte) error {
 
 	return nil
 }
+*/
 
 func FindOpponentMatch(database *mgo.Database, match *Match) (opponentMatch *Match, err error) {
 	// find opponent match

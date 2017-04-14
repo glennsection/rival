@@ -72,6 +72,12 @@ func InsertUser(database *mgo.Database, username string, password string, admin 
 	return database.C(UserCollectionName).Insert(user)
 }
 
+func (user *User) Update(database *mgo.Database) (err error) {
+	// update entire player to database
+	_, err = database.C(UserCollectionName).Upsert(bson.M { "_id": user.ID }, user)
+	return
+}
+
 func GetUserById(database *mgo.Database, id bson.ObjectId) (user *User, err error) {
 	err = database.C(UserCollectionName).Find(bson.M { "_id": id } ).One(&user)
 	return

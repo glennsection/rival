@@ -1,12 +1,16 @@
 package data
 
 import (
+	"strings"
+	"fmt"
+
 	"encoding/json"
 )
 
 type CardData struct {
 	// TODO ?->  ID int `json:"databaseId"`
 	Name                    string        `json:"id"`
+	Portrait                string        `json:"portrait"`
 	Rarity                  string        `json:"rarity"`
 	Tier                    int           `json:"tier"`
 	Type                    string        `json:"type"`
@@ -19,10 +23,10 @@ type CardData struct {
 }
 
 // data map
-var cards map[DataId]CardData
+var cards map[DataId]*CardData
 
 // implement Data interface
-func (data CardData) GetDataName() string {
+func (data *CardData) GetDataName() string {
 	return data.Name
 }
 
@@ -38,8 +42,8 @@ func LoadCards(raw []byte) {
 	json.Unmarshal(raw, container)
 
 	// enter into system data
-	cards = map[DataId]CardData {}
-	for _, card := range container.Cards {
+	cards = map[DataId]*CardData {}
+	for i, card := range container.Cards {
 		name := card.GetDataName()
 
 		// map name to ID
@@ -49,11 +53,20 @@ func LoadCards(raw []byte) {
 		}
 
 		// insert into table
-		cards[id] = card
+		cards[id] = &container.Cards[i]
 	}
 }
 
 // get card by server ID
-func GetCard(id DataId) (card CardData) {
+func GetCard(id DataId) (card *CardData) {
 	return cards[id]
+}
+
+func (data *CardData) GetPortraitSrc() string {
+	src := data.Portrait
+	idx := strings.LastIndex(src, "/")
+	if idx >= 0 {
+		src = src[idx + 1:]
+	}
+	return fmt.Sprintf("/static/img/portraits/%v.png", src)
 }

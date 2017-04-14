@@ -19,3 +19,25 @@
 
 <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
 <script src="/static/js/demo.js"></script>
+
+<!-- Error Handling -->
+{{ if not .Success }}
+<p>ERROR</p>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			{{ range $index, $message := .Messages }}
+				$.notify({
+						icon: "pe-7s-attention",
+						message: "{{ $message }}"
+					}, {
+						type: "danger",
+						timer: 4000,
+						placement: {
+							from: "top",
+							align: "center"
+						}
+					});
+			{{ end }}
+		});
+	</script>
+{{ end }}

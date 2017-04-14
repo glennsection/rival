@@ -1,0 +1,21 @@
+{{ $player := .Get "player" }}
+{{ $index := .Get "index" }}
+{{ $card := index $player.Cards $index }}
+
+<div class="game-card">
+	<div class="game-card-title">{{ $card.GetDataName }}</div>
+	<table>
+		<tbody>
+		<tr>
+			<td><img class="game-card-portrait" src="{{ $card.GetData.GetPortraitSrc }}"/></td>
+			<td>
+				<p><span class="game-card-label">Level: </span>{{ $card.Level }}</p>
+				<p><span class="game-card-label">Count: </span>{{ $card.CardCount }}</p>
+				<p><span class="game-card-label">Wins: </span>{{ $card.WinCount }}</p>
+				<p><span class="game-card-label">Leader Wins: </span>{{ $card.LeaderWinCount }}</p>
+				<p><a href="/admin/cards/edit?playerId={{ $player.ID.Hex }}&card={{ $index }}">Edit</a></p>
+			</td>
+		</tr>
+		<tbody>
+	</table>
+</div>

@@ -9,7 +9,7 @@ import (
 
 func handleAdminUsers(application *system.Application) {
 	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
-	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, ShowUser, "user.tmpl.html")
+	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
 }
 
 func ShowUsers(context *system.Context) {
@@ -35,7 +35,7 @@ func ShowUsers(context *system.Context) {
 	context.Set("pages", pages)
 }
 
-func ShowUser(context *system.Context) {
+func EditUser(context *system.Context) {
 	// parse parameters
 	userId := bson.ObjectIdHex(context.GetRequiredParameter("userId"))
 
@@ -49,6 +49,48 @@ func ShowUser(context *system.Context) {
 		panic(err)
 	}
 
+	// handle request method
+	switch context.Request.Method {
+	case "POST":
+		email := context.GetParameter("email", "")
+		if email != "" {
+			user.Email = email
+			user.Update(context.Application.DB)
+		}
+
+		name := context.GetParameter("name", "")
+		if name != "" {
+			player.Name = name
+		}
+
+		standardCurrency := context.GetIntParameter("standardCurrency", -1)
+		if standardCurrency >= 0 {
+			player.StandardCurrency = standardCurrency
+		}
+
+		premiumCurrency := context.GetIntParameter("premiumCurrency", -1)
+		if premiumCurrency >= 0 {
+			player.PremiumCurrency = premiumCurrency
+		}
+
+		level := context.GetIntParameter("level", -1)
+		if level >= 0 {
+			player.Level = level
+		}
+
+		rating := context.GetIntParameter("rating", -1)
+		if rating >= 0 {
+			player.Rating = rating
+		}
+
+		stars := context.GetIntParameter("stars", -1)
+		if stars >= 0 {
+			player.Stars = stars
+		}
+
+		player.Update(context.Application.DB)
+	}
+	
 	// set template bindings
 	context.Data = user
 	context.Set("user", user)

@@ -18,10 +18,10 @@ type TomeData struct {
 }
 
 // data map
-var tomes map[DataId]TomeData
+var tomes map[DataId]*TomeData
 
 // implement Data interface
-func (data TomeData) GetDataName() string {
+func (data *TomeData) GetDataName() string {
 	return data.Name
 }
 
@@ -37,8 +37,8 @@ func LoadTomes(raw []byte) {
 	json.Unmarshal(raw, container)
 
 	// enter into system data
-	tomes = map[DataId]TomeData {}
-	for _, tome := range container.Tomes {
+	tomes = map[DataId]*TomeData {}
+	for i, tome := range container.Tomes {
 		name := tome.GetDataName()
 
 		// map name to ID
@@ -48,11 +48,11 @@ func LoadTomes(raw []byte) {
 		}
 
 		// insert into table
-		tomes[id] = tome
+		tomes[id] = &container.Tomes[i]
 	}
 }
 
 // get tome by server ID
-func GetTome(id DataId) (tome TomeData) {
+func GetTome(id DataId) (tome *TomeData) {
 	return tomes[id]
 }
