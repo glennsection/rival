@@ -83,9 +83,9 @@ func EditUser(context *system.Context) {
 			player.Rating = rating
 		}
 
-		stars := context.GetIntParameter("stars", -1)
-		if stars >= 0 {
-			player.Stars = stars
+		rank := context.GetIntParameter("rank", -1)
+		if rank >= 0 {
+			player.Rank = rank
 		}
 
 		player.Update(context.DB)

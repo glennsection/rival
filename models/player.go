@@ -15,8 +15,8 @@ type Player struct {
 	UserID           bson.ObjectId `bson:"us" json:"-"`
 	Name             string        `bson:"nm" json:"name"`
 	Level            int           `bson:"lv" json:"level"`
+	Rank             int           `bson:"rk" json:"rank"`
 	Rating           int           `bson:"rt" json:"rating"`
-	Stars            int           `bson:"st" json:"rankStars"`
 	WinCount       	 int           `bson:"wc" json:"winCount"`
 	LossCount        int           `bson:"lc" json:"lossCount"`
 	MatchCount       int           `bson:"mc" json:"matchCount"`

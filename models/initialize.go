@@ -13,11 +13,16 @@ func Initialize(database *mgo.Database) {
 
 // create new player data
 func (player *Player) Initialize() {
+	player.Level = 1
+	player.Rank = 1
+	player.Rating = 1200 // FIXME - initial chess ELO?
+	player.WinCount = 0
+	player.LossCount = 0
+	player.MatchCount = 0
 	player.StandardCurrency = 1000
 	player.PremiumCurrency = 10
-	player.Rating = 1200 // FIXME?
-	player.Level = 1
 	player.Cards = nil
 	player.Decks = nil
 	player.CurrentDeck = 0
+	player.Tomes = nil
 }

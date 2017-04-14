@@ -2,15 +2,21 @@ package models
 
 import (
 	"time"
-	// "encoding/json"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-
-	// "bloodtales/data"
 )
 
 const MatchCollectionName = "players"
+
+// match type
+type MatchType int
+const (
+	MatchUnranked MatchType = iota
+	MatchRanked
+	MatchElite
+	MatchTournament
+)
 
 // match outcome
 type MatchOutcome int
@@ -24,50 +30,10 @@ const (
 type Match struct {
 	PlayerID      	bson.ObjectId `bson:"id1" json:"playerId"`
 	OpponentID      bson.ObjectId `bson:"id2" json:"opponentId"`
+	Type            MatchType     `bson:"tp" json:"type"`
 	Outcome        	MatchOutcome  `bson:"oc" json:"outcome"`
 	Time			time.Time     `bson:"ti" json:"time"`
 }
-
-/* FIXME - this shouldn't be needed if Time is just set by the API call
-// client model
-type MatchClientAlias Match
-type MatchClient struct {
-	//Outcome        	string           `json:"outcome"`
-	Time            int64         `json:"time"`
-
-	*MatchClientAlias
-}
-
-// custom marshalling
-func (match *Match) MarshalJSON() ([]byte, error) {
-	// create client model
-	client := &MatchClient {
-		Time: data.TimeToTicks(match.Time),
-		MatchClientAlias: (*MatchClientAlias)(match),
-	}
-	
-	// marshal with client model
-	return json.Marshal(client)
-}
-
-// custom unmarshalling
-func (match *Match) UnmarshalJSON(raw []byte) error {
-	// create client model
-	client := &MatchClient {
-		MatchClientAlias: (*MatchClientAlias)(match),
-	}
-
-	// unmarshal to client model
-	if err := json.Unmarshal(raw, &client); err != nil {
-		return err
-	}
-
-	// server time
-	match.Time = data.TicksToTime(client.Time)
-
-	return nil
-}
-*/
 
 func FindOpponentMatch(database *mgo.Database, match *Match) (opponentMatch *Match, err error) {
 	// find opponent match

@@ -261,4 +261,7 @@ func (context *Context) Respond(startTime time.Time, template string) {
 		log.Printf("ERROR occurred during last request: %v", caughtErr)
 		debug.PrintStack()
 	}
+
+	// cleanup
+	context.DBSession.Close()
 }
