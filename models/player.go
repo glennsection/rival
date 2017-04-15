@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"log"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -12,7 +11,7 @@ const PlayerCollectionName = "players"
 
 type Player struct {
 	ID               bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	UserID           bson.ObjectId `bson:"us" json:"-"`
+	UserID           bson.ObjectId `bson:"us" json:"userId"`
 	Name             string        `bson:"nm" json:"name"`
 	Level            int           `bson:"lv" json:"level"`
 	Rank             int           `bson:"rk" json:"rank"`
@@ -27,6 +26,14 @@ type Player struct {
 	Decks            []Deck        `bson:"ds" json:"decks"`
 	CurrentDeck      int           `bson:"dc" json:"currentDeck"`
 	Tomes            []Tome        `bson:"tm" json:"tomes"`
+}
+
+// client model
+type PlayerClientAlias Player
+type PlayerClient struct {
+	UserID      	string         `bson:"us" json:"userId"`
+
+	*PlayerClientAlias
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -46,6 +53,36 @@ func ensureIndexPlayer(database *mgo.Database) {
 	}
 }
 
+// custom marshalling
+func (player *Player) MarshalJSON() ([]byte, error) {
+	// create client model
+	client := &PlayerClient {
+		UserID: player.UserID.Hex(),
+		PlayerClientAlias: (*PlayerClientAlias)(player),
+	}
+	
+	// marshal with client model
+	return json.Marshal(client)
+}
+
+// custom unmarshalling
+func (player *Player) UnmarshalJSON(raw []byte) error {
+	// create client model
+	client := &PlayerClient {
+		PlayerClientAlias: (*PlayerClientAlias)(player),
+	}
+
+	// unmarshal to client model
+	if err := json.Unmarshal(raw, &client); err != nil {
+		return err
+	}
+
+	// server user ID
+	player.UserID = bson.ObjectId(client.UserID)
+
+	return nil
+}
+
 func GetPlayerById(database *mgo.Database, id bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
 	err = database.C(PlayerCollectionName).Find(bson.M { "_id": id } ).One(&player)
@@ -58,22 +95,22 @@ func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Play
 	return
 }
 
+func CreatePlayer(userID bson.ObjectId, name string) (player *Player) {
+	player = &Player {}
+	player.Initialize()
+	player.ID = bson.NewObjectId()
+	player.UserID = userID
+	player.Name = name
+	return
+}
+
 func UpdatePlayer(database *mgo.Database, user *User, data string) (err error) {
 	// find existing player data
-	player, err := GetPlayerByUser(database, user.ID)
-	if err != nil {
-		log.Println(err)
-	}
+	player, _ := GetPlayerByUser(database, user.ID)
 	
 	// initialize new player if none exists
 	if player == nil {
-		player = &Player {}
-		player.Initialize()
-		player.ID = bson.NewObjectId()
-		player.UserID = user.ID
-		player.Name = user.Username
-		
-		err = nil
+		player = CreatePlayer(user.ID, user.Username)
 	}
 	
 	// parse updated data

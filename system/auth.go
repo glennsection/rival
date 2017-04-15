@@ -25,7 +25,7 @@ const (
 func (application *Application) initializeAuthentication() {
 }
 
-func (application *Application) authenticate(context *Context, authType AuthenticationType) (err error) {
+func (context *Context) authenticate(authType AuthenticationType) (err error) {
 	// check auth type
 	if authType == NoAuthentication {
 		return
@@ -47,17 +47,7 @@ func (application *Application) authenticate(context *Context, authType Authenti
 				panic(fmt.Sprintf("Invalid authentication information for username: %v (%v)", username, err))
 			}
 
-			// create auth token
-			token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
-				"username": username,
-				"exp": time.Now().Add(time.Hour).Unix(),
-			})
-
-			// analytics tracking (TODO - integrate with context)
-			//context.Track("Login", bson.M { "mood": "happy" })
-
-			// sign and get the complete encoded token as string
-			context.Token, err = token.SignedString([]byte(authTokenSecret))
+			err = context.AppendToken()
 		} else {
 			panic("Invalid authentication method")
 		}
@@ -94,5 +84,20 @@ func (application *Application) authenticate(context *Context, authType Authenti
 		}
 	}
 
+	return
+ }
+
+ func (context *Context) AppendToken() (err error) {
+	// create auth token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
+		"username": context.User.Username,
+		"exp": time.Now().Add(time.Hour).Unix(),
+	})
+
+	// analytics tracking (TODO - integrate with context)
+	//context.Track("Login", bson.M { "mood": "happy" })
+
+	// sign and get the complete encoded token as string
+	context.Token, err = token.SignedString([]byte(authTokenSecret))
 	return
  }

@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 	"encoding/json"
+
 	"bloodtales/data"
 )
 
@@ -87,6 +88,46 @@ func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	tome.UnlockTime = data.TicksToTime(client.UnlockTime)
 
 	return nil
+}
+
+func (tome *Tome) GetDataName() string {
+	return data.ToDataName(tome.DataID)
+}
+
+func (tome *Tome) GetData() *data.TomeData {
+	return data.GetTome(tome.DataID)
+}
+
+func (tome *Tome) GetImageSrc() string {
+	data := tome.GetData()
+	if data != nil {
+		return data.GetImageSrc()
+	}
+	return "/static/img/tomes/tome_NONE.png"
+}
+
+func (tome *Tome) GetStateName() string {
+	switch tome.State {
+	default:
+		return "Empty"
+	case TomeLocked:
+		return "Locked"
+	case TomeUnlocking:
+		return "Unlocking"
+	case TomeUnlocked:
+		return "Unlocked"
+	}
+}
+
+func (tome *Tome) GetUnlockRemaining() string {
+	switch tome.State {
+	case TomeLocked:
+		data := tome.GetData()
+		return (time.Second * time.Duration(data.TimeToUnlock)).String()
+	case TomeUnlocking:
+		return time.Until(tome.UnlockTime).String()
+	}
+	return "-"
 }
 
 func (tome *Tome) StartUnlocking() {

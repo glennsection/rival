@@ -5,7 +5,6 @@ import (
 	"time"
 	"strings"
 	"fmt"
-	"log"
 	"path/filepath"
 	"net/http"
 	"html/template"
@@ -15,6 +14,7 @@ import (
 	
 	"bloodtales/data"
 	"bloodtales/models"
+	"bloodtales/log"
 )
 
 type Application struct {
@@ -58,6 +58,8 @@ func (application *Application) handleProfiler(name string, elapsedTime time.Dur
 }
 
 func (application *Application) Initialize() {
+	log.Println("[cyan!]Starting server application...[-]")
+
 	// init profiling
 	HandleProfiling(application.handleProfiler)
 
@@ -134,17 +136,14 @@ func (application *Application) HandleTemplate(pattern string, authType Authenti
 func (application *Application) handle(pattern string, authType AuthenticationType, handler func(*Context), template string) {
 	// all template requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		// prepare context
+		// create context
 		context := CreateContext(application, w, r)
 
 		// prepare request response
 		defer context.Respond(time.Now(), template)
 
-		// authentication
-		err := application.authenticate(context, authType)
-		if err != nil {
-			panic(fmt.Sprintf("Failed to authenticate user: %v", err))
-		}
+		// init context handling
+		context.Handle(authType)
 
 		// handle request
 		handler(context)

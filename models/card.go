@@ -23,10 +23,6 @@ type CardClient struct {
 	*CardClientAlias
 }
 
-func (card *Card) GetDataName() string {
-	return data.ToDataName(card.DataID)
-}
-
 // custom marshalling
 func (card *Card) MarshalJSON() ([]byte, error) {
 	// create client model
@@ -57,6 +53,18 @@ func (card *Card) UnmarshalJSON(raw []byte) error {
 	return nil
 }
 
+func (card *Card) GetDataName() string {
+	return data.ToDataName(card.DataID)
+}
+
 func (card *Card) GetData() *data.CardData {
 	return data.GetCard(card.DataID)
+}
+
+func (card *Card) GetPortraitSrc() string {
+	data := card.GetData()
+	if data != nil {
+		return data.GetPortraitSrc()
+	}
+	return ""
 }

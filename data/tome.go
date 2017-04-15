@@ -1,11 +1,14 @@
 package data
 
 import (
+	"fmt"
+	"strings"
 	"encoding/json"
 )
 
 type TomeData struct {
 	Name                    string        `json:"id"`
+	Image                   string        `json:"icon"`
 	Rarity                  string        `json:"rarity"`
 	TimeToUnlock			int 		  `json:"timeToUnlock,string"`
 	GemsToUnlock			int 		  `json:"gemsToUnlock,string"`
@@ -55,4 +58,13 @@ func LoadTomes(raw []byte) {
 // get tome by server ID
 func GetTome(id DataId) (tome *TomeData) {
 	return tomes[id]
+}
+
+func (tome *TomeData) GetImageSrc() string {
+	src := tome.Image
+	idx := strings.LastIndex(src, "/")
+	if idx >= 0 {
+		src = src[idx + 1:]
+	}
+	return fmt.Sprintf("/static/img/tomes/%v.png", src)
 }

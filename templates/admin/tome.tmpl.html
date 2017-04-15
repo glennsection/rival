@@ -1,0 +1,19 @@
+{{ $player := .Get "player" }}
+{{ $index := .Get "index" }}
+{{ $tome := index $player.Tomes $index }}
+
+<div class="game-tome">
+	<div class="game-tome-title">{{ $tome.GetDataName }}</div>
+	<table>
+		<tbody>
+		<tr>
+			<td><img class="game-tome-image" src="{{ $tome.GetImageSrc }}"/></td>
+			<td>
+				<p><span class="game-tome-label">State: </span>{{ $tome.GetStateName }}</p>
+				<p><span class="game-tome-label">Time: </span>{{ $tome.GetUnlockRemaining }}</p>
+				<p><a href="/admin/cards/edit?playerId={{ $player.ID.Hex }}&card={{ $index }}">Edit</a></p>
+			</td>
+		</tr>
+		<tbody>
+	</table>
+</div>

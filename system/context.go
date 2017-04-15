@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"time"
 	"fmt"
-	"log"
 	"strconv"
 	"sync"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"bloodtales/models"
+	"bloodtales/log"
 )
 
 type Context struct {
@@ -204,7 +204,20 @@ func (context *Context) Fail(message string) {
 	context.Message(message)
 }
 
+func (context *Context) Handle(authType AuthenticationType) {
+	log.Printf("[cyan]Request received: %v/%v[-]", context.Request.Host, context.Request.URL.Path)
+
+	// authentication
+	err := context.authenticate(authType)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to authenticate user: %v", err))
+	}
+}
+
 func (context *Context) Respond(startTime time.Time, template string) {
+	// cleanup
+	defer context.DBSession.Close()
+
 	// handle any panic errors during request
 	var caughtErr interface{}
 	if caughtErr = recover(); caughtErr != nil {
@@ -231,9 +244,9 @@ func (context *Context) Respond(startTime time.Time, template string) {
 			responseString = output.String()
 		} else {
 			// respond with error
-			responseString = fmt.Sprintf("ERROR processing template (%v): %v", template, err)
-			log.Println(responseString)
-			//responseString = html.EscapeString(responseString)
+			responseString = fmt.Sprintf("Processing template (%v): %v", template, err)
+
+			log.Error(responseString)
 		}
 
 		// write response to stream
@@ -245,23 +258,27 @@ func (context *Context) Respond(startTime time.Time, template string) {
 		if err == nil {
 			responseString = string(raw)
 		} else {
-			responseString = fmt.Sprintf("ERROR marshalling response: %v", err)
+			responseString = fmt.Sprintf("Marshalling response: %v", err)
 
-			log.Println(responseString)
+			log.Error(responseString)
 		}
 
 		// write response to stream
 		fmt.Fprint(context.responseWriter, responseString)
 	}
 
-	// show profiling info
-	Profile(fmt.Sprintf("Request: %v/%v", context.Request.Host, context.Request.URL.Path), startTime)
-
-	if caughtErr != nil {
-		log.Printf("ERROR occurred during last request: %v", caughtErr)
-		debug.PrintStack()
+	// show response profiling info
+	successMessage := "Success"
+	successColor := "green!"
+	if context.Success == false {
+		successMessage = "Failed"
+		successColor = "red!"
 	}
+	Profile(log.Sprintf("[cyan]Request handled: %v/%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
 
-	// cleanup
-	context.DBSession.Close()
+	// show the error caught eariler
+	if caughtErr != nil {
+		log.Errorf("Occurred during last request: %v", caughtErr)
+		log.Printf("[red]%v[-]", string(debug.Stack()))
+	}
 }

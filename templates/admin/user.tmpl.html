@@ -77,10 +77,27 @@
 												</div>
 											</div>
 										</div>
-										<!--
-		Decks            []Deck        `bson:"ds" json:"decks"`
-		CurrentDeck      int           `bson:"dc" json:"currentDeck"`
-		Tomes            []Tome        `bson:"tm" json:"tomes"`-->
+
+										<div class="row">
+											<div class="col-md-4">
+												<div class="form-group">
+													<label>Player Level</label>
+													<input type="text" class="form-control" placeholder="0" name="level" value="{{ $player.Level }}">
+												</div>
+											</div>
+											<div class="col-md-4">
+												<div class="form-group">
+													<label>Player Rating (Elo)</label>
+													<input type="text" class="form-control" placeholder="0" name="rating" value="{{ $player.Rating }}">
+												</div>
+											</div>
+											<div class="col-md-4">
+												<div class="form-group">
+													<label>Player Rank (Stars)</label>
+													<input type="text" class="form-control" placeholder="0" name="rank" value="{{ $player.Rank }}">
+												</div>
+											</div>
+										</div>
 
 										<div class="row">
 											<div class="col-md-6">
@@ -93,27 +110,6 @@
 												<div class="form-group">
 													<label>Premium Currency</label>
 													<input type="text" class="form-control" placeholder="0" name="premiumCurrency" value="{{ $player.PremiumCurrency }}">
-												</div>
-											</div>
-										</div>
-
-										<div class="row">
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Level</label>
-													<input type="text" class="form-control" placeholder="0" name="level" value="{{ $player.Level }}">
-												</div>
-											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Rating</label>
-													<input type="text" class="form-control" placeholder="0" name="rating" value="{{ $player.Rating }}">
-												</div>
-											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Stars</label>
-													<input type="text" class="form-control" placeholder="0" name="stars" value="{{ $player.Stars }}">
 												</div>
 											</div>
 										</div>
@@ -133,6 +129,19 @@
 									{{ range $index, $card := $player.Cards }}
 										{{ $.Set "index" $index }}
 										{{ template "card.tmpl.html" $ }}
+									{{ end }}
+								</div>
+
+								<hr/>
+
+								<div class="header">
+									<h4 class="title">Tomes</h4>
+									<p class="category">All cards in a player's inventory</p>
+								</div>
+								<div class="content">
+									{{ range $index, $tome := $player.Tomes }}
+										{{ $.Set "index" $index }}
+										{{ template "tome.tmpl.html" $ }}
 									{{ end }}
 								</div>
 							{{ end }}

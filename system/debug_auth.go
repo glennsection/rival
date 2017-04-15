@@ -3,10 +3,15 @@
 package system
 
 import (
-	"log"
+	"time"
 	
+	"github.com/dgrijalva/jwt-go"
+
 	"bloodtales/models"
+	"bloodtales/log"
 )
+
+const authTokenSecret string = "5UP3R-53CR3T-T0K3N" // TODO - move this to a config
 
 type AuthenticationType int
 
@@ -17,22 +22,41 @@ const (
 	TokenAuthentication
 )
 
-func (application *Application) initializeAuthentication() {
-	log.Printf("DEBUG - Build has disabled authentication")
-}
+var (
+	debugUser *models.User = nil
+)
 
-func (application *Application) authenticate(context *Context, authType AuthenticationType) (err error) {
+func (application *Application) initializeAuthentication() {
 	// find debug user instead of authenticating
-	debugUser := application.GetEnv("DEBUG_USER", "")
-	if debugUser != "" {
-		context.User, err = models.GetUserByUsername(context.DB, debugUser)
+	debugUsername := application.GetEnv("DEBUG_USER", "")
+	if debugUsername != "" {
+		debugUser, _ = models.GetUserByUsername(application.db, debugUsername)
 		
-		if context.User != nil {
-			log.Printf("DEBUG - Authentication disabled, using debug user: %v", debugUser)
+		if debugUser != nil {
+			log.Warningf("DEBUG - Build has disabled authentication, using debug user: %v", debugUsername)
 			return
 		}
 	}
 
-	log.Printf("DEBUG - Authentication disabled, no debug user found")
+	log.Warning("DEBUG - Build has disabled authentication, no debug user found")
+}
+
+func (context *Context) authenticate(authType AuthenticationType) error {
+	context.User = debugUser
+	return nil
+}
+
+func (context *Context) AppendToken() (err error) {
+	// create auth token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
+		"username": context.User.Username,
+		"exp": time.Now().Add(time.Hour).Unix(),
+	})
+
+	// analytics tracking (TODO - integrate with context)
+	//context.Track("Login", bson.M { "mood": "happy" })
+
+	// sign and get the complete encoded token as string
+	context.Token, err = token.SignedString([]byte(authTokenSecret))
 	return
- }
+}

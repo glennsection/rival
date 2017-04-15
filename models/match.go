@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"encoding/json"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -33,6 +34,47 @@ type Match struct {
 	Type            MatchType     `bson:"tp" json:"type"`
 	Outcome        	MatchOutcome  `bson:"oc" json:"outcome"`
 	Time			time.Time     `bson:"ti" json:"time"`
+}
+
+// client model
+type MatchClientAlias Match
+type MatchClient struct {
+	PlayerID      	string        `bson:"id1" json:"playerId"`
+	OpponentID      string        `bson:"id2" json:"opponentId"`
+
+	*MatchClientAlias
+}
+
+// custom marshalling
+func (match *Match) MarshalJSON() ([]byte, error) {
+	// create client model
+	client := &MatchClient {
+		PlayerID: match.PlayerID.Hex(),
+		OpponentID: match.OpponentID.Hex(),
+		MatchClientAlias: (*MatchClientAlias)(match),
+	}
+	
+	// marshal with client model
+	return json.Marshal(client)
+}
+
+// custom unmarshalling
+func (match *Match) UnmarshalJSON(raw []byte) error {
+	// create client model
+	client := &MatchClient {
+		MatchClientAlias: (*MatchClientAlias)(match),
+	}
+
+	// unmarshal to client model
+	if err := json.Unmarshal(raw, &client); err != nil {
+		return err
+	}
+
+	// server player IDs
+	match.PlayerID = bson.ObjectId(client.PlayerID)
+	match.OpponentID = bson.ObjectId(client.OpponentID)
+
+	return nil
 }
 
 func FindOpponentMatch(database *mgo.Database, match *Match) (opponentMatch *Match, err error) {

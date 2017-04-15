@@ -19,7 +19,17 @@ func UserRegister(context *system.Context) {
 	username, password := context.GetRequiredParameter("username"), context.GetRequiredParameter("password")
 
 	// insert user
-	if err := models.InsertUser(context.DB, username, password, false); err != nil {
+	user, err := models.InsertUser(context.DB, username, password, false)
+	if err != nil {
+		panic(err)
+	}
+	context.User = user
+	context.AppendToken()
+
+	// create player
+	player := models.CreatePlayer(user.ID, user.Username)
+	err = player.Update(context.DB)
+	if err != nil {
 		panic(err)
 	}
 

@@ -48,15 +48,11 @@ func (user *User) HashPassword(password string) {
 	user.Password = hash
 }
 
-func InsertUser(database *mgo.Database, username string, password string, admin bool) (err error) {
+func InsertUser(database *mgo.Database, username string, password string, admin bool) (user *User, err error) {
 	// check existing user
-	var user *User
-	user, err = GetUserByUsername(database, username)
+	user, _ = GetUserByUsername(database, username)
 	if user != nil {
 		panic(fmt.Sprintf("User already exists with username: %s", username))
-	}
-	if err != nil {
-		panic(fmt.Sprintf("Failed to access user database: %v", err))
 	}
 
 	// create user
@@ -69,7 +65,8 @@ func InsertUser(database *mgo.Database, username string, password string, admin 
 	}
 	user.HashPassword(password)
 
-	return database.C(UserCollectionName).Insert(user)
+	err = database.C(UserCollectionName).Insert(user)
+	return
 }
 
 func (user *User) Update(database *mgo.Database) (err error) {
