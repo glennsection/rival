@@ -12,12 +12,15 @@ import (
 
 	"gopkg.in/mgo.v2"
 	
+	"bloodtales/config"
 	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/log"
 )
 
 type Application struct {
+	Config           config.Config
+
 	// internal
 	dbSession        *mgo.Session
 	db               *mgo.Database
@@ -60,12 +63,19 @@ func (application *Application) handleProfiler(name string, elapsedTime time.Dur
 func (application *Application) Initialize() {
 	log.Println("[cyan!]Starting server application...[-]")
 
+	// load config
+	configPath := "./config.json"
+	err := config.Load(configPath, &application.Config)
+	if err != nil {
+		panic(fmt.Sprintf("Config file (%s) failed to load: %v", configPath, err))
+	}
+
 	// init profiling
 	HandleProfiling(application.handleProfiler)
 
 	// init templates
 	//application.templates = template.Must(template.ParseGlob("templates/admin/*.tmpl.html"))
-	err := application.LoadTemplates()
+	err = application.LoadTemplates()
 	if err != nil {
 		panic(err)
 	}
@@ -140,10 +150,10 @@ func (application *Application) handle(pattern string, authType AuthenticationTy
 		context := CreateContext(application, w, r)
 
 		// prepare request response
-		defer context.Respond(time.Now(), template)
+		defer context.EndRequest(time.Now(), template)
 
 		// init context handling
-		context.Handle(authType)
+		context.BeginRequest(authType)
 
 		// handle request
 		handler(context)

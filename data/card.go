@@ -3,7 +3,6 @@ package data
 import (
 	"strings"
 	"fmt"
-
 	"encoding/json"
 )
 

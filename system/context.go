@@ -7,18 +7,21 @@ import (
 	"strconv"
 	"sync"
 	"net/http"
+	"net/http/httputil"
 	"html"
 	"encoding/json"
 	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
 
+	"bloodtales/config"
 	"bloodtales/models"
 	"bloodtales/log"
 )
 
 type Context struct {
 	Application *Application         `json:"-"`
+	Config      *config.Config       `json:"-"`
 	DBSession   *mgo.Session         `json:"-"`
 	DB          *mgo.Database        `json:"-"`
 	Request     *http.Request        `json:"-"`
@@ -43,6 +46,7 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 
 	return &Context {
 		Application: application,
+		Config: &application.Config,
 		DBSession: contextDBSession,
 		DB: contextDB,
 		Request: r,
@@ -204,8 +208,20 @@ func (context *Context) Fail(message string) {
 	context.Message(message)
 }
 
-func (context *Context) Handle(authType AuthenticationType) {
-	log.Printf("[cyan]Request received: %v/%v[-]", context.Request.Host, context.Request.URL.Path)
+func (context *Context) BeginRequest(authType AuthenticationType) {
+	switch context.Config.Logging.Requests {
+	case config.BriefLogging:
+		// log basic request info
+		log.Printf("[cyan]Request received: %v/%v?%v[-]", context.Request.Host, context.Request.URL.Path, context.Request.URL.RawQuery)
+	case config.FullLogging:
+		// get formatted request dump to log
+		dump, err := httputil.DumpRequest(context.Request, true)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Printf("[cyan]Request received: %q[-]", dump)
+	}
 
 	// authentication
 	err := context.authenticate(authType)
@@ -214,7 +230,7 @@ func (context *Context) Handle(authType AuthenticationType) {
 	}
 }
 
-func (context *Context) Respond(startTime time.Time, template string) {
+func (context *Context) EndRequest(startTime time.Time, template string) {
 	// cleanup
 	defer context.DBSession.Close()
 
@@ -268,13 +284,16 @@ func (context *Context) Respond(startTime time.Time, template string) {
 	}
 
 	// show response profiling info
-	successMessage := "Success"
-	successColor := "green!"
-	if context.Success == false {
-		successMessage = "Failed"
-		successColor = "red!"
+	switch context.Config.Logging.Requests {
+	case config.BriefLogging, config.FullLogging:
+		successMessage := "Success"
+		successColor := "green!"
+		if context.Success == false {
+			successMessage = "Failed"
+			successColor = "red!"
+		}
+		Profile(log.Sprintf("[cyan]Request handled: %v/%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
 	}
-	Profile(log.Sprintf("[cyan]Request handled: %v/%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
 
 	// show the error caught eariler
 	if caughtErr != nil {
