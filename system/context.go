@@ -5,8 +5,10 @@ import (
 	"time"
 	"fmt"
 	"sync"
+	"strings"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"html"
 	"encoding/json"
 	"runtime/debug"
@@ -125,10 +127,18 @@ func (context *Context) Fail(message string) {
 }
 
 func (context *Context) BeginRequest(authType AuthenticationType) {
+	// initial request logging
 	switch context.Config.Logging.Requests {
 	case config.BriefLogging:
-		// log basic request info
-		log.Printf("[cyan]Request received: %v/%v?%v[-]", context.Request.Host, context.Request.URL.Path, context.Request.URL.RawQuery)
+		// log basic request info with truncated query
+		query, _ := url.QueryUnescape(context.Request.URL.RawQuery)
+		query = strings.Replace(query, "\r\n", "", -1)
+		message := log.Sprintf("[cyan]Request received: %v/%v?%v[-]", context.Request.Host, context.Request.URL.Path, query)
+		if len(message) > 472 {
+			message = message[:472] + "..."
+		}
+
+		log.Println(message)
 	case config.FullLogging:
 		// get formatted request dump to log
 		dump, err := httputil.DumpRequest(context.Request, true)
