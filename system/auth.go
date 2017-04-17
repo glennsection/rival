@@ -34,7 +34,7 @@ func (context *Context) authenticate(authType AuthenticationType) (err error) {
 	allowPassword := (authType == AnyAuthentication || authType == PasswordAuthentication)
 
 	// check for token paremeter
-	unparsedToken := context.GetParameter("token", "")
+	unparsedToken := context.Params.GetString("token", "")
 
 	if unparsedToken == "" {
 		if allowPassword {
