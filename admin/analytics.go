@@ -16,7 +16,7 @@ func handleAdminAnalytics(application *system.Application) {
 
 func ShowLeaderboard(context *system.Context) {
 	// parse parameters
-	page := context.GetIntParameter("page", 1)
+	page := context.Params.GetInt("page", 1)
 
 	// paginate players query (TODO - use redis!)
 	query, pages, err := util.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rt"), DefaultPageSize, page)
@@ -33,6 +33,6 @@ func ShowLeaderboard(context *system.Context) {
 
 	// set template bindings
 	context.Data = players
-	context.Set("page", page)
-	context.Set("pages", pages)
+	context.Params.Set("page", page)
+	context.Params.Set("pages", pages)
 }

@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 	"strings"
-	"strconv"
 	"fmt"
 	"path/filepath"
 	"net/http"
@@ -21,6 +20,7 @@ import (
 
 type Application struct {
 	Config           config.Config
+	Env              *Stream
 
 	// internal
 	dbSession        *mgo.Session
@@ -28,44 +28,18 @@ type Application struct {
 	templates        *template.Template
 }
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// TODO - use the Stream interface!!!!!!!!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-func (application *Application) GetEnv(name string, defaultValue string) string {
-	// get environment variable or default value
-	value := os.Getenv(name)
-	if value == "" {
-		value = defaultValue
-	}
-
-	return value
+type EnvStreamSource struct {
 }
 
-func (application *Application) GetIntEnv(name string, defaultValue int) int {
-	// get int environment variable or default value
-	value := application.GetEnv(name, "")
-	if value != "" {
-		result, err := strconv.Atoi(value)
-		if err == nil {
-			return result
-		}
+func (source EnvStreamSource) Set(name string, value interface{}) {
+	if err := os.Setenv(name, value.(string)); err != nil {
+		panic(err)
 	}
-
-	return defaultValue
 }
 
-func (application *Application) GetRequiredEnv(name string) string {
-	// get required environment variable
-	value := os.Getenv(name)
-	if value == "" {
-		panic(name + " environment variable not set")
-	}
-
-	return value
+func (source EnvStreamSource) Get(name string) interface{} {
+	return os.Getenv(name)
 }
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 func (application *Application) handleErrors() {
 	// handle any panic errors
@@ -90,18 +64,22 @@ func (application *Application) Initialize() {
 		panic(fmt.Sprintf("Config file (%s) failed to load: %v", configPath, err))
 	}
 
+	// create environment variables stream
+	application.Env = &Stream {
+		source: EnvStreamSource {},
+	}
+
 	// init profiling
 	HandleProfiling(application.handleProfiler)
 
 	// init templates
-	//application.templates = template.Must(template.ParseGlob("templates/admin/*.tmpl.html"))
 	err = application.LoadTemplates()
 	if err != nil {
 		panic(err)
 	}
 	
 	// connect database
-	mongoURI := application.GetRequiredEnv("MONGODB_URI")
+	mongoURI := application.Env.GetRequiredString("MONGODB_URI")
 	application.dbSession, err = mgo.Dial(mongoURI)
 	if err != nil {
 		panic(err)
@@ -111,16 +89,8 @@ func (application *Application) Initialize() {
 	// connect to cache
 	application.initializeCache()
 
-
-	// HACK   !!! TEST
-	cache := application.GetCache()
-	log.Printf("CACHE SET...")
-	cache.Set("FOO", "BAR")
-	log.Printf("CACHE GET: %v", cache.GetString("FOO", "???"))
-
-
 	// get default database
-	dbname := application.GetRequiredEnv("MONGODB_DB")
+	dbname := application.Env.GetRequiredString("MONGODB_DB")
 	application.db = application.dbSession.DB(dbname)
 
 	// init models using concurrent session (DB indexes, etc.)
@@ -222,7 +192,7 @@ func (application *Application) Ignore(pattern string) {
 
 func (application *Application) Serve() {
 	// start serving on port
-	port := application.GetRequiredEnv("PORT")
+	port := application.Env.GetRequiredString("PORT")
 
 	err := http.ListenAndServe(":" + port, nil)
 	if err != nil {

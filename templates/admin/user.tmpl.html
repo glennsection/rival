@@ -14,8 +14,8 @@
 				<div class="row">
 					<div class="col-md-12">
 						<div class="card">
-							{{ $user := .Get "user" }}
-							{{ $player := .Get "player" }}
+							{{ $user := .Params.Get "user" }}
+							{{ $player := .Params.Get "player" }}
 
 							{{ if not $user }}
 								<div class="header">
@@ -127,7 +127,7 @@
 								</div>
 								<div class="content">
 									{{ range $index, $card := $player.Cards }}
-										{{ $.Set "index" $index }}
+										{{ $.Params.Set "index" $index }}
 										{{ template "card.tmpl.html" $ }}
 									{{ end }}
 								</div>
@@ -140,7 +140,7 @@
 								</div>
 								<div class="content">
 									{{ range $index, $tome := $player.Tomes }}
-										{{ $.Set "index" $index }}
+										{{ $.Params.Set "index" $index }}
 										{{ template "tome.tmpl.html" $ }}
 									{{ end }}
 								</div>

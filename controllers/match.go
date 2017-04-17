@@ -26,7 +26,7 @@ func MatchFind(context *system.Context) {
 func MatchResult(context *system.Context) {
 	// parse parameters
 	match := &models.Match {}
-	context.GetRequiredJSONParameter("match", match)
+	context.Params.GetRequiredJSON("match", match)
 	// HACK
 	// match := &models.Match {
 	// 	PlayerID: bson.ObjectIdHex("58e817a17314dc0004bad2ad"),

@@ -14,7 +14,7 @@ func HandlePlayer(application *system.Application) {
 
 func SetPlayer(context *system.Context) {
 	// parse parameters
-	data := context.GetRequiredParameter("data")
+	data := context.Params.GetRequiredString("data")
 
 	// update data
 	if err := models.UpdatePlayer(context.DB, context.User, data); err != nil {

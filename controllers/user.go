@@ -16,7 +16,7 @@ func HandleUser(application *system.Application) {
 
 func UserRegister(context *system.Context) {
 	// parse parameters
-	username, password := context.GetRequiredParameter("username"), context.GetRequiredParameter("password")
+	username, password := context.Params.GetRequiredString("username"), context.Params.GetRequiredString("password")
 
 	// insert user
 	user, err := models.InsertUser(context.DB, username, password, false)
@@ -48,7 +48,7 @@ func UserLogout(context *system.Context) {
 
 func GetUser(context *system.Context) {
 	// parse parameters
-	username := context.GetRequiredParameter("username")
+	username := context.Params.GetRequiredString("username")
 
 	// get user
 	user, _ := models.GetUserByUsername(context.DB, username)

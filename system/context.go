@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"time"
 	"fmt"
-	"strconv"
 	"sync"
 	"net/http"
 	"net/http/httputil"
@@ -26,6 +25,7 @@ type Context struct {
 	DB          *mgo.Database        `json:"-"`
 	Cache       *Cache               `json:"-"`
 	Request     *http.Request        `json:"-"`
+	Params      *Stream              `json:"-"`
 	User		*models.User         `json:"-"`
 
 	Token       string               `json:"token"`
@@ -36,8 +36,12 @@ type Context struct {
 	// internal
 	responseWriter  http.ResponseWriter
 	responseWritten bool
+}
+
+type ContextStreamSource struct {
 	bindings        map[string]interface{}
 	mutex           sync.RWMutex
+	context         *Context
 }
 
 func CreateContext(application *Application, w http.ResponseWriter, r *http.Request) *Context {
@@ -50,7 +54,7 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 	defer cache.Close()
 
 	// create context
-	return &Context {
+	context := &Context {
 		Application: application,
 		Config: &application.Config,
 		DBSession: contextDBSession,
@@ -60,17 +64,22 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 
 		// internal
 		responseWriter: w,
-		bindings: map[string]interface{} {},
 
 		User: nil,
 		Token: "",
 		Success: true,
 	}
-}
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// TODO - use the Stream interface!!!!!!!!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// create request params stream
+	context.Params = &Stream {
+		source: ContextStreamSource {
+			context: context,
+			bindings: map[string]interface{} {},
+		},
+	}
+
+	return context
+}
 
 func (context *Context) Write(p []byte) (n int, err error) {
 	// remember custom was response written
@@ -78,133 +87,24 @@ func (context *Context) Write(p []byte) (n int, err error) {
 	return context.responseWriter.Write(p)
 }
 
-func (context *Context) GetParameter(name string, defaultValue string) string {
-	value := context.Request.FormValue(name)
-	if value == "" {
-		value = defaultValue
+func (source ContextStreamSource) Set(name string, value interface{}) {
+	// set bindings
+	source.mutex.Lock()
+	defer source.mutex.Unlock()
+	source.bindings[name] = value
+}
+
+func (source ContextStreamSource) Get(name string) interface{} {
+	// first check bindings
+	source.mutex.RLock()
+	defer source.mutex.RUnlock()
+	if val, ok := source.bindings[name]; ok {
+		return val
 	}
 
-	return value
+	// then use request params
+	return source.context.Request.FormValue(name)
 }
-
-func (context *Context) GetBoolParameter(name string, defaultValue bool) bool {
-	value := context.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseBool(value)
-		if err == nil {
-			return result
-		}
-	}
-
-	return defaultValue
-}
-
-func (context *Context) GetIntParameter(name string, defaultValue int) int {
-	value := context.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.Atoi(value)
-		if err == nil {
-			return result
-		}
-	}
-
-	return defaultValue
-}
-
-func (context *Context) GetFloatParameter(name string, defaultValue float64) float64 {
-	value := context.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseFloat(value, 64)
-		if err == nil {
-			return result
-		}
-	}
-
-	return defaultValue
-}
-
-func (context *Context) GetRequiredParameter(name string) string {
-	value := context.Request.FormValue(name)
-	if value == "" {
-		panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
-	}
-
-	return value
-}
-
-func (context *Context) GetRequiredBoolParameter(name string) bool {
-	value := context.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseBool(value)
-		if err == nil {
-			return result
-		} else {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
-		}
-	}
-
-	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
-}
-
-func (context *Context) GetRequiredIntParameter(name string) int {
-	value := context.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.Atoi(value)
-		if err == nil {
-			return result
-		} else {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
-		}
-	}
-
-	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
-}
-
-func (context *Context) GetRequiredFloatParameter(name string) float64 {
-	value := context.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseFloat(value, 64)
-		if err == nil {
-			return result
-		} else {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
-		}
-	}
-
-	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
-}
-
-func (context *Context) GetRequiredJSONParameter(name string, result interface{}) {
-	value := context.Request.FormValue(name)
-	if value != "" {
-		raw := []byte(value)
-		err := json.Unmarshal(raw, result)
-		if err != nil {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
-		}
-	} else {
-		panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
-	}
-}
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// AND AGAIN...
-
-func (context *Context) Set(key string, value interface{}) string {
-	context.mutex.Lock()
-	defer context.mutex.Unlock()
-	context.bindings[key] = value
-	return ""
-}
-
-func (context *Context) Get(key string) interface{} {
-	context.mutex.RLock()
-	defer context.mutex.RUnlock()
-	val := context.bindings[key]
-	return val
-}
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 func (context *Context) GetPlayer() (player *models.Player) {
 	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"strconv"
 	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/system"
@@ -106,16 +105,10 @@ func ValidateTomeRequest(context *system.Context) (index int, player *models.Pla
 	success = false
 
 	// parse parameters
-	tomeId := context.GetRequiredParameter("tomeId")
-	
-	index, err := strconv.Atoi(tomeId)
-	if err != nil {
-		panic(err)
-		return 
-	}
+	tomeId := context.Params.GetRequiredInt("tomeId")
 
 	// make sure the tome exists
-	if index >= len(player.Tomes) || index < 0 || player.Tomes[index].State == models.TomeEmpty {
+	if tomeId >= len(player.Tomes) || tomeId < 0 || player.Tomes[tomeId].State == models.TomeEmpty {
 		context.Fail("Tome does not exist")
 		return 
 	}

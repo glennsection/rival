@@ -39,7 +39,7 @@ func (context *Context) authenticate(authType AuthenticationType) (err error) {
 	if unparsedToken == "" {
 		if allowPassword {
 			// parse login parameters
-			username, password := context.GetRequiredParameter("username"), context.GetRequiredParameter("password")
+			username, password := context.Params.GetRequiredString("username"), context.Params.GetRequiredString("password")
 
 			// authenticate user
 			context.User, err = models.LoginUser(context.DB, username, password)

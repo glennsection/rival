@@ -1,8 +1,6 @@
 package admin
 
 import (
-	"gopkg.in/mgo.v2/bson"
-
 	"bloodtales/system"
 	"bloodtales/util"
 	"bloodtales/models"
@@ -15,7 +13,7 @@ func handleAdminUsers(application *system.Application) {
 
 func ShowUsers(context *system.Context) {
 	// parse parameters
-	page := context.GetIntParameter("page", 1)
+	page := context.Params.GetInt("page", 1)
 
 	// paginate users query
 	query, pages, err := util.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
@@ -32,13 +30,13 @@ func ShowUsers(context *system.Context) {
 
 	// set template bindings
 	context.Data = users
-	context.Set("page", page)
-	context.Set("pages", pages)
+	context.Params.Set("page", page)
+	context.Params.Set("pages", pages)
 }
 
 func EditUser(context *system.Context) {
 	// parse parameters
-	userId := bson.ObjectIdHex(context.GetRequiredParameter("userId"))
+	userId := context.Params.GetRequiredID("userId")
 
 	user, err := models.GetUserById(context.DB, userId)
 	if err != nil {
@@ -53,38 +51,38 @@ func EditUser(context *system.Context) {
 	// handle request method
 	switch context.Request.Method {
 	case "POST":
-		email := context.GetParameter("email", "")
+		email := context.Params.GetString("email", "")
 		if email != "" {
 			user.Email = email
 			user.Update(context.DB)
 		}
 
-		name := context.GetParameter("name", "")
+		name := context.Params.GetString("name", "")
 		if name != "" {
 			player.Name = name
 		}
 
-		standardCurrency := context.GetIntParameter("standardCurrency", -1)
+		standardCurrency := context.Params.GetInt("standardCurrency", -1)
 		if standardCurrency >= 0 {
 			player.StandardCurrency = standardCurrency
 		}
 
-		premiumCurrency := context.GetIntParameter("premiumCurrency", -1)
+		premiumCurrency := context.Params.GetInt("premiumCurrency", -1)
 		if premiumCurrency >= 0 {
 			player.PremiumCurrency = premiumCurrency
 		}
 
-		level := context.GetIntParameter("level", -1)
+		level := context.Params.GetInt("level", -1)
 		if level >= 0 {
 			player.Level = level
 		}
 
-		rating := context.GetIntParameter("rating", -1)
+		rating := context.Params.GetInt("rating", -1)
 		if rating >= 0 {
 			player.Rating = rating
 		}
 
-		rank := context.GetIntParameter("rank", -1)
+		rank := context.Params.GetInt("rank", -1)
 		if rank >= 0 {
 			player.Rank = rank
 		}
@@ -94,6 +92,6 @@ func EditUser(context *system.Context) {
 	
 	// set template bindings
 	context.Data = user
-	context.Set("user", user)
-	context.Set("player", player)
+	context.Params.Set("user", user)
+	context.Params.Set("player", player)
 }

@@ -7,7 +7,7 @@
 		</div>
 
 		<ul class="nav">
-			{{ range $index, $element := .Get "links" }}
+			{{ range $index, $element := .Params.Get "links" }}
 				{{ if $element.Active }}
 					<li class="active">
 				{{ else }}

@@ -1,5 +1,5 @@
-{{ $player := .Get "player" }}
-{{ $index := .Get "index" }}
+{{ $player := .Params.Get "player" }}
+{{ $index := .Params.GetRequiredInt "index" }}
 {{ $card := index $player.Cards $index }}
 
 <div class="game-card">

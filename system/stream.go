@@ -1,127 +1,226 @@
 package system
 
-// TODO - make this as interface used by:
-//     * DB
-//     * Cache
-//     * URL Params
-//     * Template Params
-//     * etc.
+import (
+	"fmt"
+	"strconv"
+	"encoding/json"
+
+	"gopkg.in/mgo.v2/bson"
+)
+
+type StreamSource interface {
+	Set(name string, value interface{})
+	Get(name string) interface{}
+}
+
 type Stream struct {
+	source  StreamSource
 }
 
-/*
-func (stream *Stream) Write(p []byte) (n int, err error) { // TODO: and Read()
-	// remember custom was response written
-	stream.responseWritten = true
-	return stream.responseWriter.Write(p)
+func missingStreamValue(name string) string {
+	return fmt.Sprintf("Missing required value: \"%v\"", name)
 }
 
-func (stream *Stream) GetParameter(name string, defaultValue string) string {
-	value := stream.Request.FormValue(name)
-	if value == "" {
-		value = defaultValue
-	}
-
-	return value
+func invalidStreamValue(name string, value interface{}, err error) string {
+	return fmt.Sprintf("Invalid required value: \"%v\" = \"%v\" (%v)", name, value, err)
 }
 
-func (stream *Stream) GetBoolParameter(name string, defaultValue bool) bool {
-	value := stream.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseBool(value)
-		if err == nil {
-			return result
+func (stream *Stream) Set(name string, value interface{}) string {
+	stream.source.Set(name, value)
+	return "" // NOTE - this is to work properly with templates
+}
+
+func (stream *Stream) Get(name string) interface{} {
+	return stream.source.Get(name)
+}
+
+func (stream *Stream) GetString(name string, defaultValue string) string {
+	value := stream.source.Get(name)
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			return stringValue
 		}
 	}
 
 	return defaultValue
 }
 
-func (stream *Stream) GetIntParameter(name string, defaultValue int) int {
-	value := stream.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.Atoi(value)
-		if err == nil {
-			return result
+func (stream *Stream) GetRequiredString(name string) string {
+	value := stream.source.Get(name)
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			return stringValue
+		}
+	}
+
+	panic(missingStreamValue(name))
+}
+
+func (stream *Stream) GetBool(name string, defaultValue bool) bool {
+	value := stream.source.Get(name)
+
+	if boolValue, ok := value.(bool); ok {
+		return boolValue
+	}
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			result, err := strconv.ParseBool(stringValue)
+			if err == nil {
+				return result
+			}
 		}
 	}
 
 	return defaultValue
 }
 
-func (stream *Stream) GetFloatParameter(name string, defaultValue float64) float64 {
-	value := stream.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseFloat(value, 64)
-		if err == nil {
-			return result
+func (stream *Stream) GetRequiredBool(name string) bool {
+	value := stream.source.Get(name)
+
+	if boolValue, ok := value.(bool); ok {
+		return boolValue
+	}
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			result, err := strconv.ParseBool(stringValue)
+			if err == nil {
+				return result
+			} else {
+				panic(invalidStreamValue(name, stringValue, err))
+			}
+		}
+	}
+
+	panic(missingStreamValue(name))
+}
+
+func (stream *Stream) GetInt(name string, defaultValue int) int {
+	value := stream.source.Get(name)
+
+	if intValue, ok := value.(int); ok {
+		return intValue
+	}
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			result, err := strconv.Atoi(stringValue)
+			if err == nil {
+				return result
+			}
 		}
 	}
 
 	return defaultValue
 }
 
-func (stream *Stream) GetRequiredParameter(name string) string {
-	value := stream.Request.FormValue(name)
-	if value == "" {
-		panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+func (stream *Stream) GetRequiredInt(name string) int {
+	value := stream.source.Get(name)
+
+	if intValue, ok := value.(int); ok {
+		return intValue
 	}
 
-	return value
-}
-
-func (stream *Stream) GetRequiredBoolParameter(name string) bool {
-	value := stream.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseBool(value)
-		if err == nil {
-			return result
-		} else {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			result, err := strconv.Atoi(stringValue)
+			if err == nil {
+				return result
+			} else {
+				panic(invalidStreamValue(name, stringValue, err))
+			}
 		}
 	}
 
-	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+	panic(missingStreamValue(name))
 }
 
-func (stream *Stream) GetRequiredIntParameter(name string) int {
-	value := stream.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.Atoi(value)
-		if err == nil {
-			return result
-		} else {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+func (stream *Stream) GetFloat(name string, defaultValue float64) float64 {
+	value := stream.source.Get(name)
+
+	if floatValue, ok := value.(float64); ok {
+		return floatValue
+	}
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			result, err := strconv.ParseFloat(stringValue, 64)
+			if err == nil {
+				return result
+			}
 		}
 	}
 
-	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+	return defaultValue
 }
 
-func (stream *Stream) GetRequiredFloatParameter(name string) float64 {
-	value := stream.Request.FormValue(name)
-	if value != "" {
-		result, err := strconv.ParseFloat(value, 64)
-		if err == nil {
-			return result
-		} else {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+func (stream *Stream) GetRequiredFloat(name string) float64 {
+	value := stream.source.Get(name)
+
+	if floatValue, ok := value.(float64); ok {
+		return floatValue
+	}
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			result, err := strconv.ParseFloat(stringValue, 64)
+			if err == nil {
+				return result
+			} else {
+				panic(invalidStreamValue(name, stringValue, err))
+			}
 		}
 	}
 
-	panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
+	panic(missingStreamValue(name))
 }
 
-func (stream *Stream) GetRequiredJSONParameter(name string, result interface{}) {
-	value := stream.Request.FormValue(name)
-	if value != "" {
-		raw := []byte(value)
-		err := json.Unmarshal(raw, result)
-		if err != nil {
-			panic(fmt.Sprintf("Request contains invalid required parameter: %v: %v", name, err))
+func (stream *Stream) GetJSON(name string, result interface{}, defaultValue interface{}) {
+	value := stream.source.Get(name)
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			raw := []byte(stringValue)
+			err := json.Unmarshal(raw, result)
+			if err == nil {
+				return
+			}
 		}
-	} else {
-		panic(fmt.Sprintf("Request doesn't contain required parameter: %v", name))
 	}
+
+	result = defaultValue
+	return
 }
-*/
+
+func (stream *Stream) GetRequiredJSON(name string, result interface{}) {
+	value := stream.source.Get(name)
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			raw := []byte(stringValue)
+			err := json.Unmarshal(raw, result)
+			if err == nil {
+				return
+			} else {
+				panic(invalidStreamValue(name, stringValue, err))
+			}
+		}
+	}
+
+	panic(missingStreamValue(name))
+}
+
+func (stream *Stream) GetRequiredID(name string) bson.ObjectId {
+	value := stream.source.Get(name)
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			return bson.ObjectIdHex(stringValue)
+		}
+	}
+
+	panic(missingStreamValue(name))
+}

@@ -28,7 +28,7 @@ var (
 
 func (application *Application) initializeAuthentication() {
 	// find debug user instead of authenticating
-	debugUsername := application.GetEnv("DEBUG_USER", "")
+	debugUsername := application.Env.GetString("DEBUG_USER", "")
 	if debugUsername != "" {
 		debugUser, _ = models.GetUserByUsername(application.db, debugUsername)
 		

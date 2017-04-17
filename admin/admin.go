@@ -66,7 +66,7 @@ func initializeAdmin(context *system.Context) {
 		}
 	}
 
-	context.Set("links", links)
+	context.Params.Set("links", links)
 }
 
 func Home(context *system.Context) {
