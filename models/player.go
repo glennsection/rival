@@ -31,7 +31,7 @@ type Player struct {
 // client model
 type PlayerClientAlias Player
 type PlayerClient struct {
-	UserID      	string         `bson:"us" json:"userId"`
+	UserID      	string         `json:"userId"`
 
 	*PlayerClientAlias
 }

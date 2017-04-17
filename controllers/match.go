@@ -1,19 +1,26 @@
 package controllers
 
 import (
-	"math"
 	"time"
 	//"log"
 
 	//"gopkg.in/mgo.v2/bson"
 
-	"bloodtales/util"
 	"bloodtales/system"
 	"bloodtales/models"
 )
 
 func HandleMatch(application *system.Application) {
+	application.HandleAPI("/match/find", system.TokenAuthentication, MatchFind)
 	application.HandleAPI("/match/result", system.TokenAuthentication, MatchResult)
+}
+
+func MatchFind(context *system.Context) {
+	// parse parameters
+	//matchType := models.MatchType(context.GetIntParameter("type", int(models.MatchRanked)))
+
+	//match := &models.Match {}
+	// TODO.. find match or queue
 }
 
 func MatchResult(context *system.Context) {
@@ -42,88 +49,8 @@ func MatchResult(context *system.Context) {
 
 	// HACK - for now just process winners
 	if (match.Outcome == models.MatchWin) {
-		ProcessMatchResults(context, match)
+		match.ProcessMatchResults(context.DB)
 	}
 
 	context.Message("Thanks for playing!")
-}
-
-func GetKFactor(playerRating int, opponentRating int) float64 {
-	// chess k-factors  (TODO - work on this...)
-	rating := util.Min(playerRating, opponentRating)
-	if rating < 2100 {
-		return 32.0
-	} else if rating < 2400 {
-		return 24.0
-	}
-	return 16.0
-}
-
-func ProcessMatchResults(context *system.Context, match *models.Match) {
-	// get players
-	player, err := match.GetPlayer(context.DB)
-	if err != nil {
-		panic(err)
-	}
-	opponent, err := match.GetOpponent(context.DB)
-	if err != nil {
-		panic(err)
-	}
-
-	// update according to match type
-	switch match.Type {
-
-	case models.MatchRanked:
-		// update stats
-		player.Rank += int(match.Outcome)
-		opponent.Rank -= int(match.Outcome)
-
-	case models.MatchElite:
-		// get k-factor
-		kFactor := GetKFactor(player.Rating, opponent.Rating)
-
-		// transformed ratings
-		q1 := math.Pow10(player.Rating / 400)
-		q2 := math.Pow10(opponent.Rating / 400)
-		qs := q1 + q2
-
-		// expected scores
-		e1 := q1 / qs
-		e2 := q2 / qs
-
-		// observed scores
-		s1 := 0.5 + float64(match.Outcome) * 0.5
-		s2 := 1 - s1
-
-		// resulting ratings
-		r1 := player.Rating + util.RoundToInt(kFactor * (s1 - e1))
-		r2 := opponent.Rating + util.RoundToInt(kFactor * (s2 - e2))
-
-		//log.Printf("Elite Match Results: [%v(%v) + %v:%v => %v] vs. [%v(%v) + %v:%v => %v]", player.Rating, q1, e1, s1, r1, opponent.Rating, q2, e2, s2, r2)
-		
-		// update stats
-		player.Rating = r1
-		opponent.Rating = r2
-
-	case models.MatchTournament:
-		// TODO
-
-	}
-
-	// modify win/loss counts and update database
-	player.MatchCount += 1
-	opponent.MatchCount += 1
-	switch match.Outcome {
-
-	case models.MatchWin:
-		player.WinCount += 1
-		opponent.LossCount += 1
-
-	case models.MatchLoss:
-		player.LossCount += 1
-		opponent.WinCount += 1
-
-	}
-	player.Update(context.DB)
-	opponent.Update(context.DB)
 }

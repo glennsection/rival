@@ -24,6 +24,7 @@ type Context struct {
 	Config      *config.Config       `json:"-"`
 	DBSession   *mgo.Session         `json:"-"`
 	DB          *mgo.Database        `json:"-"`
+	Cache       *Cache               `json:"-"`
 	Request     *http.Request        `json:"-"`
 	User		*models.User         `json:"-"`
 
@@ -44,11 +45,17 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 	contextDBSession := application.dbSession.Copy()
 	contextDB := application.db.With(contextDBSession)
 
+	// get concurrent cache connection
+	cache := application.GetCache()
+	defer cache.Close()
+
+	// create context
 	return &Context {
 		Application: application,
 		Config: &application.Config,
 		DBSession: contextDBSession,
 		DB: contextDB,
+		Cache: cache,
 		Request: r,
 
 		// internal
@@ -60,6 +67,10 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 		Success: true,
 	}
 }
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TODO - use the Stream interface!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 func (context *Context) Write(p []byte) (n int, err error) {
 	// remember custom was response written
@@ -176,6 +187,9 @@ func (context *Context) GetRequiredJSONParameter(name string, result interface{}
 	}
 }
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// AND AGAIN...
+
 func (context *Context) Set(key string, value interface{}) string {
 	context.mutex.Lock()
 	defer context.mutex.Unlock()
@@ -189,6 +203,8 @@ func (context *Context) Get(key string) interface{} {
 	val := context.bindings[key]
 	return val
 }
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 func (context *Context) GetPlayer() (player *models.Player) {
 	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)

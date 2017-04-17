@@ -18,7 +18,7 @@ type Card struct {
 // client model
 type CardClientAlias Card
 type CardClient struct {
-	DataID         string        `json:"cardId"`
+	DataID                  string        `json:"cardId"`
 
 	*CardClientAlias
 }

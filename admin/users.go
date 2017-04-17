@@ -4,6 +4,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/system"
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
@@ -17,7 +18,7 @@ func ShowUsers(context *system.Context) {
 	page := context.GetIntParameter("page", 1)
 
 	// paginate users query
-	query, pages, err := models.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
+	query, pages, err := util.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}

@@ -2,6 +2,7 @@ package admin
 
 import (
 	"bloodtales/system"
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
@@ -18,7 +19,7 @@ func ShowLeaderboard(context *system.Context) {
 	page := context.GetIntParameter("page", 1)
 
 	// paginate players query (TODO - use redis!)
-	query, pages, err := models.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rt"), DefaultPageSize, page)
+	query, pages, err := util.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rt"), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}

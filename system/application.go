@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 	"strings"
+	"strconv"
 	"fmt"
 	"path/filepath"
 	"net/http"
@@ -27,6 +28,10 @@ type Application struct {
 	templates        *template.Template
 }
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TODO - use the Stream interface!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 func (application *Application) GetEnv(name string, defaultValue string) string {
 	// get environment variable or default value
 	value := os.Getenv(name)
@@ -35,6 +40,19 @@ func (application *Application) GetEnv(name string, defaultValue string) string 
 	}
 
 	return value
+}
+
+func (application *Application) GetIntEnv(name string, defaultValue int) int {
+	// get int environment variable or default value
+	value := application.GetEnv(name, "")
+	if value != "" {
+		result, err := strconv.Atoi(value)
+		if err == nil {
+			return result
+		}
+	}
+
+	return defaultValue
 }
 
 func (application *Application) GetRequiredEnv(name string) string {
@@ -47,11 +65,13 @@ func (application *Application) GetRequiredEnv(name string) string {
 	return value
 }
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 func (application *Application) handleErrors() {
 	// handle any panic errors
 	if err := recover(); err != nil {
-		log.Printf("Error occurred during execution: %v", err)
-		debug.PrintStack()
+		log.Errorf("Occurred during execution: %v", err)
+		log.Printf("[red]%v[-]", string(debug.Stack()))
 	}
 }
 
@@ -80,19 +100,30 @@ func (application *Application) Initialize() {
 		panic(err)
 	}
 	
-	// connect database context
-	uri := application.GetRequiredEnv("MONGODB_URI")
-	application.dbSession, err = mgo.Dial(uri)
+	// connect database
+	mongoURI := application.GetRequiredEnv("MONGODB_URI")
+	application.dbSession, err = mgo.Dial(mongoURI)
 	if err != nil {
 		panic(err)
 	}
 	application.dbSession.SetSafe(&mgo.Safe {})
 
+	// connect to cache
+	application.initializeCache()
+
+
+	// HACK   !!! TEST
+	cache := application.GetCache()
+	log.Printf("CACHE SET...")
+	cache.Set("FOO", "BAR")
+	log.Printf("CACHE GET: %v", cache.GetString("FOO", "???"))
+
+
 	// get default database
 	dbname := application.GetRequiredEnv("MONGODB_DB")
 	application.db = application.dbSession.DB(dbname)
 
-	// init models using concurrent session
+	// init models using concurrent session (DB indexes, etc.)
 	tempSession := application.dbSession.Copy()
 	defer tempSession.Close()
 	models.Initialize(tempSession.DB(dbname))
@@ -133,6 +164,9 @@ func (application *Application) Close() {
 	if application.dbSession != nil {
 		application.dbSession.Close()
 	}
+
+	// cleanup cache
+	application.closeCache()
 }
 
 func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*Context)) {
