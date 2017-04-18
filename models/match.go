@@ -44,12 +44,12 @@ const (
 
 // server model
 type Match struct {
-	PlayerID      	bson.ObjectId `bson:"id1" json:"-"`
+	PlayerID     	bson.ObjectId `bson:"id1" json:"-"`
 	OpponentID      bson.ObjectId `bson:"id2,omitempty" json:"-"`
 	Type            MatchType     `bson:"tp" json:"-"`
 	RoomID          string        `bson:"rm" json:"roomId"`
 	State           MatchState    `bson:"st" json:"state"`
-	Outcome        	MatchOutcome  `bson:"oc" json:"outcome"`
+	Outcome       	MatchOutcome  `bson:"oc" json:"outcome"`
 	StartTime	    time.Time     `bson:"t0" json:"-"`
 	EndTime	        time.Time     `bson:"t1" json:"-"`
 }
@@ -136,30 +136,30 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 		"id1": bson.M {
 			"$ne": player.ID,
 		},
- 		"st": MatchOpen,
- 		"tp": matchType,
- 	}).One(&match)
+		"st": MatchOpen,
+		"tp": matchType,
+	}).One(&match)
 
- 	log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
+	log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
 
- 	if match != nil {
- 		// match players and mark as active
- 		match.OpponentID = player.ID
- 		match.State = MatchActive
- 		match.StartTime = time.Now()
- 	} else {
- 		// queue new match
- 		match = &Match {
- 			PlayerID: player.ID,
- 			Type: matchType,
- 			RoomID: util.GenerateUUID(),
- 			State: MatchOpen,
- 		}
- 	}
+	if match != nil {
+		// match players and mark as active
+		match.OpponentID = player.ID
+		match.State = MatchActive
+		match.StartTime = time.Now()
+	} else {
+		// queue new match
+		match = &Match {
+			PlayerID: player.ID,
+			Type: matchType,
+			RoomID: util.GenerateUUID(),
+			State: MatchOpen,
+		}
+	}
 
- 	// update database
+	// update database
 	err = match.Update(database)
- 	return
+	return
 }
 
 func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (err error) {
@@ -176,13 +176,15 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 				MatchCompleting,
 			},
 		},
-  	}).One(&match)
-  	if err != nil {
-  		return
-  	}
+ 	}).One(&match)
+ 	if err != nil {
+ 		return
+ 	}
 
-  	// determine if player is match owner, and alter outcome accordingly
-  	owner := (match.PlayerID == player.ID)
+ 	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID, match)
+
+ 	// determine if player is match owner, and alter outcome accordingly
+ 	owner := (match.PlayerID == player.ID)
 	if owner == false {
 		outcome = invertOutcome(outcome)
 	}
