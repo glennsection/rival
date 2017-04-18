@@ -21,6 +21,12 @@
 			"revisionTime": "2017-02-16T21:49:44Z"
 		},
 		{
+			"checksumSHA1": "jTwXALBikWAgWtFJtfN5IBQLK0E=",
+			"path": "github.com/nu7hatch/gouuid",
+			"revision": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3",
+			"revisionTime": "2013-12-21T20:05:32Z"
+		},
+		{
 			"checksumSHA1": "vE43s37+4CJ2CDU6TlOUOYE0K9c=",
 			"path": "golang.org/x/crypto/bcrypt",
 			"revision": "c2303dcbe84172e0c0da4c9f083eeca54c06f298",

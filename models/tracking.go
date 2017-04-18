@@ -22,7 +22,7 @@ func ensureIndexTracking(database *mgo.Database) {
 	c := database.C(TrackingCollectionName)
 
 	index := mgo.Index {
-		Key:          []string { "UserID" },
+		Key:          []string { "us" },
 		Unique:       false,
 		DropDups:     false,
 		Background:   true,

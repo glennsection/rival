@@ -25,7 +25,7 @@ func ensureIndexUser(database *mgo.Database) {
 	c := database.C(UserCollectionName)
 
 	index := mgo.Index {
-		Key:        []string { "Username" },
+		Key:        []string { "un" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,

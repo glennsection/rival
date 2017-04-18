@@ -32,7 +32,7 @@ func ensureIndexPlayer(database *mgo.Database) {
 	c := database.C(PlayerCollectionName)
 
 	index := mgo.Index {
-		Key:        []string { "UserID" },
+		Key:        []string { "us" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,

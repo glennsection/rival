@@ -3,15 +3,17 @@ package models
 import (
 	"time"
 	"math"
+	"errors"
 	"encoding/json"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/util"
+	"bloodtales/log"
 )
 
-const MatchCollectionName = "players"
+const MatchCollectionName = "matches"
 
 // match type
 type MatchType int
@@ -28,6 +30,7 @@ const (
 	MatchInvalid MatchState = iota
 	MatchOpen
 	MatchActive
+	MatchCompleting
 	MatchComplete
 )
 
@@ -41,30 +44,60 @@ const (
 
 // server model
 type Match struct {
-	PlayerID      	bson.ObjectId `bson:"id1" json:"playerId"`
-	OpponentID      bson.ObjectId `bson:"id2" json:"opponentId"`
-	Type            MatchType     `bson:"tp" json:"type"`
+	PlayerID      	bson.ObjectId `bson:"id1" json:"-"`
+	OpponentID      bson.ObjectId `bson:"id2,omitempty" json:"-"`
+	Type            MatchType     `bson:"tp" json:"-"`
+	RoomID          string        `bson:"rm" json:"roomId"`
 	State           MatchState    `bson:"st" json:"state"`
 	Outcome        	MatchOutcome  `bson:"oc" json:"outcome"`
-	Time			time.Time     `bson:"ti" json:"time"`
+	StartTime	    time.Time     `bson:"t0" json:"-"`
+	EndTime	        time.Time     `bson:"t1" json:"-"`
 }
 
 // client model
 type MatchClientAlias Match
 type MatchClient struct {
-	PlayerID      	string        `json:"playerId"`
-	OpponentID      string        `json:"opponentId"`
 	State           string        `json:"state"`
 
 	*MatchClientAlias
+}
+
+func ensureIndexMatch(database *mgo.Database) {
+	c := database.C(MatchCollectionName)
+
+	// player index
+	index := mgo.Index {
+		Key:        []string { "id1" },
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err := c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+	// opponent player index
+	index = mgo.Index {
+		Key:        []string { "id2" },
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+
+	err = c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // custom marshalling
 func (match *Match) MarshalJSON() ([]byte, error) {
 	// create client model
 	client := &MatchClient {
-		PlayerID: match.PlayerID.Hex(),
-		OpponentID: match.OpponentID.Hex(),
 		State: match.GetStateName(),
 		MatchClientAlias: (*MatchClientAlias)(match),
 	}
@@ -85,23 +118,104 @@ func (match *Match) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
-	// server player IDs
-	match.PlayerID = bson.ObjectId(client.PlayerID)
-	match.OpponentID = bson.ObjectId(client.OpponentID)
+	// server state
 	match.State = parseStateName(client.State)
 
 	return nil
 }
 
-func FindOpponentMatch(database *mgo.Database, match *Match) (opponentMatch *Match, err error) {
-	// find opponent match
+func (match *Match) Update(database *mgo.Database) (err error) {
+	// update match in database
+	_, err = database.C(MatchCollectionName).Upsert(bson.M { "id1": match.PlayerID }, match)
+	return
+}
+
+func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (match *Match, err error) {
+	// find existing match (TODO - verify that no other pending matches exist for player)
 	err = database.C(MatchCollectionName).Find(bson.M {
-		"id2": match.OpponentID,
-		"time": bson.M {
-			"$gt": match.Time.Add(-time.Minute),
-			"$lt": match.Time.Add(time.Minute),
+		"id1": bson.M {
+			"$ne": player.ID,
 		},
-	}).One(&opponentMatch)
+ 		"st": MatchOpen,
+ 		"tp": matchType,
+ 	}).One(&match)
+
+ 	log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
+
+ 	if match != nil {
+ 		// match players and mark as active
+ 		match.OpponentID = player.ID
+ 		match.State = MatchActive
+ 		match.StartTime = time.Now()
+ 	} else {
+ 		// queue new match
+ 		match = &Match {
+ 			PlayerID: player.ID,
+ 			Type: matchType,
+ 			RoomID: util.GenerateUUID(),
+ 			State: MatchOpen,
+ 		}
+ 	}
+
+ 	// update database
+	err = match.Update(database)
+ 	return
+}
+
+func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (err error) {
+	// find active match for player
+	var match *Match
+	err = database.C(MatchCollectionName).Find(bson.M {
+		"$or": []bson.M {
+			bson.M { "id1": player.ID, },
+			bson.M { "id2": player.ID, },
+		},
+		"st": bson.M {
+			"$in": []interface{} {
+				MatchActive,
+				MatchCompleting,
+			},
+		},
+  	}).One(&match)
+  	if err != nil {
+  		return
+  	}
+
+  	// determine if player is match owner, and alter outcome accordingly
+  	owner := (match.PlayerID == player.ID)
+	if owner == false {
+		outcome = invertOutcome(outcome)
+	}
+
+	if match.State == MatchActive {
+		// update match outcome
+		match.State = MatchCompleting
+		match.Outcome = outcome
+		match.EndTime = time.Now()
+
+		// update database
+		err = match.Update(database)
+		if err != nil {
+			return
+		}
+
+		// update player stats
+		err = match.ProcessMatchResults(database)
+	} else {
+		// validate match outcome
+		if match.Outcome == outcome {
+			match.State = MatchComplete
+		} else {
+			match.State = MatchInvalid
+
+			err = errors.New("Non-symmetrical match outcomes reported by clients!")
+
+			// TODO - roll back stats!
+		}
+
+		// update as invalid
+		match.Update(database)
+	}
 	return
 }
 
@@ -121,6 +235,8 @@ func (match *Match) GetStateName() string {
 		return "Open"
 	case MatchActive:
 		return "Active"
+	case MatchCompleting:
+		return "Completing"
 	case MatchComplete:
 		return "Complete"
 	}
@@ -134,8 +250,21 @@ func parseStateName(name string) MatchState {
 		return MatchOpen
 	case "Active":
 		return MatchActive
+	case "Completing":
+		return MatchCompleting
 	case "Complete":
 		return MatchComplete
+	}
+}
+
+func invertOutcome(outcome MatchOutcome) MatchOutcome {
+	switch outcome {
+	case MatchLoss:
+		return MatchWin
+	case MatchWin:
+		return MatchLoss
+	default:
+		return MatchDraw
 	}
 }
 
@@ -150,15 +279,15 @@ func getKFactor(playerRating int, opponentRating int) float64 {
 	return 16.0
 }
 
-func (match *Match) ProcessMatchResults(database *mgo.Database) {
+func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 	// get players
 	player, err := match.GetPlayer(database)
 	if err != nil {
-		panic(err)
+		return
 	}
 	opponent, err := match.GetOpponent(database)
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	// update according to match type
@@ -205,16 +334,17 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) {
 	player.MatchCount += 1
 	opponent.MatchCount += 1
 	switch match.Outcome {
-
 	case MatchWin:
 		player.WinCount += 1
 		opponent.LossCount += 1
-
 	case MatchLoss:
 		player.LossCount += 1
 		opponent.WinCount += 1
-
 	}
-	player.Update(database)
-	opponent.Update(database)
+	err = player.Update(database)
+	if err != nil {
+		return
+	}
+	err = opponent.Update(database)
+	return
 }
