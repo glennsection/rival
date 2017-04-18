@@ -67,28 +67,14 @@ func ensureIndexMatch(database *mgo.Database) {
 
 	// player index
 	index := mgo.Index {
-		Key:        []string { "id1" },
-		Unique:     true,
-		DropDups:   true,
+		Key:        []string { "id1", "id2", "state" },
+		Unique:     false,
+		DropDups:   false,
 		Background: true,
 		Sparse:     true,
 	}
 
 	err := c.EnsureIndex(index)
-	if err != nil {
-		panic(err)
-	}
-
-	// opponent player index
-	index = mgo.Index {
-		Key:        []string { "id2" },
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-
-	err = c.EnsureIndex(index)
 	if err != nil {
 		panic(err)
 	}
