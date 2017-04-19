@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 	"encoding/json"
-
+	"math/rand"
 	"bloodtales/data"
 )
 
@@ -33,6 +33,22 @@ type TomeClient struct {
 	*TomeClientAlias
 }
 
+//server model
+type TomeReward struct {
+	Cards 				[]data.DataId
+	NumRewarded			[]int 			
+	PremiumCurrency 	int 			
+	StandardCurrency 	int 			
+}
+
+//client model
+type TomeRewardClient struct {
+	Cards 				[]data.CardData	`json:cards`
+	NumRewarded			[]int 			`json:numRewarded` 			
+	PremiumCurrency 	int 			`json:PremiumCurrency`		
+	StandardCurrency 	int 			`json:StandardCurrency`
+}
+
 // custom marshalling
 func (tome *Tome) MarshalJSON() ([]byte, error) {
 	// create client model
@@ -52,6 +68,23 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 	}
 	
 	// marshal with client model
+	return json.Marshal(client)
+}
+
+//custom marshalling
+func (tomeReward *TomeReward) MarshalJSON() ([]byte, error) {
+	//create client model
+	client := &TomeRewardClient {
+		Cards: make([]data.CardData, len(tomeReward.NumRewarded)),
+		NumRewarded: tomeReward.NumRewarded,
+		PremiumCurrency: tomeReward.PremiumCurrency,
+		StandardCurrency: tomeReward.StandardCurrency,
+	}
+
+	for i, id := range tomeReward.Cards {
+		client.Cards[i] = *(data.GetCard(id))
+	}
+
 	return json.Marshal(client)
 }
 
@@ -135,10 +168,45 @@ func (tome *Tome) StartUnlocking() {
 	tome.UnlockTime = time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second)
 }
 
-func (tome *Tome) OpenTome() {
+func (tome *Tome) OpenTome(tier int) (reward *TomeReward) {
+	reward = &TomeReward{}
+	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
+	tomeData := data.GetTome(tome.DataID)
+	reward.Cards = make([]data.DataId, 0, 6)
+	reward.NumRewarded = make([]int, 0, 6)
+
+	for i := 0; i < len(tomeData.GuaranteedRarities); i++ {
+		cardSlice := data.GetCardsByTieredRarity(tier, rarities[i])
+
+		for j := 0; j < tomeData.GuaranteedRarities[i]; j++ {
+			if len(cardSlice) == 0 {
+				break
+			}
+
+			rand.Seed(time.Now().UTC().UnixNano())
+			index := rand.Intn(len(cardSlice))
+
+			card := cardSlice[index]
+
+			if index != (len(cardSlice) - 1) {
+				cardSlice[index] = cardSlice[len(cardSlice) - 1]
+			} 
+			cardSlice = cardSlice[:len(cardSlice) - 1]
+
+			reward.Cards = append(reward.Cards, card)
+			reward.NumRewarded = append(reward.NumRewarded, tomeData.CardsRewarded[i])
+		}
+	}
+
+	rand.Seed(time.Now().UTC().UnixNano())
+	reward.PremiumCurrency = tomeData.MinPremiumReward + rand.Intn(tomeData.MaxPremiumReward - tomeData.MinPremiumReward)
+	reward.StandardCurrency = tomeData.MinStandardReward + rand.Intn(tomeData.MaxStandardReward - tomeData.MinStandardReward)
+
 	tome.DataID = data.ToDataId("")
 	tome.State = TomeEmpty
 	tome.UnlockTime = data.TicksToTime(0)
+
+	return
 }
 
 func (tome *Tome) UpdateTome() {

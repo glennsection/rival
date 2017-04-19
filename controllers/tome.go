@@ -60,7 +60,8 @@ func OpenTome(context *system.Context) {
 	}
 
 	// TODO add cards recieved from tome to context data
-	(&player.Tomes[index]).OpenTome()
+	reward := (&player.Tomes[index]).OpenTome(player.Level)
+	player.AddRewards(reward)
 
 	err := player.Update(context.DB)
 	if err != nil {
@@ -68,7 +69,7 @@ func OpenTome(context *system.Context) {
 		return
 	}
 
-	context.Data = &player.Tomes[index]
+	context.Data = reward
 }
 
 func RushTome(context *system.Context) {
@@ -87,7 +88,8 @@ func RushTome(context *system.Context) {
 	}
 
 	player.PremiumCurrency -= cost
-	(player.Tomes[index]).OpenTome()
+	reward := (player.Tomes[index]).OpenTome(player.Level)
+	player.AddRewards(reward)
 
 	err := player.Update(context.DB)
 	if err != nil {
@@ -95,20 +97,19 @@ func RushTome(context *system.Context) {
 		return
 	}
 
-	context.Data = &player.Tomes[index]
+	context.Data = reward
 }
 
 func ValidateTomeRequest(context *system.Context) (index int, player *models.Player, success bool) {
 	// initialize values
-	index = -1
 	player = context.GetPlayer()
 	success = false
 
 	// parse parameters
-	tomeId := context.Params.GetRequiredInt("tomeId")
+	index = context.Params.GetRequiredInt("tomeId")
 
 	// make sure the tome exists
-	if tomeId >= len(player.Tomes) || tomeId < 0 || player.Tomes[tomeId].State == models.TomeEmpty {
+	if index >= len(player.Tomes) || index < 0 || player.Tomes[index].State == models.TomeEmpty {
 		context.Fail("Tome does not exist")
 		return 
 	}

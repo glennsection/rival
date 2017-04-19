@@ -11,14 +11,14 @@ type CardData struct {
 	Name                    string        `json:"id"`
 	Portrait                string        `json:"portrait"`
 	Rarity                  string        `json:"rarity"`
-	Tier                    int           `json:"tier"`
+	Tier                    int           `json:"tier,string"`
 	Type                    string        `json:"type"`
 	Units                   []string      `json:"units"`
-	UnitCount               int           `json:"numUnits"`
-	ManaCost                int           `json:"manaCost"`
-	Cooldown                int           `json:"cooldown"`
-	AwakenGamesNeeded       int           `json:"awakenGamesNeeded"`
-	AwakenLeaderGamesNeeded int           `json:"awakenLeaderGamesNeeded"`
+	UnitCount               int           `json:"numUnits,string"`
+	ManaCost                int           `json:"manaCost,string"`
+	Cooldown                int           `json:"cooldown,string"`
+	AwakenGamesNeeded       int           `json:"awakenGamesNeeded,string"`
+	AwakenLeaderGamesNeeded int           `json:"awakenLeaderGamesNeeded,string"`
 }
 
 // data map
@@ -59,6 +59,18 @@ func LoadCards(raw []byte) {
 // get card by server ID
 func GetCard(id DataId) (card *CardData) {
 	return cards[id]
+}
+
+func GetCardsByTieredRarity(tier int, rarity string) []DataId {
+	cardSlice := make([]DataId, 0)
+
+	for id, cardData := range cards {
+		if cardData.Tier <= tier && cardData.Rarity == rarity {
+			cardSlice = append(cardSlice, id)
+		}
+	}
+
+	return cardSlice
 }
 
 func (data *CardData) GetPortraitSrc() string {

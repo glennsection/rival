@@ -2,11 +2,12 @@ package data
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"encoding/json"
 )
 
-type TomeData struct {
+type RawTomeData struct {
 	Name                    string        `json:"id"`
 	Image                   string        `json:"icon"`
 	Rarity                  string        `json:"rarity"`
@@ -16,8 +17,22 @@ type TomeData struct {
 	MaxPremiumReward		int 		  `json:"maxGemReward,string"`
 	MinStandardReward		int 		  `json:"minGoldReward,string"`
 	MaxStandardReward		int 		  `json:"maxGoldReward,string"`
-	GuaranteedRarities		[]int		  `json:"guaranteedRarities,string"`
-	CardsRewarded			[]int		  `json:"cardsRewarded,string"`
+	GuaranteedRarities		string		  `json:"guaranteedRarities"`
+	CardsRewarded			string		  `json:"cardsRewarded"`
+}
+
+type TomeData struct {
+	Name                    string 
+	Image                   string
+	Rarity                  string
+	TimeToUnlock			int
+	GemsToUnlock			int
+	MinPremiumReward		int
+	MaxPremiumReward		int 
+	MinStandardReward		int
+	MaxStandardReward		int 
+	GuaranteedRarities		[]int
+	CardsRewarded			[]int
 }
 
 // data map
@@ -30,7 +45,41 @@ func (data *TomeData) GetDataName() string {
 
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type TomesParsed struct {
-	Tomes []TomeData
+	Tomes []RawTomeData
+}
+
+func (rawTomeData *RawTomeData) ToTomeData() (tomeData *TomeData) {
+	tomeData = &TomeData{
+		Name: rawTomeData.Name,
+		Image: rawTomeData.Image,
+		Rarity: rawTomeData.Rarity,
+		TimeToUnlock: rawTomeData.TimeToUnlock,
+		GemsToUnlock: rawTomeData.GemsToUnlock,
+		MinPremiumReward: rawTomeData.MinPremiumReward,
+		MaxPremiumReward: rawTomeData.MaxPremiumReward,
+		MinStandardReward: rawTomeData.MinStandardReward,
+		MaxStandardReward: rawTomeData.MaxStandardReward,
+		GuaranteedRarities: []int {0, 0, 0, 0},
+		CardsRewarded: []int {0, 0, 0, 0},
+	}
+
+	// convert string formatted array to []int
+	guaranteedRarities := strings.FieldsFunc(rawTomeData.GuaranteedRarities, func (r rune) bool {
+		return r == '[' || r == ',' || r == ']'
+	})
+	for i, num := range guaranteedRarities {
+		tomeData.GuaranteedRarities[i], _ = strconv.Atoi(num)
+	}
+
+	// convert string formatted array to []int
+	cardsRewarded := strings.FieldsFunc(rawTomeData.CardsRewarded, func (r rune) bool {
+		return r == '[' || r == ',' || r == ']'
+	})
+	for i, num := range cardsRewarded {
+		tomeData.CardsRewarded[i], _ = strconv.Atoi(num)
+	}
+
+	return
 }
 
 // data processor
@@ -41,8 +90,9 @@ func LoadTomes(raw []byte) {
 
 	// enter into system data
 	tomes = map[DataId]*TomeData {}
-	for i, tome := range container.Tomes {
-		name := tome.GetDataName()
+	for _, tome := range container.Tomes {
+		tomeData := tome.ToTomeData()
+		name := tomeData.GetDataName()
 
 		// map name to ID
 		id, err := mapDataName(name)
@@ -51,7 +101,7 @@ func LoadTomes(raw []byte) {
 		}
 
 		// insert into table
-		tomes[id] = &container.Tomes[i]
+		tomes[id] = tomeData
 	}
 }
 

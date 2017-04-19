@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoding/json"
-
+	"bloodtales/data"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -88,4 +88,34 @@ func (player *Player) Update(database *mgo.Database) (err error) {
 	// update entire player to database
 	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
 	return
+}
+
+func (player *Player) AddRewards(reward *TomeReward) {
+	player.PremiumCurrency += reward.PremiumCurrency
+	player.StandardCurrency += reward.StandardCurrency
+
+	// since we can have up to 6 cards rewarded and they're unsorted, it can take up to O(6n) to see if our card
+	// list already contains the cards we want to add. if we instead create a map of indexes to cards, we incur a 
+	// cost of O(n) to create the map, and then have O(1) access time thereafter at the cost of memory
+	cardMap := map[data.DataId]int {}
+	for index, card := range player.Cards {
+		cardMap[card.DataID] = index
+	}
+
+	for i, id := range reward.Cards {
+		//update the card if we already have it, otherwise instantiate a new one and add it in
+		if index, hasCard := cardMap[id]; hasCard {
+			player.Cards[index].CardCount += reward.NumRewarded[i]
+		} else {
+			card := Card{
+				DataID: id,
+				Level: 1,
+				CardCount: reward.NumRewarded[i],
+				WinCount: 0,
+				LeaderWinCount: 0,
+			}
+
+			player.Cards = append(player.Cards, card)
+		}
+	}
 }
