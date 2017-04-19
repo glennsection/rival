@@ -12,23 +12,25 @@ import (
 const PlayerCollectionName = "players"
 
 type Player struct {
-	ID               bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	UserID           bson.ObjectId `bson:"us" json:"-"`
-	Name             string        `bson:"nm" json:"name"`
-	Level            int           `bson:"lv" json:"level"`
-	Rank             int           `bson:"rk" json:"rank"`
-	Rating           int           `bson:"rt" json:"rating"`
-	WinCount       	 int           `bson:"wc" json:"winCount"`
-	LossCount        int           `bson:"lc" json:"lossCount"`
-	MatchCount       int           `bson:"mc" json:"matchCount"`
+	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
+	Name            	string        `bson:"nm" json:"name"`
+	Level           	int           `bson:"lv" json:"level"`
+	Rank            	int           `bson:"rk" json:"rank"`
+	Rating          	int           `bson:"rt" json:"rating"`
+	WinCount       		int           `bson:"wc" json:"winCount"`
+	LossCount       	int           `bson:"lc" json:"lossCount"`
+	MatchCount       	int           `bson:"mc" json:"matchCount"`
 
-	StandardCurrency int           `bson:"cs" json:"standardCurrency"`
-	PremiumCurrency  int           `bson:"cp" json:"premiumCurrency"`
-	Cards            []Card        `bson:"cd" json:"cards"`
-	Decks            []Deck        `bson:"ds" json:"decks"`
-	CurrentDeck      int           `bson:"dc" json:"currentDeck"`
-	Tomes            []Tome        `bson:"tm" json:"tomes"`
-	ArenaPoints		 int 		   `bson:"ap" json:"arenaPoints"`
+	StandardCurrency 	int           `bson:"cs" json:"standardCurrency"`
+	PremiumCurrency 	int           `bson:"cp" json:"premiumCurrency"`
+	Cards           	[]Card        `bson:"cd" json:"cards"`
+	Decks           	[]Deck        `bson:"ds" json:"decks"`
+	CurrentDeck      	int           `bson:"dc" json:"currentDeck"`
+	Tomes           	[]Tome        `bson:"tm" json:"tomes"`
+	ArenaPoints		 	int 		  `bson:"ap" json:"arenaPoints"`
+	FreeTomes		 	int 		  `bson:"ft" json:"freeTomes"`
+	FreeTomeUnlockTime  int 		  `bson:"fu" json:"freeTomeUnlockTime"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
