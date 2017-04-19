@@ -28,6 +28,7 @@ type Player struct {
 	Decks            []Deck        `bson:"ds" json:"decks"`
 	CurrentDeck      int           `bson:"dc" json:"currentDeck"`
 	Tomes            []Tome        `bson:"tm" json:"tomes"`
+	ArenaPoints		 int 		   `bson:"ap" json:"arenaPoints"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
