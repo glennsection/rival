@@ -1,10 +1,13 @@
 package models
 
 import (
+	"fmt"
 	"encoding/json"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
+	"bloodtales/data"
 )
 
 const PlayerCollectionName = "players"
@@ -88,4 +91,31 @@ func (player *Player) Update(database *mgo.Database) (err error) {
 	// update entire player to database
 	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
 	return
+}
+
+func (player *Player) Delete(database *mgo.Database) (err error) {
+	// delete player from database
+	return database.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
+}
+
+func (player *Player) GetRankData() *data.RankData {
+	return data.GetRank(player.Rank)
+}
+
+func (player *Player) GetRankTier() int {
+	rank := player.GetRankData()
+	if rank != nil {
+		return rank.GetTier()
+	}
+	return 0
+}
+
+func (player *Player) GetRankName() string {
+	rank := player.GetRankData()
+	if rank != nil {
+		tier := rank.GetTier()
+		rankInTier := rank.Level - (tier - 1) * 5
+		return fmt.Sprintf("Tier %d Rank %d", tier, rankInTier)
+	}
+	return "Unranked"
 }

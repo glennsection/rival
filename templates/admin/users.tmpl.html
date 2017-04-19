@@ -32,7 +32,10 @@
 											<td>{{ $user.ID.Hex }}</td>
 											<td>{{ $user.Username }}</td>
 											<td>{{ $user.Login }}</td>
-											<td><a href="/admin/users/edit?userId={{ $user.ID.Hex }}">View</a></td>
+											<td>
+												<a href="/admin/users/edit?userId={{ $user.ID.Hex }}">View</a> |
+												<a href="/admin/users/delete?userId={{ $user.ID.Hex }}">Delete</a>
+											</td>
 										</tr>
 										{{ end }}
 									</tbody>

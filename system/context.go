@@ -29,6 +29,7 @@ type Context struct {
 	Request     *http.Request        `json:"-"`
 	Params      *Stream              `json:"-"`
 	User		*models.User         `json:"-"`
+	Template    string               `json:"-"`
 
 	Token       string               `json:"token"`
 	Success     bool                 `json:"success"`
@@ -126,14 +127,24 @@ func (context *Context) Fail(message string) {
 	context.Message(message)
 }
 
-func (context *Context) BeginRequest(authType AuthenticationType) {
+func (context *Context) Redirect(path string, responseCode int) {
+	http.Redirect(context.responseWriter, context.Request, path, responseCode)
+}
+
+func (context *Context) BeginRequest(authType AuthenticationType, template string) {
+	// remember defined template
+	context.Template = template
+
 	// initial request logging
 	switch context.Config.Logging.Requests {
 	case config.BriefLogging:
 		// log basic request info with truncated query
-		query, _ := url.QueryUnescape(context.Request.URL.RawQuery)
-		query = strings.Replace(query, "\r\n", "", -1)
-		message := log.Sprintf("[cyan]Request received: %v/%v?%v[-]", context.Request.Host, context.Request.URL.Path, query)
+		query := context.Request.URL.RawQuery
+		if query != "" {
+			query, _ = url.QueryUnescape(context.Request.URL.RawQuery)
+			query = "?" + strings.Replace(query, "\r\n", "", -1)
+		}
+		message := log.Sprintf("[cyan]Request received: %v/%v%v[-]", context.Request.Host, context.Request.URL.Path, query)
 		if len(message) > 472 {
 			message = message[:472] + "..."
 		}
@@ -141,10 +152,7 @@ func (context *Context) BeginRequest(authType AuthenticationType) {
 		log.Println(message)
 	case config.FullLogging:
 		// get formatted request dump to log
-		dump, err := httputil.DumpRequest(context.Request, true)
-		if err != nil {
-			panic(err)
-		}
+		dump, _ := httputil.DumpRequest(context.Request, true)
 
 		log.Printf("[cyan]Request received: %q[-]", dump)
 	}
@@ -156,7 +164,7 @@ func (context *Context) BeginRequest(authType AuthenticationType) {
 	}
 }
 
-func (context *Context) EndRequest(startTime time.Time, template string) {
+func (context *Context) EndRequest(startTime time.Time) {
 	// cleanup
 	defer context.DBSession.Close()
 
@@ -170,7 +178,7 @@ func (context *Context) EndRequest(startTime time.Time, template string) {
 	// check if any custom response was written
 	if context.responseWritten {
 		// nothing left to do...
-	} else if template != "" {
+	} else if context.Template != "" {
 		// HTML escape messages
 		for i, message := range context.Messages {
 			context.Messages[i] = html.EscapeString(message)
@@ -178,7 +186,10 @@ func (context *Context) EndRequest(startTime time.Time, template string) {
 
 		// render template to buffer
 		var output bytes.Buffer
-		err := context.Application.templates.ExecuteTemplate(&output, template, context)
+		err := context.Application.templates.ExecuteTemplate(&output, context.Template, context)
+		if templateErr := recover(); templateErr != nil {
+			err = templateErr.(error)
+		}
 
 		var responseString string
 		if err == nil {
@@ -186,7 +197,7 @@ func (context *Context) EndRequest(startTime time.Time, template string) {
 			responseString = output.String()
 		} else {
 			// respond with error
-			responseString = fmt.Sprintf("Processing template (%v): %v", template, err)
+			responseString = fmt.Sprintf("Processing template (%v): %v", context.Template, err)
 
 			log.Error(responseString)
 		}

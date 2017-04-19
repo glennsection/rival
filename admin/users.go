@@ -9,6 +9,7 @@ import (
 func handleAdminUsers(application *system.Application) {
 	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
 	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
+	handleAdminTemplate(application, "/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
 }
 
 func ShowUsers(context *system.Context) {
@@ -87,11 +88,48 @@ func EditUser(context *system.Context) {
 			player.Rank = rank
 		}
 
+		winCount := context.Params.GetInt("winCount", -1)
+		if winCount >= 0 {
+			player.WinCount = winCount
+		}
+
+		lossCount := context.Params.GetInt("lossCount", -1)
+		if lossCount >= 0 {
+			player.LossCount = lossCount
+		}
+
+		matchCount := context.Params.GetInt("matchCount", -1)
+		if matchCount >= 0 {
+			player.MatchCount = matchCount
+		}
+
 		player.Update(context.DB)
+
+		context.Message("Player updated!")
 	}
 	
 	// set template bindings
 	context.Data = user
 	context.Params.Set("user", user)
 	context.Params.Set("player", player)
+}
+
+func DeleteUser(context *system.Context) {
+	// parse parameters
+	userId := context.Params.GetRequiredID("userId")
+
+	user, err := models.GetUserById(context.DB, userId)
+	if err != nil {
+		panic(err)
+	}
+
+	player, err := models.GetPlayerByUser(context.DB, userId)
+	if err != nil {
+		panic(err)
+	}
+
+	user.Delete(context.DB)
+	player.Delete(context.DB)
+
+	context.Redirect("/admin/users", 301)
 }

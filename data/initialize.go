@@ -18,6 +18,7 @@ func Load() {
 	// ------------------------------------------
 	loadDataFile("Cards", LoadCards)
 	loadDataFile("Tomes", LoadTomes)
+	loadDataFile("PvPRanking", LoadRanks)
 	// ------------------------------------------
 }
 

@@ -19,7 +19,7 @@ func ShowLeaderboard(context *system.Context) {
 	page := context.Params.GetInt("page", 1)
 
 	// paginate players query (TODO - use redis!)
-	query, pages, err := util.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rt"), DefaultPageSize, page)
+	query, pages, err := util.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rk"), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}

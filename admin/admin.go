@@ -9,7 +9,7 @@ import (
 var DefaultPageSize int = 20
 
 func HandleAdmin(application *system.Application) {
-	application.Redirect("/admin", "/admin/home")
+	application.Redirect("/admin", "/admin/home", 301)
 	handleAdminTemplate(application, "/admin/home", system.NoAuthentication, Home, "dashboard.tmpl.html")
 	handleAdminTemplate(application, "/admin/login", system.PasswordAuthentication, Login, "dashboard.tmpl.html")
 	handleAdminTemplate(application, "/admin/logout", system.NoAuthentication, Logout, "dashboard.tmpl.html")

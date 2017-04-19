@@ -283,8 +283,13 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 
 	case MatchRanked:
 		// update stats
-		player.Rank += int(match.Outcome)
-		opponent.Rank -= int(match.Outcome)
+		rankChange := int(match.Outcome)
+		if rankChange > 0 || player.GetRankTier() > 1 {
+			player.Rank += rankChange
+		}
+		if rankChange < 0 || opponent.GetRankTier() > 1 {
+			opponent.Rank -= rankChange
+		}
 
 	case MatchElite:
 		// get k-factor

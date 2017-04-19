@@ -70,9 +70,14 @@ func InsertUser(database *mgo.Database, username string, password string, admin 
 }
 
 func (user *User) Update(database *mgo.Database) (err error) {
-	// update entire player to database
+	// update user in database
 	_, err = database.C(UserCollectionName).Upsert(bson.M { "_id": user.ID }, user)
 	return
+}
+
+func (user *User) Delete(database *mgo.Database) (err error) {
+	// delete user from database
+	return database.C(UserCollectionName).Remove(bson.M { "_id": user.ID })
 }
 
 func GetUserById(database *mgo.Database, id bson.ObjectId) (user *User, err error) {

@@ -7,17 +7,20 @@
 		</div>
 
 		<ul class="nav">
-			{{ range $index, $element := .Params.Get "links" }}
-				{{ if $element.Active }}
-					<li class="active">
-				{{ else }}
-					<li>
+			{{ $links := .Params.Get "links" }}
+			{{ if $links }}
+				{{ range $index, $element := $links }}
+					{{ if $element.Active }}
+						<li class="active">
+					{{ else }}
+						<li>
+					{{ end }}
+						<a href="{{ $element.URL }}">
+							<i class="{{ $element.Icon }}"></i>
+							<p>{{ $element.Name }}</p>
+						</a>
+					</li>
 				{{ end }}
-					<a href="{{ $element.URL }}">
-						<i class="{{ $element.Icon }}"></i>
-						<p>{{ $element.Name }}</p>
-					</a>
-				</li>
 			{{ end }}
 		</ul>
 	</div>

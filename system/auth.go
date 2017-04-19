@@ -5,6 +5,7 @@ package system
 import (
 	"time"
 	"fmt"
+	"errors"
 
 	"github.com/dgrijalva/jwt-go"
 
@@ -44,12 +45,13 @@ func (context *Context) authenticate(authType AuthenticationType) (err error) {
 			// authenticate user
 			context.User, err = models.LoginUser(context.DB, username, password)
 			if context.User == nil {
-				panic(fmt.Sprintf("Invalid authentication information for username: %v (%v)", username, err))
+				err = errors.New(fmt.Sprintf("Invalid authentication information for username: %v (%v)", username, err))
+				return
 			}
 
 			err = context.AppendToken()
 		} else {
-			panic("Invalid authentication method")
+			err = errors.New("Invalid authentication method")
 		}
 	} else {
 		if allowToken {
@@ -61,10 +63,9 @@ func (context *Context) authenticate(authType AuthenticationType) (err error) {
 			token, err = jwt.Parse(unparsedToken, func(token *jwt.Token) (interface{}, error) {
 				// validate the alg is what you expect
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					panic(fmt.Sprintf("Unexpected auth signing method: %v", token.Header["alg"]))
+					return nil, errors.New(fmt.Sprintf("Unexpected auth signing method: %v", token.Header["alg"]))
 				}
 
-				//return myLookupKey(token.Header["kid"]), nil  // what is this?????
 				return []byte(authTokenSecret), nil
 			})
 
@@ -80,7 +81,7 @@ func (context *Context) authenticate(authType AuthenticationType) (err error) {
 				}
 			}
 		} else {
-			panic("Invalid authentication method")
+			err = errors.New("Invalid authentication method")
 		}
 	}
 
