@@ -13,7 +13,7 @@
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-md-12">
-						<div class="card">
+						<div class="card leaderboard">
 							<div class="header">
 								<h4 class="title">Leaderboard</h4>
 								<p class="category">There Can Be Only One!</p>
@@ -27,12 +27,11 @@
 										<th>Losses</th>
 										<th>Rank</th>
 										<th>Rating</th>
-										<th></th>
 									</thead>
 									<tbody>
 										{{ range $index, $element := .Data }}
 										<tr>
-											<td>{{ $index }}</td>
+											<td>{{ add $index 1 }}</td>
 											<td>{{ $element.Name }}</td>
 											<td>{{ $element.WinCount }}</td>
 											<td>{{ $element.LossCount }}</td>

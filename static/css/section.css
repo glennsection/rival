@@ -1,3 +1,5 @@
+/* Cards */
+
 .game-card {
 	width: 300px;
 	height: 200px;
@@ -32,6 +34,7 @@
 	text-transform: uppercase;
 }
 
+/* Tomes */
 
 .game-tome {
 	width: 300px;
@@ -65,4 +68,28 @@
 
 .game-tome p span {
 	text-transform: uppercase;
+}
+
+/* Leaderboard */
+
+.card.leaderboard {
+	background: url("/static/img/landscape.png");
+	background-size: cover;
+	color: #ffffff;
+}
+
+.card.leaderboard h4.title {
+	color: #bb4646;
+}
+
+.card.leaderboard p.category {
+	color: #2f667b;
+}
+
+.card.leaderboard table.table > thead > tr > th {
+	color: #2f667b;
+}
+
+.card.leaderboard table.table-striped > tbody > tr:nth-of-type(odd) {
+	background-color: #b14b4b
 }
