@@ -25,6 +25,7 @@
 										<th>Name</th>
 										<th>Wins</th>
 										<th>Losses</th>
+										<th>Rank</th>
 										<th>Rating</th>
 										<th></th>
 									</thead>
@@ -35,6 +36,7 @@
 											<td>{{ $element.Name }}</td>
 											<td>{{ $element.WinCount }}</td>
 											<td>{{ $element.LossCount }}</td>
+											<td>{{ $element.GetRankName }}</td>
 											<td>{{ $element.Rating }}</td>
 										</tr>
 										{{ end }}

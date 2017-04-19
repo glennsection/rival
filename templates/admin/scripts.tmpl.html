@@ -21,8 +21,7 @@
 <script src="/static/js/demo.js"></script>
 
 <!-- Error Handling -->
-{{ if not .Success }}
-<p>ERROR</p>
+{{ if .Messages }}
 	<script type="text/javascript">
 		$(document).ready(function() {
 			{{ range $index, $message := .Messages }}
@@ -30,8 +29,12 @@
 						icon: "pe-7s-attention",
 						message: "{{ $message }}"
 					}, {
-						type: "danger",
-						timer: 4000,
+						{{ if $.Success }}
+							type: "info",
+						{{ else }}
+							type: "danger",
+						{{ end }}
+						timer: 4,
 						placement: {
 							from: "top",
 							align: "center"

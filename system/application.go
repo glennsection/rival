@@ -154,10 +154,10 @@ func (application *Application) handle(pattern string, authType AuthenticationTy
 		context := CreateContext(application, w, r)
 
 		// prepare request response
-		defer context.EndRequest(time.Now(), template)
+		defer context.EndRequest(time.Now())
 
 		// init context handling
-		context.BeginRequest(authType)
+		context.BeginRequest(authType, template)
 
 		// handle request
 		handler(context)
@@ -177,10 +177,10 @@ func (application *Application) Static(pattern string, path string) {
 	http.Handle(pattern, http.StripPrefix(pattern, fs))
 }
 
-func (application *Application) Redirect(pattern string, url string) {
+func (application *Application) Redirect(pattern string, url string, responseCode int) {
 	// redirect these requests
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, url, 302)
+		http.Redirect(w, r, url, responseCode)
 	})
 }
 

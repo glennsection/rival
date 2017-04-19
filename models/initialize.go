@@ -9,13 +9,14 @@ func Initialize(database *mgo.Database) {
 	ensureIndexUser(database)
 	ensureIndexPlayer(database)
 	ensureIndexTracking(database)
+	ensureIndexMatch(database)
 }
 
 // create new player data
 func (player *Player) Initialize() {
 	player.Level = 1
-	player.Rank = 1
-	player.Rating = 1200 // FIXME - initial chess ELO?
+	player.Rank = 0
+	player.Rating = 1200
 	player.WinCount = 0
 	player.LossCount = 0
 	player.MatchCount = 0
