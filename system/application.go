@@ -31,6 +31,11 @@ type Application struct {
 type EnvStreamSource struct {
 }
 
+func (source EnvStreamSource) Has(name string) bool {
+	_, ok := os.LookupEnv(name)
+	return ok
+}
+
 func (source EnvStreamSource) Set(name string, value interface{}) {
 	if err := os.Setenv(name, value.(string)); err != nil {
 		panic(err)

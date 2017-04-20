@@ -96,6 +96,14 @@ func (context *Context) Write(p []byte) (n int, err error) {
 	return context.responseWriter.Write(p)
 }
 
+func (source ContextStreamSource) Has(name string) bool {
+	// check bindings
+	source.mutex.RLock()
+	defer source.mutex.RUnlock()
+	_, ok := source.bindings[name]
+	return ok
+}
+
 func (source ContextStreamSource) Set(name string, value interface{}) {
 	// set bindings
 	source.mutex.Lock()

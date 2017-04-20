@@ -17,7 +17,7 @@ var (
 func (application *Application) LoadTemplates() error {
 	var templates []string
 
-	// gather all HTML templates
+	// filter to gather all HTML templates
 	fn := func(path string, f os.FileInfo, err error) error {
 		if f.IsDir() != true && strings.HasSuffix(f.Name(), ".html") {
 			templates = append(templates, path)
@@ -25,6 +25,7 @@ func (application *Application) LoadTemplates() error {
 		return nil
 	}
 
+	// gather all HTML templates
 	err := filepath.Walk("templates", fn)
 	if err != nil {
 		return err
@@ -35,6 +36,16 @@ func (application *Application) LoadTemplates() error {
 	return nil
 }
 
-func templateAdd(a, b int) string {
-    return fmt.Sprintf("%d", a + b)
+func templateAdd(a, b int) template.HTML {
+    return template.HTML(fmt.Sprintf("%d", a + b))
+}
+
+func (context *Context) Pagination() template.HTML {
+	if context.Params.Has("pagination") {
+		pagination := context.Params.Get("pagination").(*Pagination)
+		url := context.Request.URL
+		urlPattern := fmt.Sprintf("%s?page=\\%d", url.Path)
+		return pagination.Links(20, urlPattern)
+	}
+	return template.HTML("")
 }

@@ -2,7 +2,6 @@ package admin
 
 import (
 	"bloodtales/system"
-	"bloodtales/util"
 	"bloodtales/models"
 )
 
@@ -17,22 +16,21 @@ func ShowUsers(context *system.Context) {
 	page := context.Params.GetInt("page", 1)
 
 	// paginate users query
-	query, pages, err := util.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
+	pagination, err := system.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}
 
 	// get resulting users
 	var users []models.User
-	err = query.All(&users)
+	err = pagination.All(&users)
 	if err != nil {
 		panic(err)
 	}
 
 	// set template bindings
 	context.Data = users
-	context.Params.Set("page", page)
-	context.Params.Set("pages", pages)
+	context.Params.Set("pagination", pagination)
 }
 
 func EditUser(context *system.Context) {

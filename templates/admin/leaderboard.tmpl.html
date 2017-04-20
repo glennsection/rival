@@ -15,6 +15,9 @@
 					<div class="col-md-12">
 						<div class="card leaderboard">
 							<div class="header">
+								<div class="pull-right">
+									{{ .Pagination }}
+								</div>
 								<h4 class="title">Leaderboard</h4>
 								<p class="category">There Can Be Only One!</p>
 							</div>
@@ -25,8 +28,8 @@
 										<th>Name</th>
 										<th>Wins</th>
 										<th>Losses</th>
-										<th>Rank</th>
-										<th>Rating</th>
+										<th>Rank (Stars)</th>
+										<th>Rating (ELO)</th>
 									</thead>
 									<tbody>
 										{{ range $index, $element := .Data }}

@@ -25,6 +25,11 @@ var (
 	redisPassword  string = ""
 )
 
+func (source CacheStreamSource) Has(name string) bool {
+	ok, _ := redis.Bool(source.redis.Do("EXISTS", name))
+	return ok
+}
+
 func (source CacheStreamSource) Set(name string, value interface{}) {
 	_, err := source.redis.Do("SET", name, value)
 	if err != nil {
