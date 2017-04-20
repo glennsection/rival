@@ -1,4 +1,10 @@
 {
+	"Authentication": {
+		"Secret": "5UP3R-53CR3T-T0K3N"
+	},
+	"Sessions": {
+		"Secret": "gfd87sdfg-mj098gr-m0-ewrw0m89rfga"
+	},
 	"Logging": {
 		"Requests": "BriefLogging"
 	}

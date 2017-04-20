@@ -80,6 +80,7 @@
 
 .card.leaderboard h4.title {
 	color: #bb4646;
+	font-weight: bolder;
 }
 
 .card.leaderboard p.category {
@@ -92,4 +93,13 @@
 
 .card.leaderboard table.table-striped > tbody > tr:nth-of-type(odd) {
 	background-color: #b14b4b
+}
+
+.card.leaderboard table.table > tbody > tr {
+	text-shadow: 2px 2px 2px #000000;
+}
+
+.card.leaderboard table.table > tbody > tr > td.important {
+	font-weight: bolder;
+	font-size: 160%;
 }

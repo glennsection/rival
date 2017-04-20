@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+{{ template "header.tmpl.html" . }}
+<body>
+
+<div class="wrapper">
+	{{ template "sidebar.tmpl.html" . }}
+ 
+	<div class="main-panel">
+		{{ template "nav.tmpl.html" . }}
+
+		<div class="content">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="card">
+							<div class="header">
+								<h4 class="title">Admin Login</h4>
+								<p class="category">Please login with admin credentials</p>
+							</div>
+							<div class="content">
+								<form method="post" action="/admin/login/go">
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Username</label>
+												<input type="text" class="form-control" name="username" value="">
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Password</label>
+												<input type="password" class="form-control" name="password" value="">
+											</div>
+										</div>
+									</div>
+
+									<button type="submit" class="btn btn-info btn-fill pull-right">Login</button>
+									<div class="clearfix"></div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{{ template "footer.tmpl.html" . }}
+	</div>
+</div>
+
+{{ template "scripts.tmpl.html" . }}
+</body>
+
+</html>

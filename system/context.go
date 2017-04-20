@@ -14,6 +14,7 @@ import (
 	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
+	"github.com/gorilla/sessions"
 
 	"bloodtales/config"
 	"bloodtales/models"
@@ -25,6 +26,7 @@ type Context struct {
 	Config      *config.Config       `json:"-"`
 	DBSession   *mgo.Session         `json:"-"`
 	DB          *mgo.Database        `json:"-"`
+	Session     *sessions.Session    `json:"-"`
 	Cache       *Cache               `json:"-"`
 	Request     *http.Request        `json:"-"`
 	Params      *Stream              `json:"-"`
@@ -52,6 +54,9 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 	contextDBSession := application.dbSession.Copy()
 	contextDB := application.db.With(contextDBSession)
 
+	// create concurrent cookie session
+	cookieSession, _ := application.sessions.Get(r, "session")
+
 	// get concurrent cache connection
 	cache := application.GetCache()
 	defer cache.Close()
@@ -62,6 +67,7 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 		Config: &application.Config,
 		DBSession: contextDBSession,
 		DB: contextDB,
+		Session: cookieSession,
 		Cache: cache,
 		Request: r,
 
@@ -160,6 +166,8 @@ func (context *Context) BeginRequest(authType AuthenticationType, template strin
 	// authentication
 	err := context.authenticate(authType)
 	if err != nil {
+		context.Redirect("/admin", 302)
+
 		panic(fmt.Sprintf("Failed to authenticate user: %v", err))
 	}
 }

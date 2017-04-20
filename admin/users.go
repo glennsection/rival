@@ -131,5 +131,5 @@ func DeleteUser(context *system.Context) {
 	user.Delete(context.DB)
 	player.Delete(context.DB)
 
-	context.Redirect("/admin/users", 301)
+	context.Redirect("/admin/users", 302 )
 }

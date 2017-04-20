@@ -1,7 +1,7 @@
 <nav class="navbar navbar-default navbar-fixed">
 	<div class="container-fluid">
 		<div class="navbar-header">
-			<a class="navbar-brand" href="/admin">Blood Tales | Admin</a>
+			<a class="navbar-brand" href="/admin">BLOOD TALES</a>
 		</div>
 		<div class="collapse navbar-collapse">
 			<ul class="nav navbar-nav navbar-left">
@@ -32,16 +32,24 @@
 			</ul>
 
 			<ul class="nav navbar-nav navbar-right">
+				{{ if .Authenticated }}
 				<li>
 					 <a href="/admin/account">
-						 <p>Account</p>
+						<p>{{ .User.Username }} <i class="fa fa-user"></i></p>
 					</a>
 				</li>
 				<li>
 					<a href="/admin/logout">
-						<p>Log out</p>
+						<p>Logout</p>
 					</a>
 				</li>
+				{{ else }}
+				<li>
+					 <a href="/admin/login">
+						 <p>Login</p>
+					</a>
+				</li>
+				{{ end }}
 				<li class="separator hidden-lg hidden-md"></li>
 			</ul>
 		</div>

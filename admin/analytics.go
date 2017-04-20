@@ -11,7 +11,7 @@ type Analytics struct {
 }
 
 func handleAdminAnalytics(application *system.Application) {
-	handleAdminTemplate(application, "/admin/leaderboard", system.TokenAuthentication, ShowLeaderboard, "leaderboard.tmpl.html")
+	handleAdminTemplate(application, "/admin/leaderboard", system.NoAuthentication, ShowLeaderboard, "leaderboard.tmpl.html")
 }
 
 func ShowLeaderboard(context *system.Context) {

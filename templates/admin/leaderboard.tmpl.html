@@ -31,8 +31,8 @@
 									<tbody>
 										{{ range $index, $element := .Data }}
 										<tr>
-											<td>{{ add $index 1 }}</td>
-											<td>{{ $element.Name }}</td>
+											<td class="important">{{ add $index 1 }}</td>
+											<td class="important">{{ $element.Name }}</td>
 											<td>{{ $element.WinCount }}</td>
 											<td>{{ $element.LossCount }}</td>
 											<td>{{ $element.GetRankName }}</td>
