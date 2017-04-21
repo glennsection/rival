@@ -133,14 +133,14 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 }
 
 func (player *Player) UpdateRewards(database *mgo.Database) (err error){
-	currentTime := data.TimeToTicks(time.Now())
 	unlockTime := data.TicksToTime(player.FreeTomeUnlockTime)
 
-	for currentTime > player.FreeTomeUnlockTime && player.FreeTomes < 3 {
+	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
 		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
-		player.FreeTomeUnlockTime = data.TimeToTicks(unlockTime)
 		player.FreeTomes++
 	}
+
+	player.FreeTomeUnlockTime = data.TimeToTicks(unlockTime)
 
 	for i,_ := range player.Tomes {
 		(&player.Tomes[i]).UpdateTome()
