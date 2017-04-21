@@ -53,6 +53,22 @@ func Paginate(query *mgo.Query, limit int, page int) (pagination *Pagination, er
 	return pagination, err
 }
 
+func (pagination *Pagination) GetTotal() int {
+	return pagination.total
+}
+
+func (pagination *Pagination) GetLimit() int {
+	return pagination.limit
+}
+
+func (pagination *Pagination) GetPage() int {
+	return pagination.page
+}
+
+func (pagination *Pagination) GetPageTotal() int {
+	return pagination.pageTotal
+}
+
 func (pagination *Pagination) All(result interface{}) error {
 	return pagination.Query.All(result)
 }
@@ -60,6 +76,7 @@ func (pagination *Pagination) All(result interface{}) error {
 func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HTML {
 	var pages []*Page
 
+	// get first/last visible page links
 	if pagination.pageTotal > 1 {
 		pageStart := 1
 		pageEnd := 1
@@ -82,7 +99,7 @@ func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HT
 			}
 		}
 
-		for i := pageStart; i <= pageEnd; i++ {
+		for i := pageStart; i <= pageEnd; i++ { 
 			page := new(Page)
 
 			page.Number = i
@@ -93,16 +110,16 @@ func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HT
 		}
 	}
 
-	first := 1
+	// first visible element on page
+	first := 0
 	if pagination.total > 0 {
 		first = ((pagination.page - 1) * pagination.limit) + 1
 	}
 
-	last := 1
-	if ((pagination.page - 1) * pagination.limit) > (pagination.total - pagination.limit) {
+	// last visible element on page
+	last := first - 1 + pagination.limit
+	if last > pagination.total {
 		last = pagination.total
-	} else {
-		last = ((pagination.page - 1) * pagination.limit) + pagination.limit
 	}
 
 	// render template
@@ -111,18 +128,26 @@ func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HT
 	ctx := map[string]interface{}{
 		"first": first,
 		"last": last,
-		"total": first,
+		"total": pagination.total,
 		"links": pages,
 	}
 	tmpl.Execute(&out, ctx)
 	return template.HTML(out.String())
 }
 
-func (context *Context) Paginate(query *mgo.Query, limit int, page int) (pagination *Pagination, err error) {
+func (context *Context) Paginate(query *mgo.Query, limit int) (pagination *Pagination, err error) {
+	// parse parameters
+	page := context.Params.GetInt("page", 1)
+
 	pagination, err = Paginate(query, limit, page)
 
 	context.Params.Set("pagination", pagination)
 	return
+}
+
+func (context *Context) GetPagination() *Pagination {
+	pagination, _ := context.Params.Get("pagination").(*Pagination)
+	return pagination
 }
 
 func (context *Context) RenderPagination() template.HTML {

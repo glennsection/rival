@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"fmt"
+
 	"bloodtales/system"
 	"bloodtales/models"
 )
@@ -12,17 +14,14 @@ func handleAdminUsers(application *system.Application) {
 }
 
 func ShowUsers(context *system.Context) {
-	// parse parameters
-	page := context.Params.GetInt("page", 1)
-
 	// paginate users query
-	pagination, err := context.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
+	pagination, err := context.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize)
 	if err != nil {
 		panic(err)
 	}
 
 	// get resulting users
-	var users []models.User
+	var users []*models.User
 	err = pagination.All(&users)
 	if err != nil {
 		panic(err)
@@ -114,6 +113,7 @@ func EditUser(context *system.Context) {
 func DeleteUser(context *system.Context) {
 	// parse parameters
 	userId := context.Params.GetRequiredID("userId")
+	page := context.Params.GetInt("page", 1)
 
 	user, err := models.GetUserById(context.DB, userId)
 	if err != nil {
@@ -128,5 +128,5 @@ func DeleteUser(context *system.Context) {
 	user.Delete(context.DB)
 	player.Delete(context.DB)
 
-	context.Redirect("/admin/users", 302 )
+	context.Redirect(fmt.Sprintf("/admin/users?page=%d", page), 302)
 }

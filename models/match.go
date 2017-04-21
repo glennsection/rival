@@ -44,6 +44,7 @@ const (
 
 // server model
 type Match struct {
+	ID              bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	PlayerID     	bson.ObjectId `bson:"id1" json:"-"`
 	OpponentID      bson.ObjectId `bson:"id2,omitempty" json:"-"`
 	Type            MatchType     `bson:"tp" json:"-"`
@@ -52,6 +53,10 @@ type Match struct {
 	Outcome       	MatchOutcome  `bson:"oc" json:"outcome"`
 	StartTime	    time.Time     `bson:"t0" json:"-"`
 	EndTime	        time.Time     `bson:"t1" json:"-"`
+
+	// internal
+	player          *Player
+	opponent        *Player
 }
 
 // client model
@@ -136,10 +141,12 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 	} else {
 		// queue new match
 		match = &Match {
+			ID: bson.NewObjectId(),
 			PlayerID: player.ID,
 			Type: matchType,
 			RoomID: util.GenerateUUID(),
 			State: MatchOpen,
+			StartTime: time.Now(),
 		}
 	}
 
@@ -207,12 +214,57 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 	return
 }
 
+func (match *Match) LoadPlayers(database *mgo.Database) (err error) {
+	match.player, err = match.GetPlayer(database)
+	if err != nil {
+		return
+	}
+
+	match.opponent, err = match.GetOpponent(database)
+	return
+}
+
 func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error) {
-	return GetPlayerById(database, match.PlayerID)
+	if match.PlayerID.Valid() {
+		return GetPlayerById(database, match.PlayerID)
+	}
+	return nil, nil
+}
+
+func (match *Match) GetPlayerName() string {
+	if match.player != nil {
+		return match.player.Name
+	}
+	return "None"
 }
 
 func (match *Match) GetOpponent(database *mgo.Database) (player *Player, err error) {
-	return GetPlayerById(database, match.OpponentID)
+	if match.OpponentID.Valid() {
+		return GetPlayerById(database, match.OpponentID)
+	}
+	return nil, nil
+}
+
+func (match *Match) GetOpponentName() string {
+	if match.opponent != nil {
+		return match.opponent.Name
+	}
+	return "None"
+}
+
+func (match *Match) GetTypeName() string {
+	switch match.Type {
+	default:
+		return "Invalid"
+	case MatchUnranked:
+		return "Unranked"
+	case MatchRanked:
+		return "Ranked"
+	case MatchElite:
+		return "Elite"
+	case MatchTournament:
+		return "Tournament"
+	}
 }
 
 func (match *Match) GetStateName() string {
@@ -242,6 +294,22 @@ func parseStateName(name string) MatchState {
 		return MatchCompleting
 	case "Complete":
 		return MatchComplete
+	}
+}
+
+func (match *Match) GetOutcomeName() string {
+	switch match.State {
+	default:
+		return "-"
+	case MatchCompleting, MatchComplete:
+		switch match.Outcome {
+		default:
+			return "Draw"
+		case -1:
+			return "Player 2 Win"
+		case 1:
+			return "Player 1 Win"
+		}
 	}
 }
 
@@ -339,5 +407,14 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 		return
 	}
 	err = opponent.Update(database)
+	return
+}
+
+func (match *Match) Delete(database *mgo.Database) (err error) {
+	return database.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
+}
+
+func GetMatchById(database *mgo.Database, id bson.ObjectId) (match *Match, err error) {
+	err = database.C(MatchCollectionName).Find(bson.M { "_id": id } ).One(&match)
 	return
 }

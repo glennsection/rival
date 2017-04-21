@@ -18,26 +18,36 @@
 								<div class="pull-right">
 									{{ .RenderPagination }}
 								</div>
-								<h4 class="title">Players</h4>
-								<p class="category">The more the merrier</p>
+								<h4 class="title">Matches</h4>
+								<p class="category">Fight!</p>
 							</div>
 							<div class="content table-responsive table-full-width">
 								<table class="table table-hover table-striped">
 									<thead>
-										<th>ID</th>
-										<th>Name</th>
-										<th>Last Login</th>
+										<th>Type</th>
+										<th>State</th>
+										<th>Player 1</th>
+										<th>Player 2</th>
+										<th>Room</th>
+										<th>Start Time</th>
+										<th>End Time</th>
+										<th>Outcome</th>
 										<th></th>
 									</thead>
 									<tbody>
-										{{ range $index, $user := .Data }}
+										{{ range $index, $match := .Data }}
 										<tr>
-											<td>{{ $user.ID.Hex }}</td>
-											<td>{{ $user.Username }}</td>
-											<td>{{ $user.Login }}</td>
+											<td>{{ $match.GetTypeName }}</td>
+											<td>{{ $match.GetStateName }}</td>
+											<td>{{ $match.GetPlayerName }}</td>
+											<td>{{ $match.GetOpponentName }}</td>
+											<td>{{ $match.RoomID }}</td>
+											<td>{{ shortTime $match.StartTime }}</td>
+											<td>{{ shortTime $match.EndTime }}</td>
+											<td>{{ $match.GetOutcomeName }}</td>
 											<td>
-												<a href="/admin/users/edit?userId={{ $user.ID.Hex }}">Edit</a> |
-												<a href="/admin/users/delete?userId={{ $user.ID.Hex }}&page={{ $.GetPagination.GetPage }}">Delete</a>
+												<a href="/admin/matches/edit?matchId={{ $match.ID.Hex }}">Edit</a> |
+												<a href="/admin/matches/delete?matchId={{ $match.ID.Hex }}&page={{ $.GetPagination.GetPage }}">Delete</a>
 											</td>
 										</tr>
 										{{ end }}

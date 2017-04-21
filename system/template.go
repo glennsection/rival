@@ -2,6 +2,7 @@ package system
 
 import (
 	"os"
+	"time"
 	"strings"
 	"fmt"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 var (
 	templateFuncMap = template.FuncMap {
 		"add": templateAdd,
+		"shortTime": templateShortTime,
 	}
 )
 
@@ -37,5 +39,9 @@ func (application *Application) LoadTemplates() error {
 }
 
 func templateAdd(a, b int) template.HTML {
-    return template.HTML(fmt.Sprintf("%d", a + b))
+	return template.HTML(fmt.Sprintf("%d", a + b))
+}
+
+func templateShortTime(t time.Time) template.HTML {
+	return template.HTML(t.Format("02/01/2006 03:04 PM"))
 }

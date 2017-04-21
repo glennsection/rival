@@ -51,6 +51,11 @@ func initializeAdmin(context *system.Context) {
 			Icon: "pe-7s-cup",
 		},
 		{
+			Name: "Matches",
+			URL: "/admin/matches",
+			Icon: "pe-7s-joy",
+		},
+		{
 			Name: "Events",
 			URL: "/admin/events",
 			Icon: "pe-7s-timer",
