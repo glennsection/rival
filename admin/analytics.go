@@ -51,7 +51,7 @@ func ShowMatches(context *system.Context) {
 		panic(err)
 	}
 
-	// load players
+	// load players (FIXME)
 	// for _, match := range matches {
 	// 	err = match.LoadPlayers(context.DB)
 	// 	if err != nil {
