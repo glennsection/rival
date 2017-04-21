@@ -117,7 +117,7 @@ func (match *Match) UnmarshalJSON(raw []byte) error {
 
 func (match *Match) Update(database *mgo.Database) (err error) {
 	// update match in database
-	_, err = database.C(MatchCollectionName).Upsert(bson.M { "id1": match.PlayerID }, match)
+	_, err = database.C(MatchCollectionName).Upsert(bson.M { "_id": match.ID }, match)
 	return
 }
 
