@@ -28,6 +28,12 @@ func GetPlayer(context *system.Context) {
 	// get player
 	player := context.GetPlayer()
 	if player != nil {
+
+		err := player.UpdateRewards(context.DB)
+		if(err != nil) {
+			panic(err)
+		}
+		
 		// set successful response
 		context.Message("Found player")
 		context.Data = player
