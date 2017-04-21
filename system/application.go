@@ -9,7 +9,8 @@ import (
 	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
-	
+	"github.com/gorilla/sessions"
+
 	"bloodtales/config"
 	"bloodtales/data"
 	"bloodtales/models"
@@ -23,10 +24,16 @@ type Application struct {
 	// internal
 	dbSession        *mgo.Session
 	db               *mgo.Database
+	sessions         *sessions.CookieStore
 	templates        *template.Template
 }
 
 type EnvStreamSource struct {
+}
+
+func (source EnvStreamSource) Has(name string) bool {
+	_, ok := os.LookupEnv(name)
+	return ok
 }
 
 func (source EnvStreamSource) Set(name string, value interface{}) {
@@ -84,12 +91,16 @@ func (application *Application) Initialize() {
 	}
 	application.dbSession.SetSafe(&mgo.Safe {})
 
-	// connect to cache
-	application.initializeCache()
-
 	// get default database
 	dbname := application.Env.GetRequiredString("MONGODB_DB")
 	application.db = application.dbSession.DB(dbname)
+
+	// connect to cache
+	application.initializeCache()
+
+	// init sessions
+	sessionSecret := application.Config.Sessions.Secret
+	application.sessions = sessions.NewCookieStore([]byte(sessionSecret))
 
 	// init models using concurrent session (DB indexes, etc.)
 	tempSession := application.dbSession.Copy()

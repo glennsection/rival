@@ -46,6 +46,10 @@ func (context *Context) authenticate(authType AuthenticationType) error {
 	return nil
 }
 
+func (context *Context) Authenticated() bool {
+	return context.User != nil
+}
+
 func (context *Context) AppendToken() (err error) {
 	// create auth token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
@@ -59,4 +63,7 @@ func (context *Context) AppendToken() (err error) {
 	// sign and get the complete encoded token as string
 	context.Token, err = token.SignedString([]byte(authTokenSecret))
 	return
+}
+
+func (context *Context) ClearAuthentication() {
 }

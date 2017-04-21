@@ -10,9 +10,11 @@ var DefaultPageSize int = 20
 
 func HandleAdmin(application *system.Application) {
 	application.Redirect("/admin", "/admin/home", 301)
-	handleAdminTemplate(application, "/admin/home", system.NoAuthentication, Home, "dashboard.tmpl.html")
-	handleAdminTemplate(application, "/admin/login", system.PasswordAuthentication, Login, "dashboard.tmpl.html")
-	handleAdminTemplate(application, "/admin/logout", system.NoAuthentication, Logout, "dashboard.tmpl.html")
+	handleAdminTemplate(application, "/admin/home", system.NoAuthentication, Home, "home.tmpl.html")
+	handleAdminTemplate(application, "/admin/login", system.NoAuthentication, Login, "login.tmpl.html")
+	handleAdminTemplate(application, "/admin/login/go", system.PasswordAuthentication, Login, "login.tmpl.html")
+	handleAdminTemplate(application, "/admin/logout", system.NoAuthentication, Logout, "")
+	handleAdminTemplate(application, "/admin/dashboard", system.TokenAuthentication, Dashboard, "dashboard.tmpl.html")
 
 	handleAdminUsers(application)
 	handleAdminAnalytics(application)
@@ -35,7 +37,7 @@ func initializeAdmin(context *system.Context) {
 	} {
 		{
 			Name: "Dashboard",
-			URL: "/admin/home",
+			URL: "/admin/dashboard",
 			Icon: "pe-7s-graph2",
 		},
 		{
@@ -47,6 +49,11 @@ func initializeAdmin(context *system.Context) {
 			Name: "Leaderboard",
 			URL: "/admin/leaderboard",
 			Icon: "pe-7s-cup",
+		},
+		{
+			Name: "Matches",
+			URL: "/admin/matches",
+			Icon: "pe-7s-joy",
 		},
 		{
 			Name: "Events",
@@ -70,13 +77,31 @@ func initializeAdmin(context *system.Context) {
 }
 
 func Home(context *system.Context) {
+	if context.Authenticated() {
+		context.Redirect("/admin/dashboard", 302)
+	}
+}
+
+func Dashboard(context *system.Context) {
 }
 
 func Login(context *system.Context) {
-	context.Message("User logged in successfully")
+	// handle request method
+	switch context.Request.Method {
+	case "POST":
+		if context.Success {
+			context.Message("User logged in successfully")
+			context.Redirect("/admin/dashboard", 302)
+		} else {
+			context.Redirect("/admin/login", 302)
+		}
+	}
 }
 
 func Logout(context *system.Context) {
-	// TODO - clear cookie?
+	// clear auth token
+	context.ClearAuthentication()
+
 	context.Message("User logged out successfully")
+	context.Redirect("/admin", 302)
 }

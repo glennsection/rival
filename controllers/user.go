@@ -33,17 +33,24 @@ func UserRegister(context *system.Context) {
 		panic(err)
 	}
 
-	context.Message("User registered successfully")
+	if context.Success {
+		context.Message("User registered successfully")
+	}
 }
 
 func UserLogin(context *system.Context) {
-	context.Message("User logged in successfully")
+	if context.Success {
+		// analytics tracking (TODO - integrate with context)
+		//context.Track("Login", bson.M { "mood": "happy" })
+		
+		context.Message("User logged in successfully")
+	}
 }
 
 func UserLogout(context *system.Context) {
-	// TODO - clear token?
-
-	context.Message("User logged out successfully")
+	if context.Success {
+		context.Message("User logged out successfully")
+	}
 }
 
 func GetUser(context *system.Context) {

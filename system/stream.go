@@ -9,6 +9,7 @@ import (
 )
 
 type StreamSource interface {
+	Has(name string) bool
 	Set(name string, value interface{})
 	Get(name string) interface{}
 }
@@ -23,6 +24,10 @@ func missingStreamValue(name string) string {
 
 func invalidStreamValue(name string, value interface{}, err error) string {
 	return fmt.Sprintf("Invalid required value: \"%v\" = \"%v\" (%v)", name, value, err)
+}
+
+func (stream *Stream) Has(name string) bool {
+	return stream.source.Has(name)
 }
 
 func (stream *Stream) Set(name string, value interface{}) string {

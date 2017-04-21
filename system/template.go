@@ -2,6 +2,7 @@ package system
 
 import (
 	"os"
+	"time"
 	"strings"
 	"fmt"
 	"path/filepath"
@@ -11,13 +12,14 @@ import (
 var (
 	templateFuncMap = template.FuncMap {
 		"add": templateAdd,
+		"shortTime": templateShortTime,
 	}
 )
 
 func (application *Application) LoadTemplates() error {
 	var templates []string
 
-	// gather all HTML templates
+	// filter to gather all HTML templates
 	fn := func(path string, f os.FileInfo, err error) error {
 		if f.IsDir() != true && strings.HasSuffix(f.Name(), ".html") {
 			templates = append(templates, path)
@@ -25,6 +27,7 @@ func (application *Application) LoadTemplates() error {
 		return nil
 	}
 
+	// gather all HTML templates
 	err := filepath.Walk("templates", fn)
 	if err != nil {
 		return err
@@ -35,6 +38,10 @@ func (application *Application) LoadTemplates() error {
 	return nil
 }
 
-func templateAdd(a, b int) string {
-    return fmt.Sprintf("%d", a + b)
+func templateAdd(a, b int) template.HTML {
+	return template.HTML(fmt.Sprintf("%d", a + b))
+}
+
+func templateShortTime(t time.Time) template.HTML {
+	return template.HTML(t.Format("02/01/2006 03:04 PM"))
 }

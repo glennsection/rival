@@ -13,8 +13,14 @@ const (
 )
 
 type Config struct {
+	Authentication struct {
+		Secret            string           `json:"Secret"`
+	}                                      `json:"Authentication"`
+	Sessions struct {
+		Secret            string           `json:"Secret"`
+	}                                      `json:"Sessions"`
 	Logging struct {
-		Requests LogLevel                  `json:"Requests"`
+		Requests          LogLevel         `json:"Requests"`
 	}                                      `json:"Logging"`
 }
 
