@@ -10,6 +10,7 @@ func HandleTome(application *system.Application) {
 	application.HandleAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
 	application.HandleAPI("/tome/open", system.TokenAuthentication, OpenTome)
 	application.HandleAPI("/tome/rush", system.TokenAuthentication, RushTome)
+	application.HandleAPI("/tome/free", system.TokenAuthentication, ClaimFreeTome)
 }
 
 func UnlockTome(context *system.Context) {
@@ -59,11 +60,7 @@ func OpenTome(context *system.Context) {
 		return
 	}
 
-	// TODO add cards recieved from tome to context data
-	reward := (&player.Tomes[index]).OpenTome(player.Level)
-	player.AddRewards(reward)
-
-	err := player.Update(context.DB)
+	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
 	if err != nil {
 		panic(err)
 		return
@@ -88,12 +85,27 @@ func RushTome(context *system.Context) {
 	}
 
 	player.PremiumCurrency -= cost
-	reward := (player.Tomes[index]).OpenTome(player.Level)
-	player.AddRewards(reward)
 
-	err := player.Update(context.DB)
+	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
 	if err != nil {
 		panic(err)
+		return
+	}
+
+	context.Data = reward
+}
+
+func ClaimFreeTome(context *system.Context) {
+	player := context.GetPlayer()
+	reward, err := player.ClaimFreeReward(context.DB)
+
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	if(reward == nil) {
+		context.Fail("No free tomes available")
 		return
 	}
 

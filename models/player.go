@@ -1,6 +1,7 @@
 package models
 
 import (
+	"time"
 	"fmt"
 	"encoding/json"
 	"gopkg.in/mgo.v2"
@@ -10,6 +11,7 @@ import (
 )
 
 const PlayerCollectionName = "players"
+const MinutesToUnlockFreeTome = 240
 
 type Player struct {
 	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
@@ -30,7 +32,7 @@ type Player struct {
 	Tomes           	[]Tome        `bson:"tm" json:"tomes"`
 	ArenaPoints		 	int 		  `bson:"ap" json:"arenaPoints"`
 	FreeTomes		 	int 		  `bson:"ft" json:"freeTomes"`
-	FreeTomeUnlockTime  int 		  `bson:"fu" json:"freeTomeUnlockTime"`
+	FreeTomeUnlockTime  int64 		  `bson:"fu" json:"freeTomeUnlockTime"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -95,7 +97,8 @@ func (player *Player) Update(database *mgo.Database) (err error) {
 	return
 }
 
-func (player *Player) AddRewards(reward *TomeReward) {
+func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *TomeReward, err error) {
+	reward = tome.OpenTome(player.Level)
 	player.PremiumCurrency += reward.PremiumCurrency
 	player.StandardCurrency += reward.StandardCurrency
 
@@ -123,6 +126,53 @@ func (player *Player) AddRewards(reward *TomeReward) {
 			player.Cards = append(player.Cards, card)
 		}
 	}
+
+	err = player.Update(database)
+	
+	return
+}
+
+func (player *Player) UpdateRewards(database *mgo.Database) (err error){
+	currentTime := data.TimeToTicks(time.Now())
+	unlockTime := data.TicksToTime(player.FreeTomeUnlockTime)
+
+	for currentTime > player.FreeTomeUnlockTime && player.FreeTomes < 3 {
+		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
+		player.FreeTomeUnlockTime = data.TimeToTicks(unlockTime)
+		player.FreeTomes++
+	}
+
+	for i,_ := range player.Tomes {
+		(&player.Tomes[i]).UpdateTome()
+	}
+
+	err = player.Update(database)
+
+	return
+}
+
+func (player *Player) ClaimFreeReward(database *mgo.Database) (reward *TomeReward, err error) {
+	err = player.UpdateRewards(database)
+
+	if player.FreeTomes == 0 || err != nil {
+		return
+	}
+
+	if(player.FreeTomes == 3) {
+		player.FreeTomeUnlockTime = data.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
+	}
+
+	player.FreeTomes--
+	tome := &Tome {
+		DataID: data.ToDataId("TOME_COMMON"),
+	}
+
+	reward, err = player.AddRewards(database, tome) 
+	if err != nil {
+		panic(err)
+	}
+
+	return
 }
 
 func (player *Player) Delete(database *mgo.Database) (err error) {
