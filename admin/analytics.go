@@ -18,7 +18,7 @@ func ShowLeaderboard(context *system.Context) {
 	page := context.Params.GetInt("page", 1)
 
 	// paginate players query (TODO - use redis!)
-	pagination, err := system.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rk"), DefaultPageSize, page)
+	pagination, err := context.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rk"), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}
@@ -32,5 +32,4 @@ func ShowLeaderboard(context *system.Context) {
 
 	// set template bindings
 	context.Data = players
-	context.Params.Set("pagination", pagination)
 }

@@ -16,7 +16,7 @@ func ShowUsers(context *system.Context) {
 	page := context.Params.GetInt("page", 1)
 
 	// paginate users query
-	pagination, err := system.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
+	pagination, err := context.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize, page)
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +30,6 @@ func ShowUsers(context *system.Context) {
 
 	// set template bindings
 	context.Data = users
-	context.Params.Set("pagination", pagination)
 }
 
 func EditUser(context *system.Context) {

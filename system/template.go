@@ -39,13 +39,3 @@ func (application *Application) LoadTemplates() error {
 func templateAdd(a, b int) template.HTML {
     return template.HTML(fmt.Sprintf("%d", a + b))
 }
-
-func (context *Context) Pagination() template.HTML {
-	if context.Params.Has("pagination") {
-		pagination := context.Params.Get("pagination").(*Pagination)
-		url := context.Request.URL
-		urlPattern := fmt.Sprintf("%s?page=\\%d", url.Path)
-		return pagination.Links(20, urlPattern)
-	}
-	return template.HTML("")
-}

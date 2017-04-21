@@ -16,7 +16,7 @@
 						<div class="card leaderboard">
 							<div class="header">
 								<div class="pull-right">
-									{{ .Pagination }}
+									{{ .RenderPagination }}
 								</div>
 								<h4 class="title">Leaderboard</h4>
 								<p class="category">There Can Be Only One!</p>
@@ -34,8 +34,8 @@
 									<tbody>
 										{{ range $index, $element := .Data }}
 										<tr>
-											<td class="important">{{ add $index 1 }}</td>
-											<td class="important">{{ $element.Name }}</td>
+											<td>{{ add $index 1 }}</td>
+											<td><a href="/admin/users/edit?userId={{ $element.UserID.Hex }}">{{ $element.Name }}</a></td>
 											<td>{{ $element.WinCount }}</td>
 											<td>{{ $element.LossCount }}</td>
 											<td>{{ $element.GetRankName }}</td>

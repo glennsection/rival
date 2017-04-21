@@ -20,9 +20,9 @@ type Pagination struct {
 }
 
 type Page struct {
-	Number      int        `json:"number"`
-	Active      bool       `json:"active"`
-	Link        string     `json:"link"`
+	Number      int
+	Active      bool
+	Link        string
 }
 
 func Paginate(query *mgo.Query, limit int, page int) (pagination *Pagination, err error) {
@@ -93,19 +93,52 @@ func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HT
 		}
 	}
 
+	first := 1
+	if pagination.total > 0 {
+		first = ((pagination.page - 1) * pagination.limit) + 1
+	}
+
+	last := 1
+	if ((pagination.page - 1) * pagination.limit) > (pagination.total - pagination.limit) {
+		last = pagination.total
+	} else {
+		last = ((pagination.page - 1) * pagination.limit) + pagination.limit
+	}
+
 	// render template
 	var out bytes.Buffer
 	tmpl := template.Must(template.New("pagination").Parse(paginationTemplate))
 	ctx := map[string]interface{}{
+		"first": first,
+		"last": last,
+		"total": first,
 		"links": pages,
 	}
 	tmpl.Execute(&out, ctx)
 	return template.HTML(out.String())
 }
 
+func (context *Context) Paginate(query *mgo.Query, limit int, page int) (pagination *Pagination, err error) {
+	pagination, err = Paginate(query, limit, page)
+
+	context.Params.Set("pagination", pagination)
+	return
+}
+
+func (context *Context) RenderPagination() template.HTML {
+	if context.Params.Has("pagination") {
+		pagination := context.Params.Get("pagination").(*Pagination)
+		url := context.Request.URL
+		urlPattern := fmt.Sprintf("%s?page=%%d", url.Path)
+		return pagination.Links(20, urlPattern)
+	}
+	return template.HTML("")
+}
+
 const (
 	paginationTemplate string = `
 {{ if .links }}
+	<span class="pagination-summary">{{ .first }} to {{ .last }} of {{ .total }}</span>
 	<ul class="pagination">
     {{ range .links }}
       	{{ if .Active }}
