@@ -95,6 +95,10 @@ span.pagination-summary {
 	color: #ffffff;
 }
 
+.card.leaderboard p > a {
+	color: #bb4646;
+}
+
 .card.leaderboard h4.title {
 	color: #bb4646;
 	font-weight: bolder;

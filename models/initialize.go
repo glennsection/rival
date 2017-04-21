@@ -22,8 +22,10 @@ func (player *Player) Initialize() {
 	player.MatchCount = 0
 	player.StandardCurrency = 1000
 	player.PremiumCurrency = 10
-	player.Cards = nil
-	player.Decks = nil
-	player.CurrentDeck = 0
-	player.Tomes = nil
+
+	// TODO - eventually we will set all these up too...
+	//player.Cards = nil
+	//player.Decks = nil
+	//player.CurrentDeck = 0
+	//player.Tomes = nil
 }

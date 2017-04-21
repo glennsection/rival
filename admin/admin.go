@@ -90,8 +90,13 @@ func Login(context *system.Context) {
 	switch context.Request.Method {
 	case "POST":
 		if context.Success {
-			context.Message("User logged in successfully")
-			context.Redirect("/admin/dashboard", 302)
+			if context.User.Admin == true {
+				context.Message("User logged in successfully")
+				context.Redirect("/admin/dashboard", 302)
+			} else {
+				context.Fail("User is not an admin")
+				context.Redirect("/admin/login", 302)
+			}
 		} else {
 			context.Redirect("/admin/login", 302)
 		}

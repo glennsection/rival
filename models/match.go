@@ -115,10 +115,19 @@ func (match *Match) UnmarshalJSON(raw []byte) error {
 	return nil
 }
 
+func GetMatchById(database *mgo.Database, id bson.ObjectId) (match *Match, err error) {
+	err = database.C(MatchCollectionName).Find(bson.M { "_id": id } ).One(&match)
+	return
+}
+
 func (match *Match) Update(database *mgo.Database) (err error) {
 	// update match in database
 	_, err = database.C(MatchCollectionName).Upsert(bson.M { "_id": match.ID }, match)
 	return
+}
+
+func (match *Match) Delete(database *mgo.Database) (err error) {
+	return database.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
 }
 
 func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (match *Match, err error) {
@@ -214,15 +223,15 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 	return
 }
 
-func (match *Match) LoadPlayers(database *mgo.Database) (err error) {
-	match.player, err = match.GetPlayer(database)
-	if err != nil {
-		return
-	}
+// func (match *Match) LoadPlayers(database *mgo.Database) (err error) {
+// 	match.player, err = match.GetPlayer(database)
+// 	if err != nil {
+// 		return
+// 	}
 
-	match.opponent, err = match.GetOpponent(database)
-	return
-}
+// 	match.opponent, err = match.GetOpponent(database)
+// 	return
+// }
 
 func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error) {
 	if match.PlayerID.Valid() {
@@ -231,12 +240,12 @@ func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error
 	return nil, nil
 }
 
-func (match *Match) GetPlayerName() string {
-	if match.player != nil {
-		return match.player.Name
-	}
-	return "None"
-}
+// func (match *Match) GetPlayerName() string {
+// 	if match.player != nil {
+// 		return match.player.Name
+// 	}
+// 	return "None"
+// }
 
 func (match *Match) GetOpponent(database *mgo.Database) (player *Player, err error) {
 	if match.OpponentID.Valid() {
@@ -245,12 +254,12 @@ func (match *Match) GetOpponent(database *mgo.Database) (player *Player, err err
 	return nil, nil
 }
 
-func (match *Match) GetOpponentName() string {
-	if match.opponent != nil {
-		return match.opponent.Name
-	}
-	return "None"
-}
+// func (match *Match) GetOpponentName() string {
+// 	if match.opponent != nil {
+// 		return match.opponent.Name
+// 	}
+// 	return "None"
+// }
 
 func (match *Match) GetTypeName() string {
 	switch match.Type {
@@ -407,14 +416,5 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 		return
 	}
 	err = opponent.Update(database)
-	return
-}
-
-func (match *Match) Delete(database *mgo.Database) (err error) {
-	return database.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
-}
-
-func GetMatchById(database *mgo.Database, id bson.ObjectId) (match *Match, err error) {
-	err = database.C(MatchCollectionName).Find(bson.M { "_id": id } ).One(&match)
 	return
 }

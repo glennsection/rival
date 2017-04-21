@@ -33,13 +33,13 @@
 										<div class="col-md-4">
 											<div class="form-group">
 												<label>Player 1</label>
-												<input type="text" class="form-control" disabled value="{{ $match.GetPlayerName }}">
+												<input type="text" class="form-control" disabled value="{{ $.GetPlayerName $match.PlayerID }}">
 											</div>
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
 												<label>Player 2</label>
-												<input type="text" class="form-control" disabled value="{{ $match.GetOpponentName }}">
+												<input type="text" class="form-control" disabled value="{{ $.GetPlayerName $match.OpponentID }}">
 											</div>
 										</div>
 									</div>

@@ -39,8 +39,8 @@
 										<tr>
 											<td>{{ $match.GetTypeName }}</td>
 											<td>{{ $match.GetStateName }}</td>
-											<td>{{ $match.GetPlayerName }}</td>
-											<td>{{ $match.GetOpponentName }}</td>
+											<td>{{ $.GetPlayerName $match.PlayerID }}</td>
+											<td>{{ $.GetPlayerName $match.OpponentID }}</td>
 											<td>{{ $match.RoomID }}</td>
 											<td>{{ shortTime $match.StartTime }}</td>
 											<td>{{ shortTime $match.EndTime }}</td>

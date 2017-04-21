@@ -14,6 +14,7 @@ import (
 	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"github.com/gorilla/sessions"
 
 	"bloodtales/config"
@@ -59,7 +60,6 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 
 	// get concurrent cache connection
 	cache := application.GetCache()
-	defer cache.Close()
 
 	// create context
 	context := &Context {
@@ -126,6 +126,21 @@ func (source ContextStreamSource) Get(name string) interface{} {
 func (context *Context) GetPlayer() (player *models.Player) {
 	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
 	return
+}
+
+func (context *Context) GetPlayerName(playerID bson.ObjectId) string {
+	key := fmt.Sprintf("PlayerName:%s", playerID.Hex())
+
+	if context.Cache.Has(key) {
+		return context.Cache.GetRequiredString(key)
+	} else {
+		player, err := models.GetPlayerById(context.DB, playerID)
+		if err == nil && player != nil {
+			context.Cache.Set(key, player.Name)
+			return player.Name
+		}
+		return "[None]"
+	}
 }
 
 func (context *Context) Message(message string) {
