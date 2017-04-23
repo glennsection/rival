@@ -4,7 +4,7 @@
 <body>
 
 <div class="wrapper">
-    {{ template "sidebar.tmpl.html" . }}
+	{{ template "sidebar.tmpl.html" . }}
  
 	<div class="main-panel">
 		{{ template "nav.tmpl.html" . }}
@@ -37,7 +37,13 @@
 											<td>{{ $user.Login }}</td>
 											<td>
 												<a href="/admin/users/edit?userId={{ $user.ID.Hex }}">Edit</a> |
-												<a href="/admin/users/delete?userId={{ $user.ID.Hex }}&page={{ $.GetPagination.GetPage }}">Delete</a>
+												<a href="#"
+												data-href="/admin/users/delete?userId={{ $user.ID.Hex }}&page={{ $.GetPagination.GetPage }}"
+												data-toggle="modal"
+												data-body="Do you want to permanently delete the user: {{ $user.Username }}?"
+												data-confirm="Delete"
+												data-deny="Cancel"
+												data-target="#confirm-delete">Delete</a>
 											</td>
 										</tr>
 										{{ end }}
@@ -50,8 +56,8 @@
 			</div>
 		</div>
 
-        {{ template "footer.tmpl.html" . }}
-    </div>
+		{{ template "footer.tmpl.html" . }}
+	</div>
 </div>
 
 {{ template "scripts.tmpl.html" . }}

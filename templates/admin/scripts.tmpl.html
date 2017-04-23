@@ -20,7 +20,40 @@
 <!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
 <script src="/static/js/demo.js"></script>
 
-<!-- Error Handling -->
+<!-- Confirmation dialog HTML -->
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				
+			</div>
+			<div class="modal-body">
+				
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal"></button>
+				<a class="btn btn-danger btn-ok"></a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Confirmation dialog Javascript -->
+<script type="text/javascript">
+	$('#confirm-delete').on('show.bs.modal', function(e) {
+		var header = $(e.relatedTarget).data('header')
+		$(this).find('.modal-header').text(header === undefined ? "Are you sure?" : header)
+		var body = $(e.relatedTarget).data('body')
+		$(this).find('.modal-body').text(body === undefined ? "Please confirm you want to do this?" : body)
+		var deny = $(e.relatedTarget).data('deny')
+		$(this).find('.btn-default').text(deny === undefined ? "No" : deny)
+		var confirm = $(e.relatedTarget).data('confirm')
+		$(this).find('.btn-ok').text(confirm === undefined ? "Yes" : confirm)
+	    $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+	});
+</script>
+
+<!-- Notification flashes -->
 {{ if .Messages }}
 	<script type="text/javascript">
 		$(document).ready(function() {
