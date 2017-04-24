@@ -24,7 +24,7 @@ func UserRegister(context *system.Context) {
 		panic(err)
 	}
 	context.User = user
-	context.AppendToken()
+	context.AppendAuthToken()
 
 	// create player
 	player := models.CreatePlayer(user.ID, user.Username)

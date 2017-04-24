@@ -1,6 +1,9 @@
 {
 	"Authentication": {
-		"Secret": "5UP3R-53CR3T-T0K3N"
+		"OAuthID": "eefc1806-c4bd-487d-bfca-3c6ded4ff004",
+		"OAuthSecret": "4ebec3a8-22db-45bc-bd17-0b49fc3b16ab",
+		"OAuthStateToken": "evening-hamlet-43104",
+		"TokenSecret": "5UP3R-53CR3T-T0K3N"
 	},
 	"Sessions": {
 		"Secret": "gfd87sdfg-mj098gr-m0-ewrw0m89rfga"

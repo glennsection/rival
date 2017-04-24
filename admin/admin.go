@@ -105,7 +105,7 @@ func Login(context *system.Context) {
 
 func Logout(context *system.Context) {
 	// clear auth token
-	context.ClearAuthentication()
+	context.ClearAuthToken()
 
 	context.Message("User logged out successfully")
 	context.Redirect("/admin", 302)

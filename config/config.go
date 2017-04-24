@@ -14,10 +14,14 @@ const (
 
 type Config struct {
 	Authentication struct {
-		Secret            string           `json:"Secret"`
+		OAuthID           string           `json:"OAuthID"`
+		OAuthSecret       string           `json:"OAuthSecret"`
+		OAuthStateToken   string           `json:"OAuthStateToken"`
+
+		TokenSecret       string           `json:"TokenSecret"`
 	}                                      `json:"Authentication"`
 	Sessions struct {
-		Secret            string           `json:"Secret"`
+		CookieSecret      string           `json:"CookieSecret"`
 	}                                      `json:"Sessions"`
 	Logging struct {
 		Requests          LogLevel         `json:"Requests"`

@@ -18,14 +18,14 @@ import (
 )
 
 type Application struct {
-	Config           config.Config
-	Env              *Stream
+	Config		   config.Config
+	Env			  *Stream
 
 	// internal
-	dbSession        *mgo.Session
-	db               *mgo.Database
-	sessions         *sessions.CookieStore
-	templates        *template.Template
+	dbSession		*mgo.Session
+	db			   *mgo.Database
+	cookies		  *sessions.CookieStore
+	templates		*template.Template
 }
 
 type EnvStreamSource struct {
@@ -99,8 +99,10 @@ func (application *Application) Initialize() {
 	application.initializeCache()
 
 	// init sessions
-	sessionSecret := application.Config.Sessions.Secret
-	application.sessions = sessions.NewCookieStore([]byte(sessionSecret))
+	cookieSecret := application.Config.Sessions.CookieSecret
+	application.cookies = sessions.NewCookieStore([]byte(cookieSecret))
+	//application.cookies.MaxAge(60 * 60 * 8) // 8 hour expiration
+	//application.cookies.Options.Secure = true // secure for OAuth
 
 	// init models using concurrent session (DB indexes, etc.)
 	tempSession := application.dbSession.Copy()

@@ -56,7 +56,7 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 	contextDB := application.db.With(contextDBSession)
 
 	// create concurrent cookie session
-	cookieSession, _ := application.sessions.Get(r, "session")
+	cookieSession, _ := application.cookies.Get(r, "session")
 
 	// get concurrent cache connection
 	cache := application.GetCache()
@@ -88,6 +88,10 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 	}
 
 	return context
+}
+
+func (context *Context) SaveSession() error {
+	return context.Session.Save(context.Request, context.responseWriter)
 }
 
 func (context *Context) Write(p []byte) (n int, err error) {
