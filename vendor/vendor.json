@@ -22,7 +22,7 @@
 		},
 		{
 			"checksumSHA1": "FhQtBYq3/nSeuhKzWoHw26fkzng=",
-			"path": "golang.org/x/protobuf/proto",
+			"path": "github.com/golang/protobuf/proto",
 			"revision": "2bba0603135d7d7f5cb73b2125beeda19c09f4ef",
 			"revisionTime": "2017-03-31T03:19:02Z"
 		},
