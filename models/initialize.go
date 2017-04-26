@@ -1,6 +1,9 @@
 package models
 
 import (
+	"io/ioutil"
+	"encoding/json"
+
 	"gopkg.in/mgo.v2"
 )
 
@@ -14,18 +17,13 @@ func Initialize(database *mgo.Database) {
 
 // create new player data
 func (player *Player) Initialize() {
-	player.Level = 1
-	player.Rank = 0
-	player.Rating = 1200
-	player.WinCount = 0
-	player.LossCount = 0
-	player.MatchCount = 0
-	player.StandardCurrency = 1000
-	player.PremiumCurrency = 10
+	// template for initial player
+	path := "./resources/models/player.json"
 
-	// TODO - eventually we will set all these up too...
-	//player.Cards = nil
-	//player.Decks = nil
-	//player.CurrentDeck = 0
-	//player.Tomes = nil
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(file, player)
 }

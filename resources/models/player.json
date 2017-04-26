@@ -1,0 +1,177 @@
+{
+    "level": 1,
+    "rank": 0,
+    "rating": 1200,
+    "winCount": 0,
+    "lossCount": 0,
+    "matchCount": 0,
+    "standardCurrency": 1000,
+    "premiumCurrency": 10,
+    "cards": [
+        {
+            "cardId": "CARD_VAMPIRE",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_ARMORED_SKELETON",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MERC_CAPTAIN",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_ARMY_CAPTAIN",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MERC_SOLDIERS",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GARGOYLE",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GOLEM",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_SPELL_HARPY",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_SKULL_SWARM",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_EARTH_ELEMENTAL",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_WEREWOLF",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_SPELL_FROST_ORB",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_BOMB_ZOMBIE",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_DARK_MAGE",
+            "level": 1,
+            "cardCount": 1,
+            "winCount": 0,
+            "leaderWinCount": 0
+        }
+    ],
+    "decks": [
+        {
+            "leaderCardId": 10,
+            "cardIds": [
+                8,
+                12,
+                11,
+                9,
+                4,
+                5,
+                6,
+                7
+            ]
+        },
+        {
+            "leaderCardId": 10,
+            "cardIds": [
+                8,
+                12,
+                11,
+                9,
+                4,
+                5,
+                6,
+                7
+            ]
+        },
+        {
+            "leaderCardId": 10,
+            "cardIds": [
+                8,
+                12,
+                11,
+                9,
+                4,
+                5,
+                6,
+                7
+            ]
+        }
+    ],
+    "currentDeck": 0,
+    "tomes": [
+        {
+            "tomeId": "Invalid",
+            "state": "Empty",
+            "unlockTime": 0
+        },
+        {
+            "tomeId": "Invalid",
+            "state": "Empty",
+            "unlockTime": 0
+        },
+        {
+            "tomeId": "Invalid",
+            "state": "Empty",
+            "unlockTime": 0
+        },
+        {
+            "tomeId": "Invalid",
+            "state": "Empty",
+            "unlockTime": 0
+        }
+    ],
+    "arenaPoints": 0,
+    "freeTomes": 0,
+    "freeTomeUnlockTime": 0
+}
