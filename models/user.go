@@ -19,11 +19,16 @@ type User struct {
 	Email    string        `bson:"em,omitempty" json:"email,omitempty"`
 	Inserted time.Time     `bson:"ti" json:"inserted"`
 	Login    time.Time     `bson:"tl" json:"login"`
+
+	UUID     string        `bson:"uuid" json:"uuid,omitempty"`
+	Tag      string        `bson:"tag" json:"tag,omitempty"`
+	// TODO - Facebook, Game Center, Google Play IDs
 }
 
 func ensureIndexUser(database *mgo.Database) {
 	c := database.C(UserCollectionName)
 
+	// Username
 	index := mgo.Index {
 		Key:        []string { "un" },
 		Unique:     true,
@@ -31,8 +36,33 @@ func ensureIndexUser(database *mgo.Database) {
 		Background: true,
 		Sparse:     true,
 	}
-
 	err := c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+	// UUID
+	index = mgo.Index {
+		Key:        []string { "uuid" },
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+	err = c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
+
+	// Tag
+	index = mgo.Index {
+		Key:        []string { "tag" },
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+	err = c.EnsureIndex(index)
 	if err != nil {
 		panic(err)
 	}
@@ -48,12 +78,33 @@ func (user *User) HashPassword(password string) {
 	user.Password = hash
 }
 
-func InsertUser(database *mgo.Database, username string, password string, admin bool) (user *User, err error) {
-	// check existing user
-	user, _ = GetUserByUsername(database, username)
-	if user != nil {
-		panic(fmt.Sprintf("User already exists with username: %s", username))
+func InsertUserWithUUID(database *mgo.Database, uuid string, tag string) (user *User, err error) {
+	// // check existing user
+	// user, _ = GetUserByUUID(database, uuid)
+	// if user != nil {
+	// 	panic(fmt.Sprintf("User already exists with UUID: %s", uuid))
+	// }
+
+	// create user
+	user = &User {
+		ID: bson.NewObjectId(),
+		UUID: uuid,
+		Tag: tag,
+		Username: uuid,
+		Inserted: time.Now(),
+		Login: time.Now(),
 	}
+
+	err = database.C(UserCollectionName).Insert(user)
+	return
+}
+
+func InsertUserWithUsername(database *mgo.Database, username string, password string, admin bool) (user *User, err error) {
+	// // check existing user
+	// user, _ = GetUserByUsername(database, username)
+	// if user != nil {
+	// 	panic(fmt.Sprintf("User already exists with username: %s", username))
+	// }
 
 	// create user
 	user = &User {
@@ -76,6 +127,16 @@ func (user *User) Delete(database *mgo.Database) (err error) {
 
 func GetUserById(database *mgo.Database, id bson.ObjectId) (user *User, err error) {
 	err = database.C(UserCollectionName).Find(bson.M { "_id": id } ).One(&user)
+	return
+}
+
+func GetUserByUUID(database *mgo.Database, uuid string) (user *User, err error) {
+	err = database.C(UserCollectionName).Find(bson.M { "uuid": uuid } ).One(&user)
+	return
+}
+
+func GetUserByTag(database *mgo.Database, tag string) (user *User, err error) {
+	err = database.C(UserCollectionName).Find(bson.M { "tag": tag } ).One(&user)
 	return
 }
 

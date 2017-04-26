@@ -9,7 +9,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/heroku"
 	gocontext "golang.org/x/net/context"
-	//"github.com/gorilla/context"
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 
 func HandlePlayer(application *system.Application) {
 	application.HandleAPI("/player/set", system.TokenAuthentication, SetPlayer)
-	application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
+	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
 }
 
 func SetPlayer(context *system.Context) {

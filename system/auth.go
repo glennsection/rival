@@ -12,6 +12,7 @@ type AuthenticationType int
 const (
 	NoAuthentication AuthenticationType = iota
 	AnyAuthentication
+	DeviceAuthentication
 	PasswordAuthentication
 	TokenAuthentication
 )
