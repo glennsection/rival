@@ -120,11 +120,6 @@ func InsertUserWithUsername(database *mgo.Database, username string, password st
 	return
 }
 
-func (user *User) Delete(database *mgo.Database) (err error) {
-	// delete user from database
-	return database.C(UserCollectionName).Remove(bson.M { "_id": user.ID })
-}
-
 func GetUserById(database *mgo.Database, id bson.ObjectId) (user *User, err error) {
 	err = database.C(UserCollectionName).Find(bson.M { "_id": id } ).One(&user)
 	return
@@ -149,6 +144,11 @@ func (user *User) Update(database *mgo.Database) (err error) {
 	// update user in database
 	_, err = database.C(UserCollectionName).Upsert(bson.M { "_id": user.ID }, user)
 	return
+}
+
+func (user *User) Delete(database *mgo.Database) (err error) {
+	// delete user from database
+	return database.C(UserCollectionName).Remove(bson.M { "_id": user.ID })
 }
 
 func LoginUser(database *mgo.Database, username string, password string) (user *User, err error) {
