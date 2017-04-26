@@ -130,6 +130,24 @@ func (match *Match) Delete(database *mgo.Database) (err error) {
 	return database.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
 }
 
+func ClearMatches(database *mgo.Database, player *Player) (err error) {
+	// find and remove all invalid matches with player
+	_, err = database.C(MatchCollectionName).RemoveAll(bson.M {
+		"$or": []bson.M {
+			bson.M { "id1": player.ID, },
+			bson.M { "id2": player.ID, },
+		},
+		"st": bson.M {
+			"$in": []interface{} {
+				MatchInvalid,
+				MatchOpen,
+				MatchActive,
+			},
+		},
+ 	})
+ 	return
+}
+
 func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (match *Match, err error) {
 	// find existing match (TODO - verify that no other pending matches exist for player)
 	err = database.C(MatchCollectionName).Find(bson.M {
@@ -164,6 +182,42 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 	return
 }
 
+func FailMatch(database *mgo.Database, player *Player) (err error) {
+	// find and remove all invalid matches with player
+	var matches []*Match
+	err = database.C(MatchCollectionName).Find(bson.M {
+		"$or": []bson.M {
+			bson.M { "id1": player.ID, },
+			bson.M { "id2": player.ID, },
+		},
+		"st": bson.M {
+			"$in": []interface{} {
+				MatchOpen,
+				MatchActive,
+			},
+		},
+	}).All(&matches)
+
+	if err == nil {
+		// fix all found matches
+		for _, match := range matches {
+			if match.State == MatchActive {
+				if match.PlayerID == player.ID {
+					match.PlayerID = match.OpponentID
+					match.OpponentID = bson.ObjectId("")
+				} else {
+					match.OpponentID = bson.ObjectId("")
+				}
+				match.State = MatchOpen
+				match.Update(database)
+			} else {
+				match.Delete(database)
+			}
+		}
+	}
+	return
+}
+
 func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (err error) {
 	// find active match for player
 	var match *Match
@@ -178,15 +232,15 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 				MatchCompleting,
 			},
 		},
- 	}).One(&match)
- 	if err != nil {
- 		return
- 	}
+	}).One(&match)
+	if err != nil {
+		return
+	}
 
- 	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID, match)
+	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID, match)
 
- 	// determine if player is match owner, and alter outcome accordingly
- 	owner := (match.PlayerID == player.ID)
+	// determine if player is match owner, and alter outcome accordingly
+	owner := (match.PlayerID == player.ID)
 	if owner == false {
 		outcome = invertOutcome(outcome)
 	}
