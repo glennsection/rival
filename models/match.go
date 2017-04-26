@@ -53,6 +53,7 @@ type Match struct {
 	Outcome       	MatchOutcome  `bson:"oc" json:"outcome"`
 	StartTime	    time.Time     `bson:"t0" json:"-"`
 	EndTime	        time.Time     `bson:"t1" json:"-"`
+	Reward			Tome 		  `bson:"rw" json:"-"`
 
 	// internal
 	player          *Player
@@ -156,6 +157,7 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 			RoomID: util.GenerateUUID(),
 			State: MatchOpen,
 			StartTime: time.Now(),
+			Reward: GetEmptyTome(),
 		}
 	}
 
@@ -164,7 +166,7 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (err error) {
+func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (reward *Tome, err error, messages []string) {
 	// find active match for player
 	var match *Match
 	err = database.C(MatchCollectionName).Find(bson.M {
@@ -204,8 +206,9 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 		}
 
 		// update player stats
-		err = match.ProcessMatchResults(database)
+		err, messages = match.ProcessMatchResults(database)
 	} else {
+		messages = make([]string, 0)
 		// validate match outcome
 		if match.Outcome == outcome {
 			match.State = MatchComplete
@@ -220,6 +223,11 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 		// update as invalid
 		match.Update(database)
 	}
+
+	if (match.Reward.State != TomeEmpty) && ((owner && match.Outcome == MatchWin) || (!owner && match.Outcome == MatchLoss)) {
+		reward = &match.Reward
+	} 
+
 	return
 }
 
@@ -344,7 +352,7 @@ func getKFactor(playerRating int, opponentRating int) float64 {
 	return 16.0
 }
 
-func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
+func (match *Match) ProcessMatchResults(database *mgo.Database) (err error, messages []string) {
 	// get players
 	player, err := match.GetPlayer(database)
 	if err != nil {
@@ -400,14 +408,17 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 
 	}
 
-	// modify win/loss counts and update database
+	// modify win/loss counts, add victory tomes, and update database
+	var tome *Tome
 	player.MatchCount += 1
 	opponent.MatchCount += 1
 	switch match.Outcome {
 	case MatchWin:
+		tome, messages = player.AddVictoryTome()
 		player.WinCount += 1
 		opponent.LossCount += 1
 	case MatchLoss:
+		tome, messages = opponent.AddVictoryTome()
 		player.LossCount += 1
 		opponent.WinCount += 1
 	}
@@ -416,5 +427,12 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 		return
 	}
 	err = opponent.Update(database)
+	if err != nil {
+		return
+	}
+
+	if tome != nil {
+		match.Reward = *tome
+	}
 	return
 }

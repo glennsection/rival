@@ -103,7 +103,7 @@ func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	// server data ID
 	tome.DataID = data.ToDataId(client.DataID)
 
-	if client.DataID == "" {
+	if client.DataID == "" || client.DataID == "INVALID" {
 		tome.State = TomeEmpty
 	} else {
 		// server tome state
@@ -163,6 +163,15 @@ func (tome *Tome) GetUnlockRemaining() string {
 	return "-"
 }
 
+func GetEmptyTome() (tome Tome) {
+	tome = Tome{
+		DataID: data.ToDataId(""),
+		State: TomeEmpty,
+		UnlockTime: data.TicksToTime(0),
+	}
+	return
+}
+
 func (tome *Tome) StartUnlocking() {
 	tome.State = TomeUnlocking
 	tome.UnlockTime = time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second)
@@ -202,9 +211,7 @@ func (tome *Tome) OpenTome(tier int) (reward *TomeReward) {
 	reward.PremiumCurrency = tomeData.MinPremiumReward + rand.Intn(tomeData.MaxPremiumReward - tomeData.MinPremiumReward)
 	reward.StandardCurrency = tomeData.MinStandardReward + rand.Intn(tomeData.MaxStandardReward - tomeData.MinStandardReward)
 
-	tome.DataID = data.ToDataId("")
-	tome.State = TomeEmpty
-	tome.UnlockTime = data.TicksToTime(0)
+	*tome = GetEmptyTome()
 
 	return
 }

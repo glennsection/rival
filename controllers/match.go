@@ -55,9 +55,17 @@ func MatchResult(context *system.Context) {
 	player := context.GetPlayer()
 	
 	// update match as complete
-	err := models.CompleteMatch(context.DB, player, outcome)
+	reward, err, messages := models.CompleteMatch(context.DB, player, outcome)
 	if err != nil {
 		panic(err)
+	}
+
+	if reward != nil {
+		context.Data = reward
+	}
+
+	for _, msg := range messages {
+		context.Message(msg)
 	}
 
 	context.Message("Thanks for playing!")

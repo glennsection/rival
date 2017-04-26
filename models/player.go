@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 	"fmt"
+	"math/rand"
 	"encoding/json"
 	
 	"gopkg.in/mgo.v2"
@@ -95,6 +96,76 @@ func UpdatePlayer(database *mgo.Database, user *User, data string) (err error) {
 func (player *Player) Update(database *mgo.Database) (err error) {
 	// update entire player to database
 	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
+	return
+}
+
+func (player *Player) AddVictoryTome() (tome *Tome, messages []string) {
+	//first check to see if the player has an available tome slot, else return
+	messages = make([]string, 0)
+	messages = append(messages, "Tomes before:")
+	tome = nil
+	for i, tomeSlot := range player.Tomes {
+		var state string
+		switch(tomeSlot.State) {
+			case TomeEmpty:
+				state = "Empty"
+			case TomeLocked:
+				state = "Locked"
+			case TomeUnlocking:
+				state = "Unlocking"
+			default:
+				state = "Unlocked"
+		}
+		messages = append(messages, fmt.Sprintf("tomeSlot %d contains %s with state %s", i, data.ToDataName(tomeSlot.DataID), state))
+
+		if tomeSlot.State == TomeEmpty {
+			tome = &tomeSlot
+			messages = append(messages, fmt.Sprintf("open slot at %d", i))
+		}
+	}
+	if tome == nil {
+		return
+	}
+
+	//next sort our TomeData by chance
+	compare := func(leftOperand *data.TomeData, rightOperand *data.TomeData) bool {
+		return leftOperand.Chance > rightOperand.Chance
+	}
+	tomes := data.GetTomeIdsSorted(compare)
+
+	//now roll for a tome
+	rand.Seed(time.Now().UTC().UnixNano())
+	roll := rand.Float32() * 100
+
+	var accum float32
+	for _, id := range tomes {
+		tomeData := data.GetTome(id)
+		accum += tomeData.Chance
+		if roll <= accum {
+			messages = append(messages, fmt.Sprintf("User earned a %s", tomeData.Name))
+			tome.DataID = id
+			tome.State = TomeLocked
+			tome.UnlockTime = data.TicksToTime(0)
+			break
+		}
+	}
+
+	messages = append(messages, "Tomes after:")
+	for i, tomeSlot := range player.Tomes {
+		var state string
+		switch(tomeSlot.State) {
+			case TomeEmpty:
+				state = "Empty"
+			case TomeLocked:
+				state = "Locked"
+			case TomeUnlocking:
+				state = "Unlocking"
+			default:
+				state = "Unlocked"
+		}
+		messages = append(messages, fmt.Sprintf("tomeSlot %d contains %s with state %s", i, data.ToDataName(tomeSlot.DataID), state))
+	}
+
 	return
 }
 
