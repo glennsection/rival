@@ -114,6 +114,9 @@ func (application *Application) Initialize() {
 
 	// load data
 	data.Load()
+
+	// init player tags
+	application.initializeTags()
 }
 
 func (application *Application) Close() {

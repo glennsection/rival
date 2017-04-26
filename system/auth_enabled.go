@@ -13,6 +13,9 @@ func (context *Context) authenticate(authType AuthenticationType) (err error) {
 	case NoAuthentication:
 		return
 
+	case DeviceAuthentication:
+		err = context.authenticateDevice(true)
+
 	case PasswordAuthentication:
 		err = context.authenticatePassword(true)
 
@@ -22,7 +25,10 @@ func (context *Context) authenticate(authType AuthenticationType) (err error) {
 	case AnyAuthentication:
 		err = context.authenticatePassword(false)
 		if err == nil {
-			err = context.authenticateToken(true)
+			err = context.authenticateToken(false)
+			if err == nil {
+				err = context.authenticateDevice(true)
+			}
 		}
 	}
 	return

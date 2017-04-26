@@ -1,6 +1,7 @@
 package config
 
 import (
+	"time"
 	"io/ioutil"
 	"encoding/json"
 )
@@ -14,11 +15,14 @@ const (
 
 type Config struct {
 	Authentication struct {
+		TokenSecret       string           `json:"TokenSecret"`
+		TokenExpiration   time.Duration    `json:"TokenExpiration,int"`
+
+		DebugToken        string           `json:"DebugToken"`
+
 		OAuthID           string           `json:"OAuthID"`
 		OAuthSecret       string           `json:"OAuthSecret"`
 		OAuthStateToken   string           `json:"OAuthStateToken"`
-
-		TokenSecret       string           `json:"TokenSecret"`
 	}                                      `json:"Authentication"`
 	Sessions struct {
 		CookieSecret      string           `json:"CookieSecret"`
