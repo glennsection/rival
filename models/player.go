@@ -99,28 +99,13 @@ func (player *Player) Update(database *mgo.Database) (err error) {
 	return
 }
 
-func (player *Player) AddVictoryTome() (tome *Tome, messages []string) {
+func (player *Player) AddVictoryTome() (tome *Tome) {
 	//first check to see if the player has an available tome slot, else return
-	messages = make([]string, 0)
-	messages = append(messages, "Tomes before:")
 	tome = nil
-	for i, tomeSlot := range player.Tomes {
-		var state string
-		switch(tomeSlot.State) {
-			case TomeEmpty:
-				state = "Empty"
-			case TomeLocked:
-				state = "Locked"
-			case TomeUnlocking:
-				state = "Unlocking"
-			default:
-				state = "Unlocked"
-		}
-		messages = append(messages, fmt.Sprintf("tomeSlot %d contains %s with state %s", i, data.ToDataName(tomeSlot.DataID), state))
-
+	for _, tomeSlot := range player.Tomes {
 		if tomeSlot.State == TomeEmpty {
 			tome = &tomeSlot
-			messages = append(messages, fmt.Sprintf("open slot at %d", i))
+			break
 		}
 	}
 	if tome == nil {
@@ -142,28 +127,11 @@ func (player *Player) AddVictoryTome() (tome *Tome, messages []string) {
 		tomeData := data.GetTome(id)
 		accum += tomeData.Chance
 		if roll <= accum {
-			messages = append(messages, fmt.Sprintf("User earned a %s", tomeData.Name))
-			tome.DataID = id
-			tome.State = TomeLocked
-			tome.UnlockTime = data.TicksToTime(0)
+			(*tome).DataID = id
+			(*tome).State = TomeLocked
+			(*tome).UnlockTime = data.TicksToTime(0)
 			break
 		}
-	}
-
-	messages = append(messages, "Tomes after:")
-	for i, tomeSlot := range player.Tomes {
-		var state string
-		switch(tomeSlot.State) {
-			case TomeEmpty:
-				state = "Empty"
-			case TomeLocked:
-				state = "Locked"
-			case TomeUnlocking:
-				state = "Unlocking"
-			default:
-				state = "Unlocked"
-		}
-		messages = append(messages, fmt.Sprintf("tomeSlot %d contains %s with state %s", i, data.ToDataName(tomeSlot.DataID), state))
 	}
 
 	return
