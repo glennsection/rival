@@ -130,6 +130,24 @@ func (match *Match) Delete(database *mgo.Database) (err error) {
 	return database.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
 }
 
+func ClearMatches(database *mgo.Database, player *Player) (err error) {
+	// find and remove all invalid matches with player
+	_, err = database.C(MatchCollectionName).RemoveAll(bson.M {
+		"$or": []bson.M {
+			bson.M { "id1": player.ID, },
+			bson.M { "id2": player.ID, },
+		},
+		"st": bson.M {
+			"$in": []interface{} {
+				MatchInvalid,
+				MatchOpen,
+				MatchActive,
+			},
+		},
+ 	})
+ 	return
+}
+
 func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (match *Match, err error) {
 	// find existing match (TODO - verify that no other pending matches exist for player)
 	err = database.C(MatchCollectionName).Find(bson.M {
@@ -140,7 +158,7 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 		"tp": matchType,
 	}).One(&match)
 
-	log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
+	//log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
 
 	if match != nil {
 		// match players and mark as active
@@ -164,7 +182,43 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (reward *Tome, err error) {
+func FailMatch(database *mgo.Database, player *Player) (err error) {
+	// find and remove all invalid matches with player
+	var matches []*Match
+	err = database.C(MatchCollectionName).Find(bson.M {
+		"$or": []bson.M {
+			bson.M { "id1": player.ID, },
+			bson.M { "id2": player.ID, },
+		},
+		"st": bson.M {
+			"$in": []interface{} {
+				MatchOpen,
+				MatchActive,
+			},
+		},
+	}).All(&matches)
+
+	if err == nil {
+		// fix all found matches
+		for _, match := range matches {
+			if match.State == MatchActive {
+				if match.PlayerID == player.ID {
+					match.PlayerID = match.OpponentID
+					match.OpponentID = bson.ObjectId("")
+				} else {
+					match.OpponentID = bson.ObjectId("")
+				}
+				match.State = MatchOpen
+				match.Update(database)
+			} else {
+				match.Delete(database)
+			}
+		}
+	}
+	return
+}
+
+func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (reward *Tome,err error) {
 	// find active match for player
 	var match *Match
 	err = database.C(MatchCollectionName).Find(bson.M {
@@ -178,15 +232,15 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 				MatchCompleting,
 			},
 		},
- 	}).One(&match)
- 	if err != nil {
- 		return
- 	}
+	}).One(&match)
+	if err != nil {
+		return
+	}
 
- 	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID, match)
+	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID, match)
 
- 	// determine if player is match owner, and alter outcome accordingly
- 	owner := (match.PlayerID == player.ID)
+	// determine if player is match owner, and alter outcome accordingly
+	owner := (match.PlayerID == player.ID)
 	if owner == false {
 		outcome = invertOutcome(outcome)
 	}
@@ -228,16 +282,6 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 	return
 }
 
-// func (match *Match) LoadPlayers(database *mgo.Database) (err error) {
-// 	match.player, err = match.GetPlayer(database)
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	match.opponent, err = match.GetOpponent(database)
-// 	return
-// }
-
 func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error) {
 	if match.PlayerID.Valid() {
 		return GetPlayerById(database, match.PlayerID)
@@ -245,26 +289,12 @@ func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error
 	return nil, nil
 }
 
-// func (match *Match) GetPlayerName() string {
-// 	if match.player != nil {
-// 		return match.player.Name
-// 	}
-// 	return "None"
-// }
-
 func (match *Match) GetOpponent(database *mgo.Database) (player *Player, err error) {
 	if match.OpponentID.Valid() {
 		return GetPlayerById(database, match.OpponentID)
 	}
 	return nil, nil
 }
-
-// func (match *Match) GetOpponentName() string {
-// 	if match.opponent != nil {
-// 		return match.opponent.Name
-// 	}
-// 	return "None"
-// }
 
 func (match *Match) GetTypeName() string {
 	switch match.Type {

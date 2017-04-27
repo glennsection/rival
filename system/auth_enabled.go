@@ -2,7 +2,17 @@
 
 package system
 
+import (
+	"bloodtales/models"
+)
+
 func (application *Application) initializeAuthentication() {
+	// init admin user
+	admin, _ := models.GetUserByUsername(application.db, application.Config.Authentication.AdminUsername)
+	if admin == nil {
+		models.InsertUserWithUsername(application.db, application.Config.Authentication.AdminUsername, application.Config.Authentication.AdminPassword, true)
+	}
+
 	application.initializeToken()
 	application.initializeOAuth()
 }

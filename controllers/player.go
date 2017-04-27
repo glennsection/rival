@@ -38,6 +38,6 @@ func GetPlayer(context *system.Context) {
 		context.Message("Found player")
 		context.Data = player
 	} else {
-		panic(fmt.Sprintf("Failed to find player for username: %v", context.User.Username))
+		context.Fail(fmt.Sprintf("Failed to find player for username: %v", context.User.Username))
 	}
 }

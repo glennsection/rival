@@ -5,6 +5,9 @@
 		
 		"DebugToken": "4eb8f22e019761b8c69846bf013aef52",
 
+		"AdminUsername": "admin",
+		"AdminPassword": "Section213",
+
 		"OAuthID": "eefc1806-c4bd-487d-bfca-3c6ded4ff004",
 		"OAuthSecret": "4ebec3a8-22db-45bc-bd17-0b49fc3b16ab",
 		"OAuthStateToken": "evening-hamlet-43104"

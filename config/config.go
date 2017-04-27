@@ -20,6 +20,9 @@ type Config struct {
 
 		DebugToken        string           `json:"DebugToken"`
 
+		AdminUsername     string           `json:"AdminUsername"`
+		AdminPassword     string           `json:"AdminPassword"`
+
 		OAuthID           string           `json:"OAuthID"`
 		OAuthSecret       string           `json:"OAuthSecret"`
 		OAuthStateToken   string           `json:"OAuthStateToken"`
