@@ -10,6 +10,7 @@ var DefaultPageSize int = 20
 
 func HandleAdmin(application *system.Application) {
 	application.Redirect("/admin", "/admin/home", 301)
+	handleAdminTemplate(application, "/error", system.NoAuthentication, Error, "error.tmpl.html")
 	handleAdminTemplate(application, "/admin/home", system.NoAuthentication, Home, "home.tmpl.html")
 	handleAdminTemplate(application, "/admin/login", system.NoAuthentication, Login, "login.tmpl.html")
 	handleAdminTemplate(application, "/admin/login/go", system.PasswordAuthentication, Login, "login.tmpl.html")
@@ -74,6 +75,13 @@ func initializeAdmin(context *system.Context) {
 	}
 
 	context.Params.Set("links", links)
+}
+
+func Error(context *system.Context) {
+	// parse parameters
+	message := context.Params.GetString("message", "Error occurred")
+
+	context.Message(message) // TODO - fix this once session flashes are working
 }
 
 func Home(context *system.Context) {

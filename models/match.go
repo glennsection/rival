@@ -158,7 +158,7 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 		"tp": matchType,
 	}).One(&match)
 
-	log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
+	//log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
 
 	if match != nil {
 		// match players and mark as active
@@ -277,16 +277,6 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 	return
 }
 
-// func (match *Match) LoadPlayers(database *mgo.Database) (err error) {
-// 	match.player, err = match.GetPlayer(database)
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	match.opponent, err = match.GetOpponent(database)
-// 	return
-// }
-
 func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error) {
 	if match.PlayerID.Valid() {
 		return GetPlayerById(database, match.PlayerID)
@@ -294,26 +284,12 @@ func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error
 	return nil, nil
 }
 
-// func (match *Match) GetPlayerName() string {
-// 	if match.player != nil {
-// 		return match.player.Name
-// 	}
-// 	return "None"
-// }
-
 func (match *Match) GetOpponent(database *mgo.Database) (player *Player, err error) {
 	if match.OpponentID.Valid() {
 		return GetPlayerById(database, match.OpponentID)
 	}
 	return nil, nil
 }
-
-// func (match *Match) GetOpponentName() string {
-// 	if match.opponent != nil {
-// 		return match.opponent.Name
-// 	}
-// 	return "None"
-// }
 
 func (match *Match) GetTypeName() string {
 	switch match.Type {

@@ -134,25 +134,32 @@ func (context *Context) GetPlayer() (player *models.Player) {
 
 func (context *Context) GetPlayerName(playerID bson.ObjectId) string {
 	key := fmt.Sprintf("PlayerName:%s", playerID.Hex())
+	name := "[None]"
 
 	if context.Cache.Has(key) {
-		return context.Cache.GetRequiredString(key)
-	} else {
+		name = context.Cache.GetString(key, "[None]")
+	}
+
+	if name == "[None]" {
 		player, err := models.GetPlayerById(context.DB, playerID)
 		if err == nil && player != nil {
 			context.Cache.Set(key, player.Name)
-			return player.Name
+			name = player.Name
 		}
-		return "[None]"
 	}
+	return name
 }
 
 func (context *Context) Message(message string) {
 	context.Messages = append(context.Messages, message)
+
+	// TODO - add to session flashes
 }
 
 func (context *Context) Messagef(message string, params ...interface{}) {
 	context.Messages = append(context.Messages, fmt.Sprintf(message, params...))
+
+	// TODO - add to session flashes
 }
 
 func (context *Context) Fail(message string) {
@@ -193,9 +200,10 @@ func (context *Context) BeginRequest(authType AuthenticationType, template strin
 	// authentication
 	err := context.authenticate(authType)
 	if err != nil {
-		context.Redirect("/admin", 302)
+		log.Errorf("Failed to authenticate user: %v", err)
+		context.Fail("Failed to authenticate user")
 
-		panic(fmt.Sprintf("Failed to authenticate user: %v", err))
+		context.Redirect("/admin", 302)
 	}
 }
 
@@ -204,55 +212,72 @@ func (context *Context) EndRequest(startTime time.Time) {
 	defer context.DBSession.Close()
 
 	// handle any panic errors during request
+	redirected := false
 	var caughtErr interface{}
 	if caughtErr = recover(); caughtErr != nil {
 		// update context for failure
 		context.Fail(fmt.Sprintf("%v", caughtErr))
+
+		if context.Template != "" {
+			context.Redirect(fmt.Sprintf("/error?message=%v", caughtErr), 302) // TODO - can remove parameter once session flashes are working
+			redirected = true
+		}
 	}
-
-	// check if any custom response was written
-	if context.responseWritten {
-		// nothing left to do...
-	} else if context.Template != "" {
-		// HTML escape messages
-		for i, message := range context.Messages {
-			context.Messages[i] = html.EscapeString(message)
-		}
-
-		// render template to buffer
-		var output bytes.Buffer
-		err := context.Application.templates.ExecuteTemplate(&output, context.Template, context)
+	// catch any panics in this function
+	defer func() {
 		if templateErr := recover(); templateErr != nil {
-			err = templateErr.(error)
-		}
+			log.Errorf("Occurred during last request: %v", templateErr)
+			log.Printf("[red]%v[-]", string(debug.Stack()))
 
-		var responseString string
-		if err == nil {
-			// convert template output to string
-			responseString = output.String()
+			if context.Template != "" {
+				context.Redirect(fmt.Sprintf("/error?message=%v", templateErr), 302) // TODO - can remove parameter once session flashes are working
+			}
+		}
+	}()
+
+	if !redirected {
+		// check if any custom response was written
+		if context.responseWritten {
+			// nothing left to do...
+		} else if context.Template != "" {
+			// HTML escape messages
+			for i, message := range context.Messages {
+				context.Messages[i] = html.EscapeString(message)
+			}
+
+			// render template to buffer
+			var output bytes.Buffer
+			err := context.Application.templates.ExecuteTemplate(&output, context.Template, context)
+
+			var responseString string
+			if err == nil {
+				// convert template output to string
+				responseString = output.String()
+
+				// write response to stream
+				fmt.Fprint(context.responseWriter, responseString)
+			} else {
+				// respond with error
+				responseString = fmt.Sprintf("Processing template (%v): %v", context.Template, err)
+
+				log.Error(responseString)
+				context.Redirect(fmt.Sprintf("/error?message=%s", responseString), 302) // TODO - can remove parameter once session flashes are working
+			}
 		} else {
-			// respond with error
-			responseString = fmt.Sprintf("Processing template (%v): %v", context.Template, err)
+			// serialize response to json
+			var responseString string
+			raw, err := json.Marshal(context)
+			if err == nil {
+				responseString = string(raw)
+			} else {
+				responseString = fmt.Sprintf("Marshalling response: %v", err)
 
-			log.Error(responseString)
+				log.Error(responseString)
+			}
+
+			// write response to stream
+			fmt.Fprint(context.responseWriter, responseString)
 		}
-
-		// write response to stream
-		fmt.Fprint(context.responseWriter, responseString)
-	} else {
-		// serialize response to json
-		var responseString string
-		raw, err := json.Marshal(context)
-		if err == nil {
-			responseString = string(raw)
-		} else {
-			responseString = fmt.Sprintf("Marshalling response: %v", err)
-
-			log.Error(responseString)
-		}
-
-		// write response to stream
-		fmt.Fprint(context.responseWriter, responseString)
 	}
 
 	// show response profiling info
