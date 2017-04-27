@@ -10,6 +10,7 @@ import (
 func handleAdminUsers(application *system.Application) {
 	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
 	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
+	handleAdminTemplate(application, "/admin/users/reset", system.TokenAuthentication, ResetUser, "")
 	handleAdminTemplate(application, "/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
 }
 
@@ -108,6 +109,20 @@ func EditUser(context *system.Context) {
 	context.Data = user
 	context.Params.Set("user", user)
 	context.Params.Set("player", player)
+}
+
+func ResetUser(context *system.Context) {
+	// parse parameters
+	userId := context.Params.GetRequiredID("userId")
+
+	player, err := models.GetPlayerByUser(context.DB, userId)
+	if err != nil {
+		panic(err)
+	}
+
+	player.Reset(context.DB)
+
+	context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userId.Hex()), 302)
 }
 
 func DeleteUser(context *system.Context) {

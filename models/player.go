@@ -74,6 +74,12 @@ func CreatePlayer(userID bson.ObjectId, name string) (player *Player) {
 	return
 }
 
+func (player *Player) Reset(database *mgo.Database) (err error) {
+	// reset player and update in database
+	player.Initialize()
+	return player.Update(database)
+}
+
 func UpdatePlayer(database *mgo.Database, user *User, data string) (err error) {
 	// find existing player data
 	player, _ := GetPlayerByUser(database, user.ID)
