@@ -218,7 +218,7 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (err error) {
+func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (reward *Tome,err error) {
 	// find active match for player
 	var match *Match
 	err = database.C(MatchCollectionName).Find(bson.M {
@@ -274,6 +274,11 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 		// update as invalid
 		match.Update(database)
 	}
+
+	if (match.State != MatchInvalid) && ((owner && match.Outcome == MatchWin) || (!owner && match.Outcome == MatchLoss)) {
+		reward = player.AddVictoryTome()
+	} 
+
 	return
 }
 
@@ -430,7 +435,7 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 
 	}
 
-	// modify win/loss counts and update database
+	// modify win/loss counts, add victory tomes, and update database
 	player.MatchCount += 1
 	opponent.MatchCount += 1
 	switch match.Outcome {
@@ -446,5 +451,8 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 		return
 	}
 	err = opponent.Update(database)
+	if err != nil {
+		return
+	}
 	return
 }

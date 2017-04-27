@@ -12,6 +12,7 @@ type RawTomeData struct {
 	Name                    string        `json:"id"`
 	Image                   string        `json:"icon"`
 	Rarity                  string        `json:"rarity"`
+	Chance					float32		  `json:"chance,string"`
 	TimeToUnlock			int 		  `json:"timeToUnlock,string"`
 	GemsToUnlock			int 		  `json:"gemsToUnlock,string"`
 	MinPremiumReward		int 		  `json:"minGemReward,string"`
@@ -26,6 +27,7 @@ type TomeData struct {
 	Name                    string 
 	Image                   string
 	Rarity                  string
+	Chance 					float32
 	TimeToUnlock			int
 	GemsToUnlock			int
 	MinPremiumReward		int
@@ -54,6 +56,7 @@ func (rawTomeData *RawTomeData) ToTomeData() (tomeData *TomeData) {
 		Name: rawTomeData.Name,
 		Image: rawTomeData.Image,
 		Rarity: rawTomeData.Rarity,
+		Chance: rawTomeData.Chance,
 		TimeToUnlock: rawTomeData.TimeToUnlock,
 		GemsToUnlock: rawTomeData.GemsToUnlock,
 		MinPremiumReward: rawTomeData.MinPremiumReward,
@@ -110,6 +113,32 @@ func LoadTomes(raw []byte) {
 // get tome by server ID
 func GetTome(id DataId) (tome *TomeData) {
 	return tomes[id]
+}
+
+func GetTomeIdsSorted(compare func(*TomeData, *TomeData) bool) (tomeIds []DataId){
+	tomeIds = make([]DataId, 0)
+
+	for id, tomeData := range tomes {
+		if len(tomeIds) == 0 {
+			tomeIds = append(tomeIds, id)
+		} else {
+			for i, dataId := range tomeIds {
+
+				if compare(tomeData, tomes[dataId]) {
+					tomeIds = append(tomeIds, id)
+					copy(tomeIds[i+1:], tomeIds[i:])
+					tomeIds[i] = id
+					break
+				}
+
+				if i == (len(tomeIds) - 1) {
+					tomeIds = append(tomeIds, id)
+				} 
+			}
+		}
+	}
+
+	return 
 }
 
 func (tome *TomeData) GetImageSrc() string {

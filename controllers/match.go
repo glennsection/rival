@@ -55,9 +55,14 @@ func MatchResult(context *system.Context) {
 	player := context.GetPlayer()
 	
 	// update match as complete
-	err := models.CompleteMatch(context.DB, player, outcome)
+	reward, err := models.CompleteMatch(context.DB, player, outcome)
 	if err != nil {
 		panic(err)
+	}
+
+	if reward != nil {
+		context.Message("Congratulations! You earned a tome!")
+		context.Data = reward
 	}
 
 	context.Message("Thanks for playing!")

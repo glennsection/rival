@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 	"fmt"
+	"math/rand"
 	"encoding/json"
 	
 	"gopkg.in/mgo.v2"
@@ -101,6 +102,44 @@ func UpdatePlayer(database *mgo.Database, user *User, data string) (err error) {
 func (player *Player) Update(database *mgo.Database) (err error) {
 	// update entire player to database
 	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
+	return
+}
+
+func (player *Player) AddVictoryTome() (tome *Tome) {
+	//first check to see if the player has an available tome slot, else return
+	tome = nil
+	for _, tomeSlot := range player.Tomes {
+		if tomeSlot.State == TomeEmpty {
+			tome = &tomeSlot
+			break
+		}
+	}
+	if tome == nil {
+		return
+	}
+
+	//next sort our TomeData by chance
+	compare := func(leftOperand *data.TomeData, rightOperand *data.TomeData) bool {
+		return leftOperand.Chance > rightOperand.Chance
+	}
+	tomes := data.GetTomeIdsSorted(compare)
+
+	//now roll for a tome
+	rand.Seed(time.Now().UTC().UnixNano())
+	roll := rand.Float32() * 100
+
+	var accum float32
+	for _, id := range tomes {
+		tomeData := data.GetTome(id)
+		accum += tomeData.Chance
+		if roll <= accum {
+			(*tome).DataID = id
+			(*tome).State = TomeLocked
+			(*tome).UnlockTime = data.TicksToTime(0)
+			break
+		}
+	}
+
 	return
 }
 
