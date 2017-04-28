@@ -216,6 +216,18 @@ func (stream *Stream) GetRequiredJSON(name string, result interface{}) {
 	panic(missingStreamValue(name))
 }
 
+func (stream *Stream) GetID(name string) bson.ObjectId {
+	value := stream.source.Get(name)
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			return bson.ObjectIdHex(stringValue)
+		}
+	}
+
+	return bson.ObjectIdHex("")
+}
+
 func (stream *Stream) GetRequiredID(name string) bson.ObjectId {
 	value := stream.source.Get(name)
 
