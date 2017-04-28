@@ -35,6 +35,8 @@ type Player struct {
 	ArenaPoints		 	int 		  `bson:"ap" json:"arenaPoints"`
 	FreeTomes		 	int 		  `bson:"ft" json:"freeTomes"`
 	FreeTomeUnlockTime  int64 		  `bson:"fu" json:"freeTomeUnlockTime"`
+
+	Quests              string        `bson:"qu" json:"quests"` // FIXME - temp fix until full quest system built on server
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
