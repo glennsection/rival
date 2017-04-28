@@ -2,8 +2,6 @@ package system
 
 import (
 	"github.com/gorilla/sessions"
-
-	"bloodtales/log"
 )
 
 type Session struct {
@@ -52,7 +50,6 @@ func (application *Application) initializeSessions() {
 
 func (context *Context) getSession() (session *Session) {
 	// get cookis session from store
-	log.Printf("[yellow]COOKIE STORE: %v, CONTEXT: %v[-]", cookieStore, context)
 	cookieSession, err := cookieStore.Get(context.Request, "session")
 	if err != nil {
 		panic(err)
