@@ -35,6 +35,8 @@ type Player struct {
 	ArenaPoints		 	int 		  `bson:"ap" json:"arenaPoints"`
 	FreeTomes		 	int 		  `bson:"ft" json:"freeTomes"`
 	FreeTomeUnlockTime  int64 		  `bson:"fu" json:"freeTomeUnlockTime"`
+
+	Quests              string        `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -73,6 +75,12 @@ func CreatePlayer(userID bson.ObjectId, name string) (player *Player) {
 	player.UserID = userID
 	player.Name = name
 	return
+}
+
+func (player *Player) Reset(database *mgo.Database) (err error) {
+	// reset player and update in database
+	player.Initialize()
+	return player.Update(database)
 }
 
 func UpdatePlayer(database *mgo.Database, user *User, data string) (err error) {

@@ -9,7 +9,6 @@ import (
 	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
-	"github.com/gorilla/sessions"
 
 	"bloodtales/config"
 	"bloodtales/data"
@@ -19,13 +18,12 @@ import (
 
 type Application struct {
 	Config		   config.Config
-	Env			  *Stream
+	Env			   *Stream
 
 	// internal
-	dbSession		*mgo.Session
+	dbSession	   *mgo.Session
 	db			   *mgo.Database
-	cookies		  *sessions.CookieStore
-	templates		*template.Template
+	templates	   *template.Template
 }
 
 type EnvStreamSource struct {
@@ -99,10 +97,7 @@ func (application *Application) Initialize() {
 	application.initializeCache()
 
 	// init sessions
-	cookieSecret := application.Config.Sessions.CookieSecret
-	application.cookies = sessions.NewCookieStore([]byte(cookieSecret))
-	//application.cookies.MaxAge(60 * 60 * 8) // 8 hour expiration
-	//application.cookies.Options.Secure = true // secure for OAuth
+	application.initializeSessions()
 
 	// init models using concurrent session (DB indexes, etc.)
 	tempSession := application.dbSession.Copy()
@@ -186,6 +181,8 @@ func (application *Application) Ignore(pattern string) {
 func (application *Application) Serve() {
 	// start serving on port
 	port := application.Env.GetRequiredString("PORT")
+
+	log.Printf("[cyan]Server application ready for incoming requests on port: %s[-]", port)
 
 	err := http.ListenAndServe(":" + port, nil)
 	if err != nil {

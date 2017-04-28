@@ -24,7 +24,7 @@ func (context *Context) authenticateToken(required bool) (err error) {
 	unparsedToken := context.Params.GetString("token", "")
 	if unparsedToken == "" {
 		// if not found, then check session
-		unparsedToken, _ = context.Session.Values["token"].(string)
+		unparsedToken = context.Session.GetString("token", "")
 	}
 
 	if unparsedToken != "" {
@@ -73,14 +73,14 @@ func (context *Context) AppendAuthToken() (err error) {
 
 	// store auth token in session
 	if err == nil {
-		context.Session.Values["token"] = context.Token
-		context.SaveSession()
+		context.Session.Set("token", context.Token)
+		context.Session.Save()
 	}
 	return
 }
 
 func (context *Context) ClearAuthToken() {
 	// clear auth token from session
-	context.Session.Values["token"] = ""
-	context.SaveSession()
+	context.Session.Set("token", "")
+	context.Session.Save()
 }

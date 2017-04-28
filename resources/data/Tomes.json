@@ -18,8 +18,8 @@
   {
     "id": "TOME_RARE",
     "rarity": "RARE",
-    "prefab": "UI/Tomes/Uncommon/Uncommon",
-    "icon": "UI/Tomes/Sprites/tome_UNCOMMON",
+    "prefab": "UI/Tomes/Uncommon/Rare",
+    "icon": "UI/Tomes/Sprites/tome_RARE",
     "chance": "30",
     "guaranteedRarities": "[3,2,0,0]",
     "cardsRewarded": "[13,4,1,1]",

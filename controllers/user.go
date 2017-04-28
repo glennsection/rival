@@ -8,10 +8,20 @@ import (
 )
 
 func HandleUser(application *system.Application) {
+	application.HandleAPI("/connect", system.NoAuthentication, UserConnect)
 	//application.HandleAPI("/register", system.NoAuthentication, UserRegister)
 	application.HandleAPI("/login", system.DeviceAuthentication, UserLogin)
 	application.HandleAPI("/logout", system.TokenAuthentication, UserLogout)
 	//application.HandleAPI("/user/get", GetUser)
+}
+
+func UserConnect(context *system.Context) {
+	// parse parameters
+	version := context.Params.GetRequiredString("version")
+
+	// update client values
+	context.Client.Version = version
+	context.Client.Save()
 }
 
 func UserLogin(context *system.Context) {

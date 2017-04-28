@@ -183,7 +183,7 @@ func (stream *Stream) GetRequiredFloat(name string) float64 {
 	panic(missingStreamValue(name))
 }
 
-func (stream *Stream) GetJSON(name string, result interface{}, defaultValue interface{}) {
+func (stream *Stream) GetJSON(name string, result interface{}) {
 	value := stream.source.Get(name)
 
 	if stringValue, ok := value.(string); ok {
@@ -195,8 +195,6 @@ func (stream *Stream) GetJSON(name string, result interface{}, defaultValue inte
 			}
 		}
 	}
-
-	result = defaultValue
 	return
 }
 

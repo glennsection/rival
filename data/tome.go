@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"encoding/json"
+	"log"
 )
 
 type RawTomeData struct {
@@ -105,6 +106,7 @@ func LoadTomes(raw []byte) {
 
 		// insert into table
 		tomes[id] = tomeData
+		log.Printf("TOME %v = %v", id, tomeData.Name)
 	}
 }
 

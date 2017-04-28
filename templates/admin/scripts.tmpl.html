@@ -21,7 +21,7 @@
 <script src="/static/js/demo.js"></script>
 
 <!-- Confirmation dialog HTML -->
-<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="confirm-dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -40,7 +40,7 @@
 
 <!-- Confirmation dialog Javascript -->
 <script type="text/javascript">
-	$('#confirm-delete').on('show.bs.modal', function(e) {
+	$('#confirm-dialog').on('show.bs.modal', function(e) {
 		var header = $(e.relatedTarget).data('header')
 		$(this).find('.modal-header').text(header === undefined ? "Are you sure?" : header)
 		var body = $(e.relatedTarget).data('body')

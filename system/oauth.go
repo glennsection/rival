@@ -62,8 +62,8 @@ func handleAuthCallback(context *Context) {
 	// 	panic(err)
 	// }
 	// session.Values["heroku-oauth-token"] = token
-	context.Session.Values["oauth-token"] = token
-	if err := context.SaveSession(); err != nil {
+	context.Session.Set("oauth-token", token)
+	if err := context.Session.Save(); err != nil {
 		panic(err)
 	}
 	context.Redirect("/user", http.StatusFound) // TODO - where should it redirect for mobile?

@@ -103,18 +103,16 @@ func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	// server data ID
 	tome.DataID = data.ToDataId(client.DataID)
 
-	if client.DataID == "" || client.DataID == "INVALID" {
+	// server tome state
+	switch client.State {
+	case "Unlocking":
+		tome.State = TomeUnlocking
+	case "Unlocked":
+		tome.State = TomeUnlocked
+	case "Locked":
+		tome.State = TomeLocked
+	default:
 		tome.State = TomeEmpty
-	} else {
-		// server tome state
-		switch client.State {
-		case "Unlocking":
-			tome.State = TomeUnlocking
-		case "Unlocked":
-			tome.State = TomeUnlocked
-		default:
-			tome.State = TomeLocked
-		}
 	}
 
 	// server unlock time

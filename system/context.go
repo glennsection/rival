@@ -15,7 +15,6 @@ import (
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/gorilla/sessions"
 
 	"bloodtales/config"
 	"bloodtales/models"
@@ -27,8 +26,9 @@ type Context struct {
 	Config      *config.Config       `json:"-"`
 	DBSession   *mgo.Session         `json:"-"`
 	DB          *mgo.Database        `json:"-"`
-	Session     *sessions.Session    `json:"-"`
+	Session     *Session             `json:"-"`
 	Cache       *Cache               `json:"-"`
+	Client      *Client              `json:"-"`
 	Request     *http.Request        `json:"-"`
 	Params      *Stream              `json:"-"`
 	User		*models.User         `json:"-"`
@@ -55,9 +55,6 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 	contextDBSession := application.dbSession.Copy()
 	contextDB := application.db.With(contextDBSession)
 
-	// create concurrent cookie session
-	cookieSession, _ := application.cookies.Get(r, "session")
-
 	// get concurrent cache connection
 	cache := application.GetCache()
 
@@ -67,7 +64,6 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 		Config: &application.Config,
 		DBSession: contextDBSession,
 		DB: contextDB,
-		Session: cookieSession,
 		Cache: cache,
 		Request: r,
 
@@ -79,6 +75,12 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 		Success: true,
 	}
 
+	// create concurrent cookie session
+	context.Session = context.getSession()
+
+	// load client info
+	context.Client = context.loadClient()
+
 	// create request params stream
 	context.Params = &Stream {
 		source: ContextStreamSource {
@@ -88,10 +90,6 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 	}
 
 	return context
-}
-
-func (context *Context) SaveSession() error {
-	return context.Session.Save(context.Request, context.responseWriter)
 }
 
 func (context *Context) Write(p []byte) (n int, err error) {
@@ -125,6 +123,24 @@ func (source ContextStreamSource) Get(name string) interface{} {
 
 	// then use request params
 	return source.context.Request.FormValue(name)
+}
+
+func (context *Context) GetUserPlayerName(userID bson.ObjectId) string {
+	key := fmt.Sprintf("UserPlayerName:%s", userID.Hex())
+	name := "[None]"
+
+	if context.Cache.Has(key) {
+		name = context.Cache.GetString(key, "[None]")
+	}
+
+	if name == "[None]" {
+		player, err := models.GetPlayerByUser(context.DB, userID)
+		if err == nil && player != nil {
+			context.Cache.Set(key, player.Name)
+			name = player.Name
+		}
+	}
+	return name
 }
 
 func (context *Context) GetPlayer() (player *models.Player) {
