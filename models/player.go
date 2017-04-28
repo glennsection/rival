@@ -99,7 +99,7 @@ func (player *Player) Update(database *mgo.Database) (err error) {
 	return
 }
 
-func (player *Player) AddVictoryTome() (tome *Tome) {
+func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
 	//first check to see if the player has an available tome slot, else return
 	tome = nil
 	for _, tomeSlot := range player.Tomes {
@@ -133,6 +133,8 @@ func (player *Player) AddVictoryTome() (tome *Tome) {
 			break
 		}
 	}
+
+	player.Update(database)
 
 	return
 }
@@ -210,6 +212,20 @@ func (player *Player) ClaimFreeReward(database *mgo.Database) (reward *TomeRewar
 	reward, err = player.AddRewards(database, tome) 
 	if err != nil {
 		panic(err)
+	}
+
+	return
+}
+
+func (player *Player) ModifyArenaPoints(val int) {
+	if val < 1 {
+		return
+	}
+
+	player.ArenaPoints += val
+
+	if player.ArenaPoints > 10 {
+		player.ArenaPoints = 10
 	}
 
 	return

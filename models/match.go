@@ -51,6 +51,8 @@ type Match struct {
 	RoomID          string        `bson:"rm" json:"roomId"`
 	State           MatchState    `bson:"st" json:"state"`
 	Outcome       	MatchOutcome  `bson:"oc" json:"outcome"`
+	PlayerScore		int 		  `bson:"ps" json:"playerScore"`
+	OpponentScore 	int 		  `bson:"os" json:"opponentScore"`
 	StartTime	    time.Time     `bson:"t0" json:"-"`
 	EndTime	        time.Time     `bson:"t1" json:"-"`
 
@@ -65,6 +67,12 @@ type MatchClient struct {
 	State           string        `json:"state"`
 
 	*MatchClientAlias
+}
+
+// client rewards
+type MatchReward struct {
+	Tome 			*Tome 		  `json:"tome"`
+	ArenaPoints 	int 		  `json:"arenaPoints"`
 }
 
 func ensureIndexMatch(database *mgo.Database) {
@@ -218,7 +226,7 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome) (reward *Tome,err error) {
+func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome, playerScore int, opponentScore int) (matchReward *MatchReward, err error) {
 	// find active match for player
 	var match *Match
 	err = database.C(MatchCollectionName).Find(bson.M {
@@ -243,12 +251,17 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 	owner := (match.PlayerID == player.ID)
 	if owner == false {
 		outcome = invertOutcome(outcome)
+		temp := playerScore
+		playerScore = opponentScore
+		opponentScore = temp
 	}
 
 	if match.State == MatchActive {
 		// update match outcome
 		match.State = MatchCompleting
 		match.Outcome = outcome
+		match.PlayerScore = playerScore
+		match.OpponentScore = opponentScore
 		match.EndTime = time.Now()
 
 		// update database
@@ -261,7 +274,7 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 		err = match.ProcessMatchResults(database)
 	} else {
 		// validate match outcome
-		if match.Outcome == outcome {
+		if match.Outcome == outcome && match.PlayerScore == playerScore && match.OpponentScore == opponentScore {
 			match.State = MatchComplete
 		} else {
 			match.State = MatchInvalid
@@ -275,8 +288,18 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome)
 		match.Update(database)
 	}
 
-	if (match.State != MatchInvalid) && ((owner && match.Outcome == MatchWin) || (!owner && match.Outcome == MatchLoss)) {
-		reward = player.AddVictoryTome()
+	if match.State != MatchInvalid {
+		matchReward = &MatchReward {}
+
+		if owner {
+			matchReward.ArenaPoints = match.PlayerScore
+		} else {
+			matchReward.ArenaPoints = match.OpponentScore
+		}
+
+		if (owner && match.Outcome == MatchWin) || (!owner && match.Outcome == MatchLoss) {
+			matchReward.Tome = player.AddVictoryTome(database)
+		}
 	} 
 
 	return
@@ -435,8 +458,10 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 
 	}
 
-	// modify win/loss counts, add victory tomes, and update database
+	// modify win/loss counts, add arena points, and update database
+	player.ModifyArenaPoints(match.PlayerScore)
 	player.MatchCount += 1
+	opponent.ModifyArenaPoints(match.OpponentScore)
 	opponent.MatchCount += 1
 	switch match.Outcome {
 	case MatchWin:

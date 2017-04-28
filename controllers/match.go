@@ -51,17 +51,18 @@ func MatchFail(context *system.Context) {
 func MatchResult(context *system.Context) {
 	// parse parameters
 	outcome := models.MatchOutcome(context.Params.GetRequiredInt("outcome"))
+	playerScore := context.Params.GetRequiredInt("playerScore")
+	opponentScore := context.Params.GetRequiredInt("opponentScore")
 
 	player := context.GetPlayer()
 	
 	// update match as complete
-	reward, err := models.CompleteMatch(context.DB, player, outcome)
+	reward, err := models.CompleteMatch(context.DB, player, outcome, playerScore, opponentScore)
 	if err != nil {
 		panic(err)
 	}
 
 	if reward != nil {
-		context.Message("Congratulations! You earned a tome!")
 		context.Data = reward
 	}
 
