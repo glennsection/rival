@@ -20,7 +20,7 @@ type Player struct {
 	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
 	Name            	string        `bson:"nm" json:"name"`
 	Level           	int           `bson:"lv" json:"level"`
-	Rank            	int           `bson:"rk" json:"rank"`
+	RankPoints          int           `bson:"rk" json:"rankPoints"`
 	Rating          	int           `bson:"rt" json:"rating"`
 	WinCount       		int           `bson:"wc" json:"winCount"`
 	LossCount       	int           `bson:"lc" json:"lossCount"`
@@ -229,7 +229,7 @@ func (player *Player) Delete(database *mgo.Database) (err error) {
 }
 
 func (player *Player) GetRankData() *data.RankData {
-	return data.GetRank(player.Rank)
+	return data.GetRank(player.RankPoints)
 }
 
 func (player *Player) GetRankTier() int {

@@ -80,9 +80,9 @@ func EditUser(context *system.Context) {
 			player.Rating = rating
 		}
 
-		rank := context.Params.GetInt("rank", -1)
-		if rank >= 0 {
-			player.Rank = rank
+		rankPoints := context.Params.GetInt("rankPoints", -1)
+		if rankPoints >= 0 {
+			player.RankPoints = rankPoints
 		}
 
 		winCount := context.Params.GetInt("winCount", -1)

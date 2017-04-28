@@ -397,10 +397,10 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 		// update stats
 		rankChange := int(match.Outcome)
 		if rankChange > 0 || player.GetRankTier() > 1 {
-			player.Rank += rankChange
+			player.RankPoints += rankChange
 		}
 		if rankChange < 0 || opponent.GetRankTier() > 1 {
-			opponent.Rank -= rankChange
+			opponent.RankPoints -= rankChange
 		}
 
 	case MatchElite:
