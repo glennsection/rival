@@ -225,7 +225,7 @@ func (stream *Stream) GetID(name string) bson.ObjectId {
 		}
 	}
 
-	return bson.ObjectIdHex("")
+	return bson.ObjectId("")
 }
 
 func (stream *Stream) GetRequiredID(name string) bson.ObjectId {
