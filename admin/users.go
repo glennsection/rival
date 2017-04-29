@@ -80,9 +80,9 @@ func EditUser(context *system.Context) {
 			player.Rating = rating
 		}
 
-		rank := context.Params.GetInt("rank", -1)
-		if rank >= 0 {
-			player.Rank = rank
+		rankPoints := context.Params.GetInt("rankPoints", -1)
+		if rankPoints >= 0 {
+			player.RankPoints = rankPoints
 		}
 
 		winCount := context.Params.GetInt("winCount", -1)
@@ -113,16 +113,28 @@ func EditUser(context *system.Context) {
 
 func ResetUser(context *system.Context) {
 	// parse parameters
-	userId := context.Params.GetRequiredID("userId")
+	userId := context.Params.GetID("userId")
 
-	player, err := models.GetPlayerByUser(context.DB, userId)
-	if err != nil {
-		panic(err)
+	if userId.Valid() {
+		player, err := models.GetPlayerByUser(context.DB, userId)
+		if err != nil {
+			panic(err)
+		}
+
+		player.Reset(context.DB)
+
+		context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userId.Hex()), 302)
+	} else {
+		// get all players
+		var players []*models.Player
+		context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
+
+		for _, player := range players {
+			player.Reset(context.DB)
+		}
+
+		context.Redirect("/admin/users", 302)
 	}
-
-	player.Reset(context.DB)
-
-	context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userId.Hex()), 302)
 }
 
 func DeleteUser(context *system.Context) {

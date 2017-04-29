@@ -99,6 +99,9 @@ func (application *Application) Initialize() {
 	// init sessions
 	application.initializeSessions()
 
+	// init client
+	application.initializeClient()
+
 	// init models using concurrent session (DB indexes, etc.)
 	tempSession := application.dbSession.Copy()
 	defer tempSession.Close()

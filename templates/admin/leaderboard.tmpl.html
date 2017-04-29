@@ -19,7 +19,7 @@
 									{{ .RenderPagination }}
 								</div>
 								<h4 class="title">Leaderboard</h4>
-								<p class="category">There Can Be Only One! (<a href="/admin/matches/reset">Reset Players!</a>)</p>
+								<p class="category">There Can Be Only One!</p>
 							</div>
 							<div class="content table-responsive table-full-width">
 								<table class="table table-hover table-striped">
@@ -38,7 +38,7 @@
 											<td><a href="/admin/users/edit?userId={{ $element.UserID.Hex }}">{{ $element.Name }}</a></td>
 											<td>{{ $element.WinCount }}</td>
 											<td>{{ $element.LossCount }}</td>
-											<td>{{ $element.GetRankName }} ({{ $element.Rank }} Stars)</td>
+											<td>{{ $element.GetRankName }} ({{ $element.RankStars }} Stars)</td>
 											<td>{{ $element.Rating }}</td>
 										</tr>
 										{{ end }}

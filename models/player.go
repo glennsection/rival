@@ -20,7 +20,7 @@ type Player struct {
 	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
 	Name            	string        `bson:"nm" json:"name"`
 	Level           	int           `bson:"lv" json:"level"`
-	Rank            	int           `bson:"rk" json:"rank"`
+	RankPoints          int           `bson:"rk" json:"rankPoints"`
 	Rating          	int           `bson:"rt" json:"rating"`
 	WinCount       		int           `bson:"wc" json:"winCount"`
 	LossCount       	int           `bson:"lc" json:"lossCount"`
@@ -83,9 +83,9 @@ func (player *Player) Reset(database *mgo.Database) (err error) {
 	return player.Update(database)
 }
 
-func UpdatePlayer(database *mgo.Database, user *User, data string) (err error) {
+func UpdatePlayer(database *mgo.Database, user *User, data string) (player *Player, err error) {
 	// find existing player data
-	player, _ := GetPlayerByUser(database, user.ID)
+	player, _ = GetPlayerByUser(database, user.ID)
 	
 	// initialize new player if none exists
 	if player == nil {
@@ -257,7 +257,7 @@ func (player *Player) Delete(database *mgo.Database) (err error) {
 }
 
 func (player *Player) GetRankData() *data.RankData {
-	return data.GetRank(player.Rank)
+	return data.GetRank(player.RankPoints)
 }
 
 func (player *Player) GetRankTier() int {

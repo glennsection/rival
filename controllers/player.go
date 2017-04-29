@@ -17,9 +17,13 @@ func SetPlayer(context *system.Context) {
 	data := context.Params.GetRequiredString("data")
 
 	// update data
-	if err := models.UpdatePlayer(context.DB, context.User, data); err != nil {
+	player, err := models.UpdatePlayer(context.DB, context.User, data)
+	if err != nil {
 		panic(err)
 	}
+
+	// refresh cached name
+	context.RefreshPlayerName(player)
 
 	context.Message("Player updated successfully")
 }

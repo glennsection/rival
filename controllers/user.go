@@ -1,10 +1,7 @@
 package controllers
 
 import (
-	// "fmt"
-	
 	"bloodtales/system"
-	// "bloodtales/models"
 )
 
 func HandleUser(application *system.Application) {
@@ -12,7 +9,6 @@ func HandleUser(application *system.Application) {
 	//application.HandleAPI("/register", system.NoAuthentication, UserRegister)
 	application.HandleAPI("/login", system.DeviceAuthentication, UserLogin)
 	application.HandleAPI("/logout", system.TokenAuthentication, UserLogout)
-	//application.HandleAPI("/user/get", GetUser)
 }
 
 func UserConnect(context *system.Context) {
@@ -42,16 +38,3 @@ func UserLogout(context *system.Context) {
 		context.Message("User logged out successfully")
 	}
 }
-
-// func GetUser(context *system.Context) {
-// 	// parse parameters
-// 	username := context.Params.GetRequiredString("username")
-
-// 	// get user
-// 	user, _ := models.GetUserByUsername(context.DB, username)
-// 	if user != nil {
-// 		context.Messagef("Found user: %v", user.Username)
-// 	} else {
-// 		context.Fail(fmt.Sprintf("Failed to find User with username: %v", username))
-// 	}
-// }
