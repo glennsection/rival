@@ -201,7 +201,7 @@ func (player *Player) UpdateRewards(database *mgo.Database) (err error){
 	return
 }
 
-func (player *Player) ClaimFreeReward(database *mgo.Database) (reward *TomeReward, err error) {
+func (player *Player) ClaimFreeTome(database *mgo.Database) (reward *TomeReward, err error) {
 	err = player.UpdateRewards(database)
 
 	if player.FreeTomes == 0 || err != nil {
@@ -217,10 +217,22 @@ func (player *Player) ClaimFreeReward(database *mgo.Database) (reward *TomeRewar
 		DataID: data.ToDataId("TOME_COMMON"),
 	}
 
-	reward, err = player.AddRewards(database, tome) 
-	if err != nil {
-		panic(err)
+	reward, err = player.AddRewards(database, tome)
+
+	return
+}
+
+func (player *Player) ClaimArenaTome(database *mgo.Database) (reward *TomeReward, err error) {
+	if player.ArenaPoints < 10 {
+		return
 	}
+
+	player.ArenaPoints = 0;
+	tome := &Tome {
+		DataID: data.ToDataId("TOME_RARE"),
+	}
+
+	reward, err = player.AddRewards(database, tome)
 
 	return
 }

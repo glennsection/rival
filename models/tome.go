@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"math"
 	"encoding/json"
 	"math/rand"
 	"bloodtales/data"
@@ -159,6 +160,20 @@ func (tome *Tome) GetUnlockRemaining() string {
 		return time.Until(tome.UnlockTime).String()
 	}
 	return "-"
+}
+
+func (tome *Tome) GetUnlockCost() int {
+	tomeData := data.GetTome(tome.DataID)
+
+	if(tome.State != TomeUnlocking) {
+		return tomeData.GemsToUnlock
+	}
+
+	timeNow := data.TimeToTicks(time.Now())
+	unlockTime := data.TimeToTicks(tome.UnlockTime) - timeNow
+	totalUnlockTime := data.TimeToTicks(time.Now().Add(time.Second * time.Duration(tomeData.TimeToUnlock))) - timeNow
+
+	return int(math.Ceil(float64(tomeData.GemsToUnlock) * float64(unlockTime / totalUnlockTime)))
 }
 
 func GetEmptyTome() (tome Tome) {

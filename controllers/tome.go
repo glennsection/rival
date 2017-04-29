@@ -11,6 +11,7 @@ func HandleTome(application *system.Application) {
 	application.HandleAPI("/tome/open", system.TokenAuthentication, OpenTome)
 	application.HandleAPI("/tome/rush", system.TokenAuthentication, RushTome)
 	application.HandleAPI("/tome/free", system.TokenAuthentication, ClaimFreeTome)
+	application.HandleAPI("/tome/arena", system.TokenAuthentication, ClaimArenaTome)
 }
 
 func UnlockTome(context *system.Context) {
@@ -97,15 +98,32 @@ func RushTome(context *system.Context) {
 
 func ClaimFreeTome(context *system.Context) {
 	player := context.GetPlayer()
-	reward, err := player.ClaimFreeReward(context.DB)
+	reward, err := player.ClaimFreeTome(context.DB)
 
 	if err != nil {
 		panic(err)
 		return
 	}
 
-	if(reward == nil) {
+	if reward == nil {
 		context.Fail("No free tomes available")
+		return
+	}
+
+	context.Data = reward
+}
+
+func ClaimArenaTome(context *system.Context) {
+	player := context.GetPlayer()
+	reward, err := player.ClaimArenaTome(context.DB)
+
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	if reward == nil {
+		context.Fail("Not enough arena points")
 		return
 	}
 
