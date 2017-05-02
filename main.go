@@ -24,6 +24,7 @@ func main() {
 	controllers.HandlePlayer(application)
 	controllers.HandleTome(application)
 	controllers.HandleMatch(application)
+	controllers.HandlePurchase(application)
 	// ------------------------
 
 	// deliver response

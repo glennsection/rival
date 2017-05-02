@@ -201,6 +201,19 @@ func (player *Player) UpdateRewards(database *mgo.Database) (err error){
 	return
 }
 
+func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (reward *TomeReward, err error) {
+	tome := &Tome {
+		DataID: data.ToDataId(tomeId),
+	}
+
+	// check currency
+	// TODO
+
+	reward, err = player.AddRewards(database, tome)
+
+	return
+}
+
 func (player *Player) ClaimFreeTome(database *mgo.Database) (reward *TomeReward, err error) {
 	err = player.UpdateRewards(database)
 
@@ -208,16 +221,13 @@ func (player *Player) ClaimFreeTome(database *mgo.Database) (reward *TomeReward,
 		return
 	}
 
-	if(player.FreeTomes == 3) {
+	if player.FreeTomes == 3 {
 		player.FreeTomeUnlockTime = data.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
 	}
 
 	player.FreeTomes--
-	tome := &Tome {
-		DataID: data.ToDataId("TOME_COMMON"),
-	}
 
-	reward, err = player.AddRewards(database, tome)
+	reward, err = player.ClaimTome(database, "TOME_COMMON")
 
 	return
 }
@@ -228,11 +238,8 @@ func (player *Player) ClaimArenaTome(database *mgo.Database) (reward *TomeReward
 	}
 
 	player.ArenaPoints = 0;
-	tome := &Tome {
-		DataID: data.ToDataId("TOME_RARE"),
-	}
 
-	reward, err = player.AddRewards(database, tome)
+	reward, err = player.ClaimTome(database, "TOME_RARE")
 
 	return
 }

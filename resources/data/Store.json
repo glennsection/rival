@@ -1,0 +1,134 @@
+{ "Store":
+[
+  {
+    "id": "STORE_PREMIUM_1",
+    "category": "PremiumCurrency",
+    "displayName": "Pile",
+    "spritePath": "UI/Store/Item Icons/store_blood_pack_1",
+    "itemId": "",
+    "quantity": "30",
+    "currency": "Real",
+    "cost": "2.99"
+  },
+  {
+    "id": "STORE_PREMIUM_2",
+    "category": "PremiumCurrency",
+    "displayName": "Sack",
+    "spritePath": "UI/Store/Item Icons/store_blood_pack_2",
+    "itemId": "",
+    "quantity": "100",
+    "currency": "Real",
+    "cost": "9.99"
+  },
+  {
+    "id": "STORE_PREMIUM_3",
+    "category": "PremiumCurrency",
+    "displayName": "Chest",
+    "spritePath": "UI/Store/Item Icons/store_blood_pack_3",
+    "itemId": "",
+    "quantity": "275",
+    "currency": "Real",
+    "cost": "24.99"
+  },
+  {
+    "id": "STORE_PREMIUM_4",
+    "category": "PremiumCurrency",
+    "displayName": "Stash",
+    "spritePath": "UI/Store/Item Icons/store_blood_pack_4",
+    "itemId": "",
+    "quantity": "575",
+    "currency": "Real",
+    "cost": "49.99"
+  },
+  {
+    "id": "STORE_PREMIUM_5",
+    "category": "PremiumCurrency",
+    "displayName": "Throne",
+    "spritePath": "UI/Store/Item Icons/store_blood_pack_5",
+    "itemId": "",
+    "quantity": "1225",
+    "currency": "Real",
+    "cost": "99.99"
+  },
+  {
+    "id": "STORE_STANDARD_1",
+    "category": "StandardCurrency",
+    "displayName": "Pile",
+    "spritePath": "UI/Store/Item Icons/store_coins_pack_1",
+    "itemId": "",
+    "quantity": "5000",
+    "currency": "Premium",
+    "cost": "10"
+  },
+  {
+    "id": "STORE_STANDARD_2",
+    "category": "StandardCurrency",
+    "displayName": "Sack",
+    "spritePath": "UI/Store/Item Icons/store_coins_pack_2",
+    "itemId": "",
+    "quantity": "10000",
+    "currency": "Premium",
+    "cost": "20"
+  },
+  {
+    "id": "STORE_STANDARD_3",
+    "category": "StandardCurrency",
+    "displayName": "Chest",
+    "spritePath": "UI/Store/Item Icons/store_coins_pack_3",
+    "itemId": "",
+    "quantity": "25000",
+    "currency": "Premium",
+    "cost": "50"
+  },
+  {
+    "id": "STORE_STANDARD_4",
+    "category": "StandardCurrency",
+    "displayName": "Stash",
+    "spritePath": "UI/Store/Item Icons/store_coins_pack_4",
+    "itemId": "",
+    "quantity": "50000",
+    "currency": "Premium",
+    "cost": "100"
+  },
+  {
+    "id": "STORE_STANDARD_5",
+    "category": "StandardCurrency",
+    "displayName": "Throne",
+    "spritePath": "UI/Store/Item Icons/store_coins_pack_5",
+    "itemId": "",
+    "quantity": "150000",
+    "currency": "Premium",
+    "cost": "300"
+  },
+  {
+    "id": "STORE_TOME_1",
+    "category": "Tomes",
+    "displayName": "Common",
+    "spritePath": "UI/Tomes/Sprites/tome_COMMON",
+    "itemId": "TOME_COMMON",
+    "quantity": "1",
+    "currency": "Premium",
+    "cost": "36"
+  },
+  {
+    "id": "STORE_TOME_2",
+    "category": "Tomes",
+    "displayName": "Rare",
+    "spritePath": "UI/Tomes/Sprites/tome_UNCOMMON",
+    "itemId": "TOME_RARE",
+    "quantity": "1",
+    "currency": "Premium",
+    "cost": "60"
+  },
+  {
+    "id": "STORE_TOME_3",
+    "category": "Tomes",
+    "displayName": "Epic",
+    "spritePath": "UI/Tomes/Sprites/tome_RARE",
+    "itemId": "TOME_EPIC",
+    "quantity": "1",
+    "currency": "Premium",
+    "cost": "110"
+  }
+]
+}

@@ -64,7 +64,6 @@ func OpenTome(context *system.Context) {
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	context.Data = reward
@@ -90,7 +89,6 @@ func RushTome(context *system.Context) {
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	context.Data = reward
@@ -102,7 +100,6 @@ func ClaimFreeTome(context *system.Context) {
 
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if reward == nil {
@@ -119,7 +116,6 @@ func ClaimArenaTome(context *system.Context) {
 
 	if err != nil {
 		panic(err)
-		return
 	}
 
 	if reward == nil {
