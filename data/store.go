@@ -1,10 +1,9 @@
 package data
 
 import (
-	// "fmt"
-	// "strconv"
-	// "strings"
-	// "encoding/json"
+	"fmt"
+	"strings"
+	"encoding/json"
 )
 
 // currency type
@@ -13,84 +12,94 @@ const (
 	CurrencyReal CurrencyType = iota
 	CurrencyPremium
 )
-   // "id": "STORE_PREMIUM_1",
-   //  "category": "PremiumCurrency",
-   //  "displayName": "Pile",
-   //  "spritePath": "UI/Store/Item Icons/store_blood_pack_1",
-   //  "itemId": "",
-   //  "quantity": "30",
-   //  "currency": "Real",
-   //  "cost": "2.99"
 
+// store category
+type StoreCategory int
+const (
+	StoreCategoryPremiumCurrency StoreCategory = iota
+	StoreCategoryStandardCurrency
+	StoreCategoryTomes
+	StoreCategoryCards
+)
+
+// server data
 type StoreData struct {
 	Name                    string        `json:"id"`
-	Image                   string        `json:"category"`
-	Rarity                  string        `json:"itemId"`
-	Chance                  int           `json:"quantity,string"`
-	Currency                int           `json:"currency,string"`
-	Cost                    int           `json:"cost,string"`
+	Image                   string        `json:"spritePath"`
+	Category                StoreCategory `json:"category"`
+	ItemID                  string        `json:"itemId"`
+	Quantity                int           `json:"quantity,string"`
+	Currency                CurrencyType  `json:"currency"`
+	Cost                    float64       `json:"cost,string"`
 }
 
-/*
+// client data
+type StoreDataClientAlias StoreData
+type StoreDataClient struct {
+	Category                string        `json:"category"`
+	Currency                string        `json:"currency"`
+
+	*StoreDataClientAlias
+}
+
 // data map
-var tomes map[DataId]*TomeData
+var storeItems map[DataId]*StoreData
 
 // implement Data interface
-func (data *TomeData) GetDataName() string {
+func (data *StoreData) GetDataName() string {
 	return data.Name
 }
 
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
-type TomesParsed struct {
-	Tomes []RawTomeData
+type StoreParsed struct {
+	Store []StoreData
 }
 
-func (rawTomeData *RawTomeData) ToTomeData() (tomeData *TomeData) {
-	tomeData = &TomeData{
-		Name: rawTomeData.Name,
-		Image: rawTomeData.Image,
-		Rarity: rawTomeData.Rarity,
-		Chance: rawTomeData.Chance,
-		TimeToUnlock: rawTomeData.TimeToUnlock,
-		GemsToUnlock: rawTomeData.GemsToUnlock,
-		MinPremiumReward: rawTomeData.MinPremiumReward,
-		MaxPremiumReward: rawTomeData.MaxPremiumReward,
-		MinStandardReward: rawTomeData.MinStandardReward,
-		MaxStandardReward: rawTomeData.MaxStandardReward,
-		GuaranteedRarities: []int {0, 0, 0, 0},
-		CardsRewarded: []int {0, 0, 0, 0},
+// custom unmarshalling
+func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
+	// create client model
+	client := &StoreDataClient {
+		StoreDataClientAlias: (*StoreDataClientAlias)(storeItem),
 	}
 
-	// convert string formatted array to []int
-	guaranteedRarities := strings.FieldsFunc(rawTomeData.GuaranteedRarities, func (r rune) bool {
-		return r == '[' || r == ',' || r == ']'
-	})
-	for i, num := range guaranteedRarities {
-		tomeData.GuaranteedRarities[i], _ = strconv.Atoi(num)
+	// unmarshal to client model
+	if err := json.Unmarshal(raw, &client); err != nil {
+		return err
 	}
 
-	// convert string formatted array to []int
-	cardsRewarded := strings.FieldsFunc(rawTomeData.CardsRewarded, func (r rune) bool {
-		return r == '[' || r == ',' || r == ']'
-	})
-	for i, num := range cardsRewarded {
-		tomeData.CardsRewarded[i], _ = strconv.Atoi(num)
+	// server category
+	switch client.Category {
+	case "PremiumCurrency":
+		storeItem.Category = StoreCategoryPremiumCurrency
+	default:
+		storeItem.Category = StoreCategoryStandardCurrency
+	case "Tomes":
+		storeItem.Category = StoreCategoryTomes
+	case "Cards":
+		storeItem.Category = StoreCategoryCards
 	}
 
-	return
+	// server currency
+	switch client.Currency {
+	case "Real":
+		storeItem.Currency = CurrencyReal
+	default:
+		storeItem.Currency = CurrencyPremium
+	}
+
+	return nil
 }
 
 // data processor
-func LoadTomes(raw []byte) {
+func LoadStore(raw []byte) {
 	// parse
-	container := &TomesParsed {}
+	container := &StoreParsed {}
 	json.Unmarshal(raw, container)
 
 	// enter into system data
-	tomes = map[DataId]*TomeData {}
-	for _, tome := range container.Tomes {
-		tomeData := tome.ToTomeData()
-		name := tomeData.GetDataName()
+	storeItems = map[DataId]*StoreData {}
+	for i, storeItem := range container.Store {
+		name := storeItem.GetDataName()
 
 		// map name to ID
 		id, err := mapDataName(name)
@@ -99,47 +108,20 @@ func LoadTomes(raw []byte) {
 		}
 
 		// insert into table
-		tomes[id] = tomeData
+		storeItems[id] = &container.Store[i]
 	}
 }
 
-// get tome by server ID
-func GetTome(id DataId) (tome *TomeData) {
-	return tomes[id]
+// get store item by server ID
+func GetStoreItem(id DataId) (store *StoreData) {
+	return storeItems[id]
 }
 
-func GetTomeIdsSorted(compare func(*TomeData, *TomeData) bool) (tomeIds []DataId){
-	tomeIds = make([]DataId, 0)
-
-	for id, tomeData := range tomes {
-		if len(tomeIds) == 0 {
-			tomeIds = append(tomeIds, id)
-		} else {
-			for i, dataId := range tomeIds {
-
-				if compare(tomeData, tomes[dataId]) {
-					tomeIds = append(tomeIds, id)
-					copy(tomeIds[i+1:], tomeIds[i:])
-					tomeIds[i] = id
-					break
-				}
-
-				if i == (len(tomeIds) - 1) {
-					tomeIds = append(tomeIds, id)
-				} 
-			}
-		}
-	}
-
-	return 
-}
-
-func (tome *TomeData) GetImageSrc() string {
-	src := tome.Image
+func (store *StoreData) GetImageSrc() string {
+	src := store.Image
 	idx := strings.LastIndex(src, "/")
 	if idx >= 0 {
 		src = src[idx + 1:]
 	}
-	return fmt.Sprintf("/static/img/tomes/%v.png", src)
+	return fmt.Sprintf("/static/img/stores/%v.png", src) // FIXME
 }
-*/

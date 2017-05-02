@@ -72,7 +72,7 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 	return json.Marshal(client)
 }
 
-//custom marshalling
+// custom marshalling
 func (tomeReward *TomeReward) MarshalJSON() ([]byte, error) {
 	//create client model
 	client := &TomeRewardClient {
