@@ -151,7 +151,9 @@ func (application *Application) handle(pattern string, authType AuthenticationTy
 		context.BeginRequest(authType, template)
 
 		// handle request
-		handler(context)
+		if context.Success {
+			handler(context)
+		}
 	})
 }
 

@@ -4,6 +4,8 @@ import (
 	"net/url"
 
 	"github.com/garyburd/redigo/redis"
+
+	"bloodtales/log"
 )
 
 type Cache struct {
@@ -33,7 +35,7 @@ func (source CacheStreamSource) Has(name string) bool {
 func (source CacheStreamSource) Set(name string, value interface{}) {
 	_, err := source.redis.Do("SET", name, value)
 	if err != nil {
-		panic(err)
+		log.Errorf("Redis error: %v", err)
 	}
 }
 
