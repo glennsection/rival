@@ -245,7 +245,7 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome,
 		return
 	}
 
-	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID, match)
+	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID.Hex(), match.ID.Hex())
 
 	// determine if player is match owner, and alter outcome accordingly
 	owner := (match.PlayerID == player.ID)

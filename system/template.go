@@ -16,7 +16,7 @@ var (
 	}
 )
 
-func (application *Application) LoadTemplates() error {
+func (application *Application) loadTemplates() {
 	var templates []string
 
 	// filter to gather all HTML templates
@@ -30,12 +30,11 @@ func (application *Application) LoadTemplates() error {
 	// gather all HTML templates
 	err := filepath.Walk("templates", fn)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	// preload all HTML templates
 	application.templates = template.Must(template.New("").Funcs(templateFuncMap).ParseFiles(templates...))
-	return nil
 }
 
 func templateAdd(a, b int) template.HTML {

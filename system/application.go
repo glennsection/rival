@@ -76,22 +76,10 @@ func (application *Application) Initialize() {
 	HandleProfiling(application.handleProfiler)
 
 	// init templates
-	err = application.LoadTemplates()
-	if err != nil {
-		panic(err)
-	}
+	application.loadTemplates()
 	
 	// connect database
-	mongoURI := application.Env.GetRequiredString("MONGODB_URI")
-	application.dbSession, err = mgo.Dial(mongoURI)
-	if err != nil {
-		panic(err)
-	}
-	application.dbSession.SetSafe(&mgo.Safe {})
-
-	// get default database
-	dbname := application.Env.GetRequiredString("MONGODB_DB")
-	application.db = application.dbSession.DB(dbname)
+	application.initializeDatabase()
 
 	// connect to cache
 	application.initializeCache()
@@ -105,7 +93,7 @@ func (application *Application) Initialize() {
 	// init models using concurrent session (DB indexes, etc.)
 	tempSession := application.dbSession.Copy()
 	defer tempSession.Close()
-	models.Initialize(tempSession.DB(dbname))
+	models.Initialize(application.db.With(tempSession))
 
 	// init auth
 	application.initializeAuthentication()
