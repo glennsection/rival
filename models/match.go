@@ -288,7 +288,7 @@ func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome,
 		match.Update(database)
 	}
 
-	if match.State != MatchInvalid {
+	if match.State != MatchInvalid && err == nil {
 		matchReward = &MatchReward {}
 
 		if owner {
