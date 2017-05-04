@@ -9,7 +9,26 @@ import (
 
 func HandlePlayer(application *system.Application) {
 	application.HandleAPI("/player/set", system.TokenAuthentication, SetPlayer)
+	application.HandleAPI("/player/name", system.TokenAuthentication, SetPlayerName)
 	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
+}
+
+func SetPlayerName(context *system.Context) {
+	// parse parameters
+	name := context.Params.GetRequiredString("name")
+
+	// get player
+	player := context.GetPlayer()
+
+	// set name and update
+	player.Name = name
+	err := player.Update(context.DB)
+	if err != nil {
+		panic(err)
+	}
+
+	// refresh cached name
+	context.RefreshPlayerName(player)
 }
 
 func SetPlayer(context *system.Context) {
@@ -17,13 +36,10 @@ func SetPlayer(context *system.Context) {
 	data := context.Params.GetRequiredString("data")
 
 	// update data
-	player, err := models.UpdatePlayer(context.DB, context.User, data)
+	_, err := models.UpdatePlayer(context.DB, context.User, data)
 	if err != nil {
 		panic(err)
 	}
-
-	// refresh cached name
-	context.RefreshPlayerName(player)
 
 	context.Message("Player updated successfully")
 }
