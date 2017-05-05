@@ -352,7 +352,7 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 		}
 	}
 
-	if match.State != MatchInvalid {
+	if match.State != MatchInvalid && err == nil {
 		matchReward = &MatchReward {}
 
 		if host {

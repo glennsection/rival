@@ -65,4 +65,6 @@ func Purchase(context *system.Context) {
 	case data.StoreCategoryCards:
 
 	}
+
+	player.Update(context.DB)
 }
