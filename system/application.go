@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"html/template"
-	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
 
@@ -14,6 +13,7 @@ import (
 	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/log"
+	"bloodtales/util"
 )
 
 type Application struct {
@@ -47,8 +47,9 @@ func (source EnvStreamSource) Get(name string) interface{} {
 func (application *Application) handleErrors() {
 	// handle any panic errors
 	if err := recover(); err != nil {
-		log.Errorf("Occurred during execution: %v", err)
-		log.Printf("[red]%v[-]", string(debug.Stack()))
+		util.PrintError("Occurred during execution", err)
+		//log.Errorf("Occurred during execution: %v", err)
+		//log.Printf("[red]%v[-]", string(debug.Stack()))
 	}
 }
 

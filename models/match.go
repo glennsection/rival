@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 	"math"
-	"errors"
 	"encoding/json"
 
 	"gopkg.in/mgo.v2"
@@ -55,6 +54,9 @@ type Match struct {
 	OpponentScore 	int 		  `bson:"os" json:"opponentScore"`
 	StartTime	    time.Time     `bson:"t0" json:"-"`
 	EndTime	        time.Time     `bson:"t1" json:"-"`
+
+	// client
+	Host            bool          `bson:"-" json:"host"`
 
 	// internal
 	player          *Player
@@ -173,6 +175,7 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 		match.OpponentID = player.ID
 		match.State = MatchActive
 		match.StartTime = time.Now()
+		match.Host = false
 	} else {
 		// queue new match
 		match = &Match {
@@ -182,6 +185,7 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 			RoomID: util.GenerateUUID(),
 			State: MatchOpen,
 			StartTime: time.Now(),
+			Host: true,
 		}
 	}
 
@@ -226,78 +230,138 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, outcome MatchOutcome, playerScore int, opponentScore int) (matchReward *MatchReward, err error) {
-	// find active match for player
-	var match *Match
-	err = database.C(MatchCollectionName).Find(bson.M {
-		"$or": []bson.M {
-			bson.M { "id1": player.ID, },
-			bson.M { "id2": player.ID, },
-		},
-		"st": bson.M {
-			"$in": []interface{} {
-				MatchActive,
-				MatchCompleting,
-			},
-		},
-	}).One(&match)
-	if err != nil {
-		return
+func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome MatchOutcome, playerScore int, opponentScore int) (matchReward *MatchReward, err error) {
+	// prepare match change
+	change := mgo.Change {
+		Upsert: false,
+		ReturnNew: true,
 	}
 
-	log.Printf("CompleteMatch(player: %v, match: %v)", player.ID.Hex(), match.ID.Hex())
+	// check if host or guest
+	var idField string
+	if host {
+		// prepare host query
+		idField = "id1"
 
-	// determine if player is match owner, and alter outcome accordingly
-	owner := (match.PlayerID == player.ID)
-	if owner == false {
+		// prepare host match change
+		change.Update = bson.M {
+			"$set": bson.M {
+				"st": MatchCompleting,
+				"oc": outcome,
+				"ps": playerScore,
+				"os": opponentScore,
+				"t1": time.Now(),
+			},
+		}
+	} else {
+		// prepare guest query
+		idField = "id2"
+
+		// invert outcome for guest
 		outcome = invertOutcome(outcome)
+
+		// invert scores for guest
 		temp := playerScore
 		playerScore = opponentScore
 		opponentScore = temp
+
+		// prepare guest match change
+		change.Update = bson.M {
+			"$set": bson.M {
+				"st": MatchCompleting,
+				"oc": outcome,
+				"ps": playerScore,
+				"os": opponentScore,
+				"t1": time.Now(),
+			},
+		}
 	}
 
-	if match.State == MatchActive {
-		// update match outcome
-		match.State = MatchCompleting
-		match.Outcome = outcome
-		match.PlayerScore = playerScore
-		match.OpponentScore = opponentScore
-		match.EndTime = time.Now()
-
-		// update database
-		err = match.Update(database)
-		if err != nil {
+	// find active match for player, and update if found
+	foundActiveMatch := true
+	var match *Match
+	_, err = database.C(MatchCollectionName).Find(bson.M {
+		idField: player.ID,
+		"st": MatchActive,
+	}).Apply(change, &match)
+	if err != nil {
+		if err.Error() == "not found" {
+			// continue without error
+			match = nil
+			err = nil
+			foundActiveMatch = false
+		} else {
+			err = util.NewError(err)
 			return
 		}
+	}
+
+	if foundActiveMatch {
+		// update match outcome
+		// match.State = MatchCompleting
+		// match.Outcome = outcome
+		// match.PlayerScore = playerScore
+		// match.OpponentScore = opponentScore
+		// match.EndTime = time.Now()
+
+		// // update database
+		// err = match.Update(database)
+		// if err != nil {
+		// 	err = util.NewError(err)
+		// 	return
+		// }
 
 		// update player stats
 		err = match.ProcessMatchResults(database)
+		if err != nil {
+			err = util.NewError(err)
+			return
+		}
 	} else {
+		// prepare match change
+		change = mgo.Change {
+			Update: bson.M { "$set": bson.M { "st": MatchComplete }, },
+			Upsert: false,
+			ReturnNew: true,
+		}
+
+		// find completing match, and set to completed if found
+		_, err = database.C(MatchCollectionName).Find(bson.M {
+			idField: player.ID,
+			"st": MatchCompleting,
+		}).Apply(change, &match)
+		if err != nil {
+			err = util.NewError(err)
+			return
+		}
+		// TODO - make sure we check if match was found
+
 		// validate match outcome
+		log.Printf("%v:%v %d:%d %d:%d", match.Outcome, outcome, match.PlayerScore, playerScore, match.OpponentScore, opponentScore)
 		if match.Outcome == outcome && match.PlayerScore == playerScore && match.OpponentScore == opponentScore {
-			match.State = MatchComplete
+			// match.State = MatchComplete
 		} else {
 			match.State = MatchInvalid
 
-			err = errors.New("Non-symmetrical match outcomes reported by clients!")
+			// update as invalid
+			match.Update(database)
 
-			// TODO - roll back stats!
+			err = util.NewError("Non-symmetrical match outcomes reported by clients!")
+
+			// TODO - roll back player stats!
 		}
-
-		// update as invalid
-		match.Update(database)
 	}
 
 	if match.State != MatchInvalid {
 		matchReward = &MatchReward {}
 
-		if owner {
+		if host {
 			matchReward.ArenaPoints = match.PlayerScore
 		} else {
 			matchReward.ArenaPoints = match.OpponentScore
 		}
 
-		if (owner && match.Outcome == MatchWin) || (!owner && match.Outcome == MatchLoss) {
+		if (host && match.Outcome == MatchWin) || (!host && match.Outcome == MatchLoss) {
 			matchReward.Tome = player.AddVictoryTome(database)
 		}
 	} 

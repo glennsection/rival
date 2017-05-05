@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"html"
 	"encoding/json"
-	"runtime/debug"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -19,6 +18,7 @@ import (
 	"bloodtales/config"
 	"bloodtales/models"
 	"bloodtales/log"
+	"bloodtales/util"
 )
 
 type Context struct {
@@ -250,8 +250,9 @@ func (context *Context) EndRequest(startTime time.Time) {
 	// catch any panics in this function
 	defer func() {
 		if templateErr := recover(); templateErr != nil {
-			log.Errorf("Occurred during last request: %v", templateErr)
-			log.Printf("[red]%v[-]", string(debug.Stack()))
+			util.PrintError("Occurred during last request", templateErr)
+			// log.Errorf("Occurred during last request: %v", templateErr)
+			// log.Printf("[red]%v[-]", string(debug.Stack()))
 
 			if context.Template != "" {
 				context.Redirect(fmt.Sprintf("/error?message=%v", templateErr), 302) // TODO - can remove parameter once session flashes are working
@@ -318,7 +319,8 @@ func (context *Context) EndRequest(startTime time.Time) {
 
 	// show the error caught eariler
 	if caughtErr != nil {
-		log.Errorf("Occurred during last request: %v", caughtErr)
-		log.Printf("[red]%v[-]", string(debug.Stack()))
+		util.PrintError("Occurred during last request", caughtErr)
+		// log.Errorf("Occurred during last request: %v", caughtErr)
+		// log.Printf("[red]%v[-]", string(debug.Stack()))
 	}
 }
