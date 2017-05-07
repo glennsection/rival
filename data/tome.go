@@ -7,34 +7,29 @@ import (
 	"encoding/json"
 )
 
-type RawTomeData struct {
+// server data
+type TomeData struct {
 	Name                    string        `json:"id"`
 	Image                   string        `json:"icon"`
 	Rarity                  string        `json:"rarity"`
-	Chance					float32		  `json:"chance,string"`
+	Chance 					float64		  `json:"chance,string"`
 	TimeToUnlock			int 		  `json:"timeToUnlock,string"`
 	GemsToUnlock			int 		  `json:"gemsToUnlock,string"`
 	MinPremiumReward		int 		  `json:"minGemReward,string"`
 	MaxPremiumReward		int 		  `json:"maxGemReward,string"`
 	MinStandardReward		int 		  `json:"minGoldReward,string"`
-	MaxStandardReward		int 		  `json:"maxGoldReward,string"`
-	GuaranteedRarities		string		  `json:"guaranteedRarities"`
-	CardsRewarded			string		  `json:"cardsRewarded"`
+	MaxStandardReward		int  		  `json:"maxGoldReward,string"`
+	GuaranteedRarities		[]int		  `json:"guaranteedRarities"`
+	CardsRewarded			[]int		  `json:"cardsRewarded"`
 }
 
-type TomeData struct {
-	Name                    string 
-	Image                   string
-	Rarity                  string
-	Chance 					float32
-	TimeToUnlock			int
-	GemsToUnlock			int
-	MinPremiumReward		int
-	MaxPremiumReward		int 
-	MinStandardReward		int
-	MaxStandardReward		int 
-	GuaranteedRarities		[]int
-	CardsRewarded			[]int
+// client data
+type TomeDataClientAlias TomeData
+type TomeDataClient struct {
+	GuaranteedRarities      string        `json:"guaranteedRarities"`
+	CardsRewarded           string        `json:"cardsRewarded"`
+
+	*TomeDataClientAlias
 }
 
 // data map
@@ -47,42 +42,38 @@ func (data *TomeData) GetDataName() string {
 
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type TomesParsed struct {
-	Tomes []RawTomeData
+	Tomes []TomeData
 }
 
-func (rawTomeData *RawTomeData) ToTomeData() (tomeData *TomeData) {
-	tomeData = &TomeData{
-		Name: rawTomeData.Name,
-		Image: rawTomeData.Image,
-		Rarity: rawTomeData.Rarity,
-		Chance: rawTomeData.Chance,
-		TimeToUnlock: rawTomeData.TimeToUnlock,
-		GemsToUnlock: rawTomeData.GemsToUnlock,
-		MinPremiumReward: rawTomeData.MinPremiumReward,
-		MaxPremiumReward: rawTomeData.MaxPremiumReward,
-		MinStandardReward: rawTomeData.MinStandardReward,
-		MaxStandardReward: rawTomeData.MaxStandardReward,
-		GuaranteedRarities: []int {0, 0, 0, 0},
-		CardsRewarded: []int {0, 0, 0, 0},
+// custom unmarshalling
+func (tome *TomeData) UnmarshalJSON(raw []byte) error {
+	// create client model
+	client := &TomeDataClient {
+		TomeDataClientAlias: (*TomeDataClientAlias)(tome),
 	}
 
-	// convert string formatted array to []int
-	guaranteedRarities := strings.FieldsFunc(rawTomeData.GuaranteedRarities, func (r rune) bool {
+	// unmarshal to client model
+	if err := json.Unmarshal(raw, &client); err != nil {
+		return err
+	}
+
+	// server guarantees
+	guaranteedRarities := strings.FieldsFunc(client.GuaranteedRarities, func (r rune) bool {
 		return r == '[' || r == ',' || r == ']'
 	})
 	for i, num := range guaranteedRarities {
-		tomeData.GuaranteedRarities[i], _ = strconv.Atoi(num)
+		tome.GuaranteedRarities[i], _ = strconv.Atoi(num)
 	}
 
-	// convert string formatted array to []int
-	cardsRewarded := strings.FieldsFunc(rawTomeData.CardsRewarded, func (r rune) bool {
+	// server rewards
+	cardsRewarded := strings.FieldsFunc(client.CardsRewarded, func (r rune) bool {
 		return r == '[' || r == ',' || r == ']'
 	})
 	for i, num := range cardsRewarded {
-		tomeData.CardsRewarded[i], _ = strconv.Atoi(num)
+		tome.CardsRewarded[i], _ = strconv.Atoi(num)
 	}
 
-	return
+	return nil
 }
 
 // data processor
@@ -93,9 +84,8 @@ func LoadTomes(raw []byte) {
 
 	// enter into system data
 	tomes = map[DataId]*TomeData {}
-	for _, tome := range container.Tomes {
-		tomeData := tome.ToTomeData()
-		name := tomeData.GetDataName()
+	for i, tome := range container.Tomes {
+		name := tome.GetDataName()
 
 		// map name to ID
 		id, err := mapDataName(name)
@@ -104,7 +94,7 @@ func LoadTomes(raw []byte) {
 		}
 
 		// insert into table
-		tomes[id] = tomeData
+		tomes[id] = &container.Tomes[i]
 	}
 }
 
