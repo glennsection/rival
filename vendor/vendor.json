@@ -45,6 +45,12 @@
 			"revisionTime": "2017-03-07T00:35:30Z"
 		},
 		{
+			"checksumSHA1": "W+UDF6H5I7spd9+8iXDbnFGKIo8=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "a91eba7f97777409bc2c443f5534d41dd20c5720",
+			"revisionTime": "2017-03-19T17:27:27Z"
+		},
+		{
 			"checksumSHA1": "jTwXALBikWAgWtFJtfN5IBQLK0E=",
 			"path": "github.com/nu7hatch/gouuid",
 			"revision": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3",

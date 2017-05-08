@@ -61,6 +61,7 @@ func (tome *TomeData) UnmarshalJSON(raw []byte) error {
 	guaranteedRarities := strings.FieldsFunc(client.GuaranteedRarities, func (r rune) bool {
 		return r == '[' || r == ',' || r == ']'
 	})
+	tome.GuaranteedRarities = make([]int, len(guaranteedRarities))
 	for i, num := range guaranteedRarities {
 		tome.GuaranteedRarities[i], _ = strconv.Atoi(num)
 	}
@@ -69,6 +70,7 @@ func (tome *TomeData) UnmarshalJSON(raw []byte) error {
 	cardsRewarded := strings.FieldsFunc(client.CardsRewarded, func (r rune) bool {
 		return r == '[' || r == ',' || r == ']'
 	})
+	tome.CardsRewarded = make([]int, len(cardsRewarded))
 	for i, num := range cardsRewarded {
 		tome.CardsRewarded[i], _ = strconv.Atoi(num)
 	}
