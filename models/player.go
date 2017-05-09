@@ -129,9 +129,9 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
 
 	//now roll for a tome
 	rand.Seed(time.Now().UTC().UnixNano())
-	roll := rand.Float32() * 100
+	roll := rand.Float64() * 100
 
-	var accum float32
+	var accum float64
 	for _, id := range tomes {
 		tomeData := data.GetTome(id)
 		accum += tomeData.Chance

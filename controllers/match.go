@@ -53,11 +53,12 @@ func MatchResult(context *system.Context) {
 	outcome := models.MatchOutcome(context.Params.GetRequiredInt("outcome"))
 	playerScore := context.Params.GetRequiredInt("playerScore")
 	opponentScore := context.Params.GetRequiredInt("opponentScore")
+	host := context.Params.GetRequiredBool("host")
 
 	player := context.GetPlayer()
 	
 	// update match as complete
-	reward, err := models.CompleteMatch(context.DB, player, outcome, playerScore, opponentScore)
+	reward, err := models.CompleteMatch(context.DB, player, host, outcome, playerScore, opponentScore)
 	if err != nil {
 		panic(err)
 	}

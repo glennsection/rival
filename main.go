@@ -24,6 +24,7 @@ func main() {
 	controllers.HandlePlayer(application)
 	controllers.HandleTome(application)
 	controllers.HandleCard(application)
+	controllers.HandleDeck(application)
 	controllers.HandleMatch(application)
 	controllers.HandlePurchase(application)
 	// ------------------------
