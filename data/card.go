@@ -32,7 +32,7 @@ type CardProgressionData struct {
 var cards map[DataId]*CardData
 
 // card progression
-var cardLeveling map[string][]*CardProgressionData
+var cardLeveling map[string][]CardProgressionData
 
 // implement Data interface
 func (data *CardData) GetDataName() string {
@@ -84,7 +84,7 @@ func LoadLegendaryCardProgression(raw []byte) {
 
 func LoadCardProgression(rarity string, raw []byte) { 
 	if cardLeveling == nil {
-		cardLeveling = map[string][]*CardProgressionData {}
+		cardLeveling = map[string][]CardProgressionData {}
 	}
 	
 	// parse, NOTE: because our key names are differ between files, we can't use a structure like CardsParsed. instead, this map works just as well
@@ -93,14 +93,8 @@ func LoadCardProgression(rarity string, raw []byte) {
 
 	// insert into table
 	for _, dataArray := range container {
-		cardLeveling[rarity] = make([]*CardProgressionData, len(dataArray))
-
-		for i, data := range dataArray {
-			cardLeveling[rarity][i] = &data
-		}
+		cardLeveling[rarity] = dataArray 
 	}
-
-	fmt.Println(fmt.Sprintf("%d levels parsed", len(cardLeveling[rarity]))) // DEBUG
 }
 
 // get card by server ID
@@ -130,5 +124,5 @@ func (data *CardData) GetPortraitSrc() string {
 }
 
 func GetCardProgressionData(rarity string, level int) CardProgressionData {
-	return *cardLeveling[rarity][level]
+	return cardLeveling[rarity][level]
 }

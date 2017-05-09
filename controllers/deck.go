@@ -19,17 +19,10 @@ func SetLeaderCard(context *system.Context) {
 	player := context.GetPlayer()
 
 	//validate params
-	cardDataId := data.ToDataId(cardId)
-	index := -1
-	for i, card := range player.Cards {
-		if cardDataId == card.DataID {
-			index = i
-			break
-		}
-	}
-
-	if index == -1 {
-		context.Fail("Card not found")
+	cardIndexes := player.GetMapOfCardIndexes()
+	index, valid := cardIndexes[data.ToDataId(cardId)]
+	if !valid {
+		context.Fail("Invalid ID")
 		return
 	}
 
@@ -54,17 +47,10 @@ func SetDeckCard(context *system.Context) {
 		return
 	}
 
-	cardDataId := data.ToDataId(cardId)
-	index := -1
-	for i, card := range player.Cards {
-		if cardDataId == card.DataID {
-			index = i
-			break
-		}
-	}
-
-	if index == -1 {
-		context.Fail("Card not found")
+	cardIndexes := player.GetMapOfCardIndexes()
+	index, valid := cardIndexes[data.ToDataId(cardId)]
+	if !valid {
+		context.Fail("Invalid ID")
 		return
 	}
 
