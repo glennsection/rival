@@ -17,6 +17,10 @@ func Load() {
 	// load all data files
 	// ------------------------------------------
 	loadDataFile("Cards", LoadCards)
+	loadDataFile("CommonCardLeveling", LoadCommonCardProgression)
+	loadDataFile("RareCardLeveling", LoadRareCardProgression)
+	loadDataFile("EpicCardLeveling", LoadEpicCardProgression)
+	loadDataFile("LegendaryCardLeveling", LoadLegendaryCardProgression)
 	loadDataFile("Tomes", LoadTomes)
 	loadDataFile("PvPRanking", LoadRanks)
 	loadDataFile("Store", LoadStore)

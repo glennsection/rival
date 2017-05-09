@@ -1,54 +1,70 @@
-{ "CardLeveling":
+{ "CommonCardLeveling":
 [
   {
     "level": "1",
     "cardsNeeded": "1",
-	"cost": "0",
+    "cost": "0",
+    "xp": "0"
   },
   {
     "level": "2",
-    "cardsNeeded": "5",
-	"cost": "20",
+    "cardsNeeded": "15",
+    "cost": "20",
+    "xp": "100"
   },
   {
     "level": "3",
-    "cardsNeeded": "15",
-	"cost": "60",
+    "cardsNeeded": "35",
+    "cost": "60",
+    "xp": "110"
   },
   {
     "level": "4",
-    "cardsNeeded": "35",
-	"cost": "200",
+    "cardsNeeded": "60",
+    "cost": "200",
+    "xp": "120"
   },
   {
     "level": "5",
-    "cardsNeeded": "60",
-	"cost": "425",
+    "cardsNeeded": "90",
+    "cost": "425",
+    "xp": "130"
   },
   {
     "level": "6",
-    "cardsNeeded": "110",
-	"cost": "1000",
+    "cardsNeeded": "145",
+    "cost": "1000",
+    "xp": "140"
   },
   {
     "level": "7",
-    "cardsNeeded": "200",
-	"cost": "2200",
+    "cardsNeeded": "220",
+    "cost": "2200",
+    "xp": "150"
   },
   {
     "level": "8",
-    "cardsNeeded": "350",
-	"cost": "3800",
+    "cardsNeeded": "300",
+    "cost": "3800",
+    "xp": "160"
   },
   {
     "level": "9",
-    "cardsNeeded": "490",
-	"cost": "5250",
+    "cardsNeeded": "400",
+    "cost": "5250",
+    "xp": "170"
   },
   {
     "level": "10",
     "cardsNeeded": "600",
-	"cost": "8000",
+    "cost": "8000",
+    "xp": "180"
   },
+  {
+    "level": "11",
+    "cardsNeeded": "0",
+    "cost": "0",
+    "xp": "190"
+  }
 ]
 }

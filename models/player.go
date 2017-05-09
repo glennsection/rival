@@ -20,6 +20,7 @@ type Player struct {
 	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
 	Name            	string        `bson:"nm" json:"name"`
 	Level           	int           `bson:"lv" json:"level"`
+	Xp 					int 		  `bson:"xp" json:"xp"`
 	RankPoints          int           `bson:"rk" json:"rankPoints"`
 	Rating          	int           `bson:"rt" json:"rating"`
 	WinCount       		int           `bson:"wc" json:"winCount"`
@@ -155,10 +156,7 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 	// since we can have up to 6 cards rewarded and they're unsorted, it can take up to O(6n) to see if our card
 	// list already contains the cards we want to add. if we instead create a map of indexes to cards, we incur a 
 	// cost of O(n) to create the map, and then have O(1) access time thereafter at the cost of memory
-	cardMap := map[data.DataId]int {}
-	for index, card := range player.Cards {
-		cardMap[card.DataID] = index
-	}
+	cardMap := player.GetMapOfCardIndexes()
 
 	for i, id := range reward.Cards {
 		//update the card if we already have it, otherwise instantiate a new one and add it in
@@ -283,4 +281,12 @@ func (player *Player) GetRankName() string {
 		return fmt.Sprintf("Tier %d Rank %d", tier, rankInTier)
 	}
 	return "Unranked"
+}
+
+func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
+	cardMap := map[data.DataId]int {}
+	for index, card := range player.Cards {
+		cardMap[card.DataID] = index
+	}
+	return cardMap
 }
