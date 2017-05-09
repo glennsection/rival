@@ -48,8 +48,6 @@ func (application *Application) handleErrors() {
 	// handle any panic errors
 	if err := recover(); err != nil {
 		util.PrintError("Occurred during execution", err)
-		//log.Errorf("Occurred during execution: %v", err)
-		//log.Printf("[red]%v[-]", string(debug.Stack()))
 	}
 }
 
@@ -99,6 +97,9 @@ func (application *Application) Initialize() {
 	// init auth
 	application.initializeAuthentication()
 
+	// init sockets
+	application.initializeSockets()
+
 	// load data
 	data.Load()
 
@@ -139,7 +140,7 @@ func (application *Application) handle(pattern string, authType AuthenticationTy
 		// init context handling
 		context.BeginRequest(authType, template)
 
-		// handle request
+		// handle request if authenticated
 		if context.Success {
 			handler(context)
 		}

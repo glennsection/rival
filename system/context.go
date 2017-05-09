@@ -232,10 +232,10 @@ func (context *Context) BeginRequest(authType AuthenticationType, template strin
 }
 
 func (context *Context) EndRequest(startTime time.Time) {
-	// cleanup
+	// cleanup connection
 	defer context.DBSession.Close()
 
-	// handle any panic errors during request
+	// handle any panics which occurred during request
 	redirected := false
 	var caughtErr interface{}
 	if caughtErr = recover(); caughtErr != nil {
@@ -247,12 +247,10 @@ func (context *Context) EndRequest(startTime time.Time) {
 			redirected = true
 		}
 	}
-	// catch any panics in this function
+	// catch any panics occurring in this function
 	defer func() {
 		if templateErr := recover(); templateErr != nil {
 			util.PrintError("Occurred during last request", templateErr)
-			// log.Errorf("Occurred during last request: %v", templateErr)
-			// log.Printf("[red]%v[-]", string(debug.Stack()))
 
 			if context.Template != "" {
 				context.Redirect(fmt.Sprintf("/error?message=%v", templateErr), 302) // TODO - can remove parameter once session flashes are working
@@ -261,11 +259,11 @@ func (context *Context) EndRequest(startTime time.Time) {
 	}()
 
 	if !redirected {
-		// check if any custom response was written
+		// check if any custom response was written by the handler
 		if context.responseWritten {
 			// nothing left to do...
 		} else if context.Template != "" {
-			// HTML escape messages
+			// escape messages for HTML template
 			for i, message := range context.Messages {
 				context.Messages[i] = html.EscapeString(message)
 			}
@@ -289,7 +287,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 				context.Redirect(fmt.Sprintf("/error?message=%s", responseString), 302) // TODO - can remove parameter once session flashes are working
 			}
 		} else {
-			// serialize response to json
+			// serialize API response to json
 			var responseString string
 			raw, err := json.Marshal(context)
 			if err == nil {
@@ -300,7 +298,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 				log.Error(responseString)
 			}
 
-			// write response to stream
+			// write API response to stream
 			fmt.Fprint(context.responseWriter, responseString)
 		}
 	}
@@ -320,7 +318,5 @@ func (context *Context) EndRequest(startTime time.Time) {
 	// show the error caught eariler
 	if caughtErr != nil {
 		util.PrintError("Occurred during last request", caughtErr)
-		// log.Errorf("Occurred during last request: %v", caughtErr)
-		// log.Printf("[red]%v[-]", string(debug.Stack()))
 	}
 }
