@@ -16,7 +16,7 @@ func SetLeaderCard(context *system.Context) {
 	cardId := context.Params.GetRequiredString("cardId")
 
 	// get player
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	//validate params
 	cardIndexes := player.GetMapOfCardIndexes()
@@ -39,7 +39,7 @@ func SetDeckCard(context *system.Context) {
 	deckIndex := context.Params.GetRequiredInt("index")
 
 	// get player
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	//validate params
 	if deckIndex > len(player.Decks[player.CurrentDeck].CardIDs) {
@@ -66,7 +66,7 @@ func SwitchDeck(context *system.Context) {
 	currentDeck := context.Params.GetRequiredInt("currentDeck")
 
 	// get player
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	// validate currentDeck
 	if currentDeck < 0 || currentDeck > len(player.Decks) {

@@ -21,7 +21,7 @@ func Purchase(context *system.Context) {
 	}
 
 	// get player
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	// check store item currency cost
 	switch storeItem.Currency {

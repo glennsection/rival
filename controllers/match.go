@@ -13,7 +13,7 @@ func HandleMatch(application *system.Application) {
 }
 
 func MatchClear(context *system.Context) {
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	// clear invalid matches
 	err := models.ClearMatches(context.DB, player)
@@ -26,7 +26,7 @@ func MatchFind(context *system.Context) {
 	// parse parameters
 	matchType := models.MatchType(context.Params.GetInt("type", int(models.MatchRanked)))
 
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	// find or queue match
 	match, err := models.FindMatch(context.DB, player, matchType)
@@ -39,7 +39,7 @@ func MatchFind(context *system.Context) {
 }
 
 func MatchFail(context *system.Context) {
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	// fail any current match
 	err := models.FailMatch(context.DB, player)
@@ -55,7 +55,7 @@ func MatchResult(context *system.Context) {
 	opponentScore := context.Params.GetRequiredInt("opponentScore")
 	host := context.Params.GetRequiredBool("host")
 
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 	
 	// update match as complete
 	reward, err := models.CompleteMatch(context.DB, player, host, outcome, playerScore, opponentScore)

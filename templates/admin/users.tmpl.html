@@ -35,7 +35,7 @@
 										<tr>
 											<td>{{ $user.ID.Hex }}</td>
 											<td>{{ $user.Username }}</td>
-											<td>{{ $.GetUserPlayerName $user.ID }}</td>
+											<td>{{ getUserPlayerName $ $user.ID }}</td>
 											<td>{{ $user.Login }}</td>
 											<td>
 												<a href="/admin/users/edit?userId={{ $user.ID.Hex }}">Edit</a> |

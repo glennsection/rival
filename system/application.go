@@ -74,8 +74,8 @@ func (application *Application) Initialize() {
 	// init profiling
 	HandleProfiling(application.handleProfiler)
 
-	// init templates
-	application.loadTemplates()
+	// // init templates
+	// application.loadTemplates()
 	
 	// connect database
 	application.initializeDatabase()
@@ -174,6 +174,9 @@ func (application *Application) Ignore(pattern string) {
 }
 
 func (application *Application) Serve() {
+	// init templates
+	application.loadTemplates()
+
 	// start serving on port
 	port := application.Env.GetRequiredString("PORT")
 

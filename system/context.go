@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/config"
 	"bloodtales/models"
@@ -123,55 +122,6 @@ func (source ContextStreamSource) Get(name string) interface{} {
 
 	// then use request params
 	return source.context.Request.FormValue(name)
-}
-
-func (context *Context) GetPlayer() (player *models.Player) {
-	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
-	return
-}
-
-func (context *Context) RefreshPlayerName(player *models.Player) {
-	playerKey := fmt.Sprintf("PlayerName:%s", player.ID.Hex())
-	userKey := fmt.Sprintf("UserPlayerName:%s", player.UserID.Hex())
-
-	context.Cache.Set(playerKey, player.Name)
-	context.Cache.Set(userKey, player.Name)
-}
-
-func (context *Context) GetUserPlayerName(userID bson.ObjectId) string {
-	key := fmt.Sprintf("UserPlayerName:%s", userID.Hex())
-	name := "[None]"
-
-	if context.Cache.Has(key) {
-		name = context.Cache.GetString(key, "[None]")
-	}
-
-	if name == "[None]" {
-		player, err := models.GetPlayerByUser(context.DB, userID)
-		if err == nil && player != nil {
-			context.Cache.Set(key, player.Name)
-			name = player.Name
-		}
-	}
-	return name
-}
-
-func (context *Context) GetPlayerName(playerID bson.ObjectId) string {
-	key := fmt.Sprintf("PlayerName:%s", playerID.Hex())
-	name := "[None]"
-
-	if context.Cache.Has(key) {
-		name = context.Cache.GetString(key, "[None]")
-	}
-
-	if name == "[None]" {
-		player, err := models.GetPlayerById(context.DB, playerID)
-		if err == nil && player != nil {
-			context.Cache.Set(key, player.Name)
-			name = player.Name
-		}
-	}
-	return name
 }
 
 func (context *Context) Message(message string) {

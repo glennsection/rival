@@ -10,11 +10,16 @@ import (
 )
 
 var (
+	// default template functions
 	templateFuncMap = template.FuncMap {
 		"add": templateAdd,
 		"shortTime": templateShortTime,
 	}
 )
+
+func AddTemplateFunc(name string, f interface{}) {
+	templateFuncMap[name] = f
+}
 
 func (application *Application) loadTemplates() {
 	var templates []string

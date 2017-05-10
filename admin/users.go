@@ -43,7 +43,9 @@ func EditUser(context *system.Context) {
 
 	player, err := models.GetPlayerByUser(context.DB, userId)
 	if err != nil {
-		panic(err)
+		if err.Error() != "not found" {
+			panic(err)
+		}
 	}
 
 	// handle request method
@@ -55,52 +57,54 @@ func EditUser(context *system.Context) {
 			user.Update(context.DB)
 		}
 
-		name := context.Params.GetString("name", "")
-		if name != "" {
-			player.Name = name
-		}
+		if player != nil {
+			name := context.Params.GetString("name", "")
+			if name != "" {
+				player.Name = name
+			}
 
-		standardCurrency := context.Params.GetInt("standardCurrency", -1)
-		if standardCurrency >= 0 {
-			player.StandardCurrency = standardCurrency
-		}
+			standardCurrency := context.Params.GetInt("standardCurrency", -1)
+			if standardCurrency >= 0 {
+				player.StandardCurrency = standardCurrency
+			}
 
-		premiumCurrency := context.Params.GetInt("premiumCurrency", -1)
-		if premiumCurrency >= 0 {
-			player.PremiumCurrency = premiumCurrency
-		}
+			premiumCurrency := context.Params.GetInt("premiumCurrency", -1)
+			if premiumCurrency >= 0 {
+				player.PremiumCurrency = premiumCurrency
+			}
 
-		level := context.Params.GetInt("level", -1)
-		if level >= 0 {
-			player.Level = level
-		}
+			level := context.Params.GetInt("level", -1)
+			if level >= 0 {
+				player.Level = level
+			}
 
-		rating := context.Params.GetInt("rating", -1)
-		if rating >= 0 {
-			player.Rating = rating
-		}
+			rating := context.Params.GetInt("rating", -1)
+			if rating >= 0 {
+				player.Rating = rating
+			}
 
-		rankPoints := context.Params.GetInt("rankPoints", -1)
-		if rankPoints >= 0 {
-			player.RankPoints = rankPoints
-		}
+			rankPoints := context.Params.GetInt("rankPoints", -1)
+			if rankPoints >= 0 {
+				player.RankPoints = rankPoints
+			}
 
-		winCount := context.Params.GetInt("winCount", -1)
-		if winCount >= 0 {
-			player.WinCount = winCount
-		}
+			winCount := context.Params.GetInt("winCount", -1)
+			if winCount >= 0 {
+				player.WinCount = winCount
+			}
 
-		lossCount := context.Params.GetInt("lossCount", -1)
-		if lossCount >= 0 {
-			player.LossCount = lossCount
-		}
+			lossCount := context.Params.GetInt("lossCount", -1)
+			if lossCount >= 0 {
+				player.LossCount = lossCount
+			}
 
-		matchCount := context.Params.GetInt("matchCount", -1)
-		if matchCount >= 0 {
-			player.MatchCount = matchCount
-		}
+			matchCount := context.Params.GetInt("matchCount", -1)
+			if matchCount >= 0 {
+				player.MatchCount = matchCount
+			}
 
-		player.Update(context.DB)
+			player.Update(context.DB)
+		}
 
 		context.Message("Player updated!")
 	}

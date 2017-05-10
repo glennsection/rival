@@ -95,7 +95,7 @@ func RushTome(context *system.Context) {
 }
 
 func ClaimFreeTome(context *system.Context) {
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 	reward, err := player.ClaimFreeTome(context.DB)
 
 	if err != nil {
@@ -111,7 +111,7 @@ func ClaimFreeTome(context *system.Context) {
 }
 
 func ClaimArenaTome(context *system.Context) {
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 	reward, err := player.ClaimArenaTome(context.DB)
 
 	if err != nil {
@@ -128,7 +128,7 @@ func ClaimArenaTome(context *system.Context) {
 
 func ValidateTomeRequest(context *system.Context) (index int, player *models.Player, success bool) {
 	// initialize values
-	player = context.GetPlayer()
+	player = GetPlayer(context)
 	success = false
 
 	// parse parameters
