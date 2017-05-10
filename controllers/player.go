@@ -15,7 +15,7 @@ func HandlePlayer(application *system.Application) {
 	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
 
 	// template functions
-	system.AddTemplateFunc("getUserPlayerName", GetUserPlayerName)
+	system.AddTemplateFunc("getUserName", GetUserName)
 	system.AddTemplateFunc("getPlayerName", GetPlayerName)
 }
 
@@ -24,16 +24,16 @@ func GetPlayer(context *system.Context) (player *models.Player) {
 	return
 }
 
-func RefreshPlayerName(context *system.Context, player *models.Player) {
-	playerKey := fmt.Sprintf("PlayerName:%s", player.ID.Hex())
-	userKey := fmt.Sprintf("UserPlayerName:%s", player.UserID.Hex())
+func RefreshUserName(context *system.Context, name string, userID bson.ObjectId, playerID bson.ObjectId) {
+	userKey := fmt.Sprintf("UserName:%s", userID.Hex())
+	playerKey := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
 
-	context.Cache.Set(playerKey, player.Name)
-	context.Cache.Set(userKey, player.Name)
+	context.Cache.Set(userKey, name)
+	context.Cache.Set(playerKey, name)
 }
 
-func GetUserPlayerName(context *system.Context, userID bson.ObjectId) string {
-	key := fmt.Sprintf("UserPlayerName:%s", userID.Hex())
+func GetUserName(context *system.Context, userID bson.ObjectId) string {
+	key := fmt.Sprintf("UserName:%s", userID.Hex())
 	name := ""
 
 	if context.Cache.Has(key) {
@@ -41,30 +41,30 @@ func GetUserPlayerName(context *system.Context, userID bson.ObjectId) string {
 	}
 
 	if name == "" {
-		player, err := models.GetPlayerByUser(context.DB, userID)
-		if err == nil && player != nil {
-			context.Cache.Set(key, player.Name)
-			name = player.Name
+		user, err := models.GetUserById(context.DB, userID)
+		if err == nil && user != nil {
+			context.Cache.Set(key, user.Name)
+			name = user.Name
 		}
 	}
 	return name
 }
 
 func GetPlayerName(context *system.Context, playerID bson.ObjectId) string {
-	key := fmt.Sprintf("PlayerName:%s", playerID.Hex())
+	key := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
 	name := ""
 
 	if context.Cache.Has(key) {
 		name = context.Cache.GetString(key, "")
 	}
 
-	if name == "" {
-		player, err := models.GetPlayerById(context.DB, playerID)
-		if err == nil && player != nil {
-			context.Cache.Set(key, player.Name)
-			name = player.Name
-		}
-	}
+	// if name == "" { // TODO FIXME...
+	// 	user, err := models.GetUserByPlayerID(context.DB, playerID)
+	// 	if err == nil && user != nil {
+	// 		context.Cache.Set(key, user.Name)
+	// 		name = user.Name
+	// 	}
+	// }
 	return name
 }
 
@@ -72,18 +72,24 @@ func SetPlayerName(context *system.Context) {
 	// parse parameters
 	name := context.Params.GetRequiredString("name")
 
-	// get player
-	player := GetPlayer(context)
+	// get user
+	user := context.User
 
 	// set name and update
-	player.Name = name
-	err := player.Update(context.DB)
+	user.Name = name
+	err := user.Update(context.DB)
+	if err != nil {
+		panic(err)
+	}
+
+	// get player
+	player, err := models.GetPlayerByUser(context.DB, user.ID)
 	if err != nil {
 		panic(err)
 	}
 
 	// refresh cached name
-	RefreshPlayerName(context, player)
+	RefreshUserName(context, name, user.ID, player.ID)
 }
 
 func SetPlayer(context *system.Context) {
@@ -103,11 +109,14 @@ func FetchPlayer(context *system.Context) {
 	// get player
 	player := GetPlayer(context)
 	if player != nil {
-
+		// update rewards
 		err := player.UpdateRewards(context.DB)
 		if(err != nil) {
 			panic(err)
 		}
+
+		// add in user name
+		player.Name = context.User.Name
 		
 		// set successful response
 		context.Message("Found player")

@@ -33,7 +33,7 @@ func (context *Context) authenticateDevice(required bool) (err error) {
 				}
 
 				// insert new player
-				player := models.CreatePlayer(context.User.ID, "")
+				player := models.CreatePlayer(context.User.ID)
 				err = player.Update(context.DB)
 				if err != nil {
 					panic(err)

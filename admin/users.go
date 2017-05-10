@@ -3,6 +3,8 @@ package admin
 import (
 	"fmt"
 	
+	"gopkg.in/mgo.v2/bson"
+
 	"bloodtales/system"
 	"bloodtales/models"
 )
@@ -15,21 +17,74 @@ func handleAdminUsers(application *system.Application) {
 }
 
 func ShowUsers(context *system.Context) {
-	// paginate users query
-	pagination, err := context.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize)
-	if err != nil {
-		panic(err)
-	}
+	// parse parameters
+	search := context.Params.GetString("search", "")
 
-	// get resulting users
-	var users []*models.User
-	err = pagination.All(&users)
-	if err != nil {
-		panic(err)
-	}
+	// process search terms
+	if search != "" {
+		// build query
+		query := context.DB.C(models.PlayerCollectionName).Find(bson.M {
+			"nm": bson.M {
+				"$regex": bson.RegEx {
+					Pattern: fmt.Sprintf(".*%s.*", search),
+					Options: "i",
+				},
+			},
+		})
 
-	// set template bindings
-	context.Data = users
+		// sorting TODO
+		// query = query.Sort()
+
+		// paginate users query
+		pagination, err := context.Paginate(query, DefaultPageSize)
+		if err != nil {
+			panic(err)
+		}
+
+		// get resulting players
+		var players []*models.Player
+		err = pagination.All(&players)
+		if err != nil {
+			panic(err)
+		}
+
+		// get users
+		userIds := make([]bson.ObjectId, len(players))
+		for i, player := range players {
+			userIds[i] = player.UserID
+		}
+		context.DB.C(models.UserCollectionName).Find(bson.M {
+			"_id": bson.M {
+				"$in": userIds,
+			},
+		})
+
+		// get resulting users
+		var users []*models.User
+		err = pagination.All(&users)
+		if err != nil {
+			panic(err)
+		}
+
+		// set template bindings
+		context.Data = users
+	} else {
+		// paginate users query
+		pagination, err := context.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize)
+		if err != nil {
+			panic(err)
+		}
+
+		// get resulting users
+		var users []*models.User
+		err = pagination.All(&users)
+		if err != nil {
+			panic(err)
+		}
+
+		// set template bindings
+		context.Data = users
+	}
 }
 
 func EditUser(context *system.Context) {
@@ -51,18 +106,25 @@ func EditUser(context *system.Context) {
 	// handle request method
 	switch context.Request.Method {
 	case "POST":
-		email := context.Params.GetString("email", "")
-		if email != "" {
-			user.Email = email
+		userUpdated := false
+
+		tag := context.Params.GetString("tag", "")
+		if tag != "" {
+			user.Tag = tag
+			userUpdated = true
+		}
+
+		name := context.Params.GetString("name", "")
+		if tag != "" {
+			user.Name = name
+			userUpdated = true
+		}
+
+		if userUpdated {
 			user.Update(context.DB)
 		}
 
 		if player != nil {
-			name := context.Params.GetString("name", "")
-			if name != "" {
-				player.Name = name
-			}
-
 			standardCurrency := context.Params.GetInt("standardCurrency", -1)
 			if standardCurrency >= 0 {
 				player.StandardCurrency = standardCurrency

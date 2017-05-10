@@ -16,6 +16,17 @@
 						<div class="card">
 							<div class="header">
 								<div class="pull-right">
+									<form class="form-inline" role="search">
+										<div class="input-group">
+											<input class="form-control" placeholder="Search" name="search" id="search" type="text">
+											<span class="input-group-btn">
+												<button class="btn btn-default" type="submit">
+													<i class="fa fa-search"></i>
+												</button>
+											</span>
+										</div>
+									</form>
+
 									{{ .RenderPagination }}
 								</div>
 								<h4 class="title">Players</h4>
@@ -24,19 +35,19 @@
 							<div class="content table-responsive table-full-width">
 								<table class="table table-hover table-striped">
 									<thead>
-										<th>ID</th>
 										<th>Device</th>
 										<th>Name</th>
+										<th>Player Tag</th>
 										<th>Last Login</th>
 										<th></th>
 									</thead>
 									<tbody>
 										{{ range $index, $user := .Data }}
 										<tr>
-											<td>{{ $user.ID.Hex }}</td>
 											<td>{{ $user.Username }}</td>
-											<td>{{ getUserPlayerName $ $user.ID }}</td>
-											<td>{{ $user.Login }}</td>
+											<td>{{ getUserName $ $user.ID }}</td>
+											<td>{{ $user.Tag }}</td>
+											<td>{{ shortTime $user.LoginTime }}</td>
 											<td>
 												<a href="/admin/users/edit?userId={{ $user.ID.Hex }}">Edit</a> |
 												<a href="#"
