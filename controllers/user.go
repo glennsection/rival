@@ -26,7 +26,7 @@ func UserLogin(context *system.Context) {
 		//context.Track("Login", bson.M { "mood": "happy" })
 
 		// respond with player data
-		GetPlayer(context)
+		FetchPlayer(context)
 	}
 }
 

@@ -99,20 +99,20 @@ func SetPlayer(context *system.Context) {
 	context.Message("Player updated successfully")
 }
 
-// func GetPlayer(context *system.Context) {
-// 	// get player
-// 	player := GetPlayer(context)
-// 	if player != nil {
+func FetchPlayer(context *system.Context) {
+	// get player
+	player := GetPlayer(context)
+	if player != nil {
 
-// 		err := player.UpdateRewards(context.DB)
-// 		if(err != nil) {
-// 			panic(err)
-// 		}
+		err := player.UpdateRewards(context.DB)
+		if(err != nil) {
+			panic(err)
+		}
 		
-// 		// set successful response
-// 		context.Message("Found player")
-// 		context.Data = player
-// 	} else {
-// 		context.Fail(fmt.Sprintf("Failed to find player for username: %v", context.User.Username))
-// 	}
-// }
+		// set successful response
+		context.Message("Found player")
+		context.Data = player
+	} else {
+		context.Fail(fmt.Sprintf("Failed to find player for username: %v", context.User.Username))
+	}
+}
