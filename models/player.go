@@ -149,7 +149,7 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
 }
 
 func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *TomeReward, err error) {
-	reward = tome.OpenTome(player.Level)
+	reward = tome.OpenTome(data.GetAccountLevel(player.Xp))
 	player.PremiumCurrency += reward.PremiumCurrency
 	player.StandardCurrency += reward.StandardCurrency
 

@@ -16,6 +16,7 @@ func Load() {
 
 	// load all data files
 	// ------------------------------------------
+	loadDataFile("PlayerLevelProgression", LoadPlayerLevelProgression)
 	loadDataFile("Cards", LoadCards)
 	loadDataFile("CommonCardLeveling", LoadCommonCardProgression)
 	loadDataFile("RareCardLeveling", LoadRareCardProgression)

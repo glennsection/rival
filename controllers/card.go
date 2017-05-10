@@ -35,6 +35,7 @@ func UpgradeCard(context *system.Context) {
 
 	player.StandardCurrency -= levelData.Cost
 	player.Xp += levelData.Xp
+	player.Level = data.GetAccountLevel(player.Xp)
 	card.CardCount -= levelData.CardsNeeded
 	card.Level += 1
 
