@@ -1,11 +1,59 @@
 package models
 
+import (
+	"encoding/json"
+
+	"bloodtales/data"
+)
+
 type Deck struct {
-	LeaderCardID int   `bson:"ld" json:"leaderCardId"`
-	CardIDs      []int `bson:"cd" json:"cardIds"`
+	LeaderCardID 	data.DataId 	`bson:"ld" json:"leaderCardId"`
+	CardIDs      	[]data.DataId  	`bson:"cd" json:"cardIds"`
 }
 
-func (deck *Deck) SetDeckCard(card int, deckIndex int) {
+type DeckClientAlias struct {
+	LeaderCardID 	string 			`json:"leaderCardId"`
+	CardIDs 		[]string 		`json:"cardIds"`
+}
+
+// custom marshalling
+func (deck *Deck) MarshalJSON() ([]byte, error) {
+	// create client model
+	client := &DeckClientAlias {
+		LeaderCardID: data.ToDataName(deck.LeaderCardID),
+	}
+
+	client.CardIDs = make([]string, len(deck.CardIDs))
+	for i, cardId := range deck.CardIDs {
+		client.CardIDs[i] = data.ToDataName(cardId)
+	}
+	
+	// marshal with client model
+	return json.Marshal(client)
+}
+
+// custom unmarshalling
+func (deck *Deck) UnmarshalJSON(raw []byte) error {
+	// create client model
+	client := &DeckClientAlias {}
+
+	// unmarshal to client model
+	if err := json.Unmarshal(raw, &client); err != nil {
+		return err
+	}
+
+	// server data IDs
+	deck.LeaderCardID = data.ToDataId(client.LeaderCardID)
+
+	deck.CardIDs = make([]data.DataId, len(client.CardIDs))
+	for i, cardId := range client.CardIDs {
+		deck.CardIDs[i] = data.ToDataId(cardId)
+	}
+
+	return nil
+}
+
+func (deck *Deck) SetDeckCard(card data.DataId, deckIndex int) {
 	//card is already at its desired position
 	if card == deck.CardIDs[deckIndex] {
 		return
@@ -31,7 +79,7 @@ func (deck *Deck) SetDeckCard(card int, deckIndex int) {
 	deck.CardIDs[deckIndex] = card
 }
 
-func (deck *Deck) SetLeaderCard(card int) {
+func (deck *Deck) SetLeaderCard(card data.DataId) {
 	//card is already the leader card
 	if card == deck.LeaderCardID {
 		return

@@ -14,20 +14,21 @@ func HandleDeck(application *system.Application) {
 func SetLeaderCard(context *system.Context) {
 	// parse parameters
 	cardId := context.Params.GetRequiredString("cardId")
+	cardDataId := data.ToDataId(cardId)
 
 	// get player
 	player := GetPlayer(context)
 
 	//validate params
 	cardIndexes := player.GetMapOfCardIndexes()
-	index, valid := cardIndexes[data.ToDataId(cardId)]
+	_, valid := cardIndexes[cardDataId]
 	if !valid {
 		context.Fail("Invalid ID")
 		return
 	}
 
 	deck := &(player.Decks[player.CurrentDeck])
-	deck.SetLeaderCard(index)
+	deck.SetLeaderCard(cardDataId)
 	context.Data = deck
 
 	player.Update(context.DB)
@@ -37,6 +38,8 @@ func SetDeckCard(context *system.Context) {
 	// parse parameters
 	cardId := context.Params.GetRequiredString("cardId")
 	deckIndex := context.Params.GetRequiredInt("index")
+
+	cardDataId := data.ToDataId(cardId)
 
 	// get player
 	player := GetPlayer(context)
@@ -48,14 +51,14 @@ func SetDeckCard(context *system.Context) {
 	}
 
 	cardIndexes := player.GetMapOfCardIndexes()
-	index, valid := cardIndexes[data.ToDataId(cardId)]
+	_, valid := cardIndexes[cardDataId]
 	if !valid {
 		context.Fail("Invalid ID")
 		return
 	}
 
 	deck := &(player.Decks[player.CurrentDeck])
-	deck.SetDeckCard(index, deckIndex)
+	deck.SetDeckCard(cardDataId, deckIndex)
 	context.Data = deck
 
 	player.Update(context.DB)
