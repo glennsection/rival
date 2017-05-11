@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/system"
@@ -21,9 +22,10 @@ func ShowUsers(context *system.Context) {
 	search := context.Params.GetString("search", "")
 
 	// process search terms
+	var query *mgo.Query = nil
 	if search != "" {
 		// build query
-		query := context.DB.C(models.PlayerCollectionName).Find(bson.M {
+		query = context.DB.C(models.UserCollectionName).Find(bson.M {
 			"nm": bson.M {
 				"$regex": bson.RegEx {
 					Pattern: fmt.Sprintf(".*%s.*", search),
@@ -31,60 +33,28 @@ func ShowUsers(context *system.Context) {
 				},
 			},
 		})
-
-		// sorting TODO
-		// query = query.Sort()
-
-		// paginate users query
-		pagination, err := context.Paginate(query, DefaultPageSize)
-		if err != nil {
-			panic(err)
-		}
-
-		// get resulting players
-		var players []*models.Player
-		err = pagination.All(&players)
-		if err != nil {
-			panic(err)
-		}
-
-		// get users
-		userIds := make([]bson.ObjectId, len(players))
-		for i, player := range players {
-			userIds[i] = player.UserID
-		}
-		context.DB.C(models.UserCollectionName).Find(bson.M {
-			"_id": bson.M {
-				"$in": userIds,
-			},
-		})
-
-		// get resulting users
-		var users []*models.User
-		err = pagination.All(&users)
-		if err != nil {
-			panic(err)
-		}
-
-		// set template bindings
-		context.Data = users
 	} else {
-		// paginate users query
-		pagination, err := context.Paginate(context.DB.C(models.UserCollectionName).Find(nil), DefaultPageSize)
-		if err != nil {
-			panic(err)
-		}
-
-		// get resulting users
-		var users []*models.User
-		err = pagination.All(&users)
-		if err != nil {
-			panic(err)
-		}
-
-		// set template bindings
-		context.Data = users
+		query = context.DB.C(models.UserCollectionName).Find(nil)
 	}
+
+	// sorting
+	query = context.Sort(query)
+
+	// paginate users query
+	pagination, err := context.Paginate(query, DefaultPageSize)
+	if err != nil {
+		panic(err)
+	}
+
+	// get resulting users
+	var users []*models.User
+	err = pagination.All(&users)
+	if err != nil {
+		panic(err)
+	}
+
+	// set template bindings
+	context.Data = users
 }
 
 func EditUser(context *system.Context) {

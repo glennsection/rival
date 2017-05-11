@@ -105,6 +105,9 @@ func (application *Application) Initialize() {
 
 	// init player tags
 	application.initializeTags()
+
+	// init table sort
+	application.initializeSort()
 }
 
 func (application *Application) Close() {

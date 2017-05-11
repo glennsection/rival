@@ -15,8 +15,8 @@ func HandlePlayer(application *system.Application) {
 	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
 
 	// template functions
-	system.AddTemplateFunc("getUserName", GetUserName)
-	system.AddTemplateFunc("getPlayerName", GetPlayerName)
+	system.AddTemplateFunc("getUserName", templateGetUserName)
+	system.AddTemplateFunc("getPlayerName", templateGetPlayerName)
 }
 
 func GetPlayer(context *system.Context) (player *models.Player) {
@@ -32,7 +32,7 @@ func RefreshUserName(context *system.Context, name string, userID bson.ObjectId,
 	context.Cache.Set(playerKey, name)
 }
 
-func GetUserName(context *system.Context, userID bson.ObjectId) string {
+func templateGetUserName(context *system.Context, userID bson.ObjectId) string {
 	key := fmt.Sprintf("UserName:%s", userID.Hex())
 	name := ""
 
@@ -50,7 +50,7 @@ func GetUserName(context *system.Context, userID bson.ObjectId) string {
 	return name
 }
 
-func GetPlayerName(context *system.Context, playerID bson.ObjectId) string {
+func templateGetPlayerName(context *system.Context, playerID bson.ObjectId) string {
 	key := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
 	name := ""
 
