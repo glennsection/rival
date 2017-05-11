@@ -9,20 +9,36 @@
 		<tr>
 			<td><img class="game-card-portrait" src="{{ $card.GetPortraitSrc }}"/></td>
 			<td>
-				<p><span class="game-card-label">Level: </span>{{ $card.Level }}</p>
-				<p><span class="game-card-label">Count: </span>{{ $card.CardCount }}</p>
-				<p><span class="game-card-label">Wins: </span>{{ $card.WinCount }}</p>
-				<p><span class="game-card-label">Leader Wins: </span>{{ $card.LeaderWinCount }}</p>
-				<p>
-					<a href="/admin/cards/edit?playerId={{ $player.ID.Hex }}&card={{ $card.DataID }}">Edit</a> |
-					<a href="#"
-					data-href="/admin/cards/delete?playerId={{ $player.ID.Hex }}&card={{ $card.DataID }}"
-					data-toggle="modal"
-					data-body="Do you want to permanently remove the card from this player: {{ toDataName $card.DataID }}?"
-					data-confirm="Delete"
-					data-deny="Cancel"
-					data-target="#confirm-dialog">Delete</a>
-				</p>
+				<form class="form-inline" action="/admin/cards/edit" method="post">
+					<input type="hidden" name="playerId" value="{{ $player.ID.Hex }}">
+					<input type="hidden" name="card" value="{{ $card.DataID }}">
+					<p>
+						<span class="game-card-label">Level: </span>
+						<input type="text" class="form-control input-sm" name="level" value="{{ $card.Level }}">
+					</p>
+					<p>
+						<span class="game-card-label">Count: </span>
+						<input type="text" class="form-control input-sm" name="cardCount" value="{{ $card.CardCount }}">
+					</p>
+					<p>
+						<span class="game-card-label">Wins: </span>
+						<input type="text" class="form-control input-sm" name="winCount" value="{{ $card.WinCount }}">
+					</p>
+					<p>
+						<span class="game-card-label">Leader Wins: </span>
+						<input type="text" class="form-control input-sm" name="leaderWinCount" value="{{ $card.LeaderWinCount }}">
+					</p>
+					<p>
+						<button type="submit" class="btn btn-info btn-fill">Update</button>
+						<a href="#" class="btn btn-danger"
+							data-href="/admin/cards/delete?playerId={{ $player.ID.Hex }}&card={{ $card.DataID }}"
+							data-toggle="modal"
+							data-body="Do you want to permanently remove the card from this player: {{ toDataName $card.DataID }}?"
+							data-confirm="Delete"
+							data-deny="Cancel"
+							data-target="#confirm-dialog">Delete</a>
+					</p>
+				</form>
 			</td>
 		</tr>
 		<tbody>

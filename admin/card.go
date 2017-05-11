@@ -12,98 +12,32 @@ import (
 )
 
 func handleAdminCards(application *system.Application) {
-	//handleAdminTemplate(application, "/admin/cards/edit", system.TokenAuthentication, EditCard, "card.tmpl.html")
+	handleAdminTemplate(application, "/admin/cards/edit", system.TokenAuthentication, EditCard, "")
 	handleAdminTemplate(application, "/admin/cards/delete", system.TokenAuthentication, DeleteCard, "")
 }
 
 func EditCard(context *system.Context) {
-	// // parse parameters
-	// userId := context.Params.GetRequiredID("userId")
+	// parse parameters
+	playerId := context.Params.GetRequiredID("playerId")
+	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
-	// user, err := models.GetUserById(context.DB, userId)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	player, err := models.GetPlayerById(context.DB, playerId)
+	if err != nil {
+		panic(err)
+	}
 
-	// player, err := models.GetPlayerByUser(context.DB, userId)
-	// if err != nil {
-	// 	if err.Error() != "not found" {
-	// 		panic(err)
-	// 	}
-	// }
+	for i, card := range player.Cards {
+		if card.DataID == cardId {
+			player.Cards[i].Level = context.Params.GetRequiredInt("level")
+			player.Cards[i].CardCount = context.Params.GetRequiredInt("cardCount")
+			player.Cards[i].WinCount = context.Params.GetRequiredInt("winCount")
+			player.Cards[i].LeaderWinCount = context.Params.GetRequiredInt("leaderWinCount")
 
-	// // handle request method
-	// switch context.Request.Method {
-	// case "POST":
-	// 	userUpdated := false
-
-	// 	tag := context.Params.GetString("tag", "")
-	// 	if tag != "" {
-	// 		user.Tag = tag
-	// 		userUpdated = true
-	// 	}
-
-	// 	name := context.Params.GetString("name", "")
-	// 	if tag != "" {
-	// 		user.Name = name
-	// 		userUpdated = true
-	// 	}
-
-	// 	if userUpdated {
-	// 		user.Update(context.DB)
-	// 	}
-
-	// 	if player != nil {
-	// 		standardCurrency := context.Params.GetInt("standardCurrency", -1)
-	// 		if standardCurrency >= 0 {
-	// 			player.StandardCurrency = standardCurrency
-	// 		}
-
-	// 		premiumCurrency := context.Params.GetInt("premiumCurrency", -1)
-	// 		if premiumCurrency >= 0 {
-	// 			player.PremiumCurrency = premiumCurrency
-	// 		}
-
-	// 		level := context.Params.GetInt("level", -1)
-	// 		if level >= 0 {
-	// 			player.Level = level
-	// 		}
-
-	// 		rating := context.Params.GetInt("rating", -1)
-	// 		if rating >= 0 {
-	// 			player.Rating = rating
-	// 		}
-
-	// 		rankPoints := context.Params.GetInt("rankPoints", -1)
-	// 		if rankPoints >= 0 {
-	// 			player.RankPoints = rankPoints
-	// 		}
-
-	// 		winCount := context.Params.GetInt("winCount", -1)
-	// 		if winCount >= 0 {
-	// 			player.WinCount = winCount
-	// 		}
-
-	// 		lossCount := context.Params.GetInt("lossCount", -1)
-	// 		if lossCount >= 0 {
-	// 			player.LossCount = lossCount
-	// 		}
-
-	// 		matchCount := context.Params.GetInt("matchCount", -1)
-	// 		if matchCount >= 0 {
-	// 			player.MatchCount = matchCount
-	// 		}
-
-	// 		player.Update(context.DB)
-	// 	}
-
-	// 	context.Message("Player updated!")
-	// }
+			player.Update(context.DB)
+		}
+	}
 	
-	// // set template bindings
-	// context.Data = user
-	// context.Params.Set("user", user)
-	// context.Params.Set("player", player)
+	context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", player.UserID.Hex()), 302)
 }
 
 func DeleteCard(context *system.Context) {
