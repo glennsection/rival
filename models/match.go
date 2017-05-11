@@ -228,7 +228,7 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome MatchOutcome, playerScore int, opponentScore int) (matchReward *MatchReward, err error) {
+func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome MatchOutcome, playerScore int, opponentScore int) (match *Match, matchReward *MatchReward, err error) {
 	// prepare match change
 	change := mgo.Change {
 		Upsert: false,
@@ -277,7 +277,6 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 
 	// find active match for player, and update if found
 	foundActiveMatch := true
-	var match *Match
 	_, err = database.C(MatchCollectionName).Find(bson.M {
 		idField: player.ID,
 		"st": MatchActive,

@@ -80,22 +80,28 @@
 
 										{{ if $player }}
 											<div class="row">
-												<div class="col-md-4">
+												<div class="col-md-3">
 													<div class="form-group">
 														<label>Player Level</label>
 														<input type="text" class="form-control" placeholder="0" name="level" value="{{ $player.Level }}">
 													</div>
 												</div>
-												<div class="col-md-4">
+												<div class="col-md-3">
 													<div class="form-group">
 														<label>Player Rating (Elo)</label>
 														<input type="text" class="form-control" placeholder="0" name="rating" value="{{ $player.Rating }}">
 													</div>
 												</div>
-												<div class="col-md-4">
+												<div class="col-md-3">
 													<div class="form-group">
 														<label>Player Rank (Stars)</label>
 														<input type="text" class="form-control" placeholder="0" name="rankPoints" value="{{ $player.RankPoints }}">
+													</div>
+												</div>
+												<div class="col-md-3">
+													<div class="form-group">
+														<label>Arena Points</label>
+														<input type="text" class="form-control" placeholder="0" name="arenaPoints" value="{{ $player.ArenaPoints }}">
 													</div>
 												</div>
 											</div>

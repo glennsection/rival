@@ -58,10 +58,20 @@ func MatchResult(context *system.Context) {
 	player := GetPlayer(context)
 	
 	// update match as complete
-	reward, err := models.CompleteMatch(context.DB, player, host, outcome, playerScore, opponentScore)
+	match, reward, err := models.CompleteMatch(context.DB, player, host, outcome, playerScore, opponentScore)
 	if err != nil {
 		panic(err)
 	}
+
+	// get opponent
+	opponent, err := match.GetOpponent(context.DB)
+	if err != nil {
+		panic(err)
+	}
+
+	// update leaderboards
+	updatePlayerPlace(context, player)
+	updatePlayerPlace(context, opponent)
 
 	if reward != nil {
 		context.Data = reward

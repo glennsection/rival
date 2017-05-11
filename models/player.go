@@ -259,6 +259,17 @@ func (player *Player) Delete(database *mgo.Database) (err error) {
 	return database.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
 }
 
+func (player *Player) GetDrawCount() int {
+	return player.MatchCount - player.WinCount - player.LossCount
+}
+
+func (player *Player) GetWinRatio() string {
+	if player.MatchCount > 0 {
+		return fmt.Sprintf("%d%%", player.WinCount * 100 / player.MatchCount)
+	}
+	return "-"
+}
+
 func (player *Player) GetRankData() *data.RankData {
 	return data.GetRank(player.RankPoints)
 }
@@ -276,7 +287,8 @@ func (player *Player) GetRankName() string {
 	if rank != nil {
 		tier := rank.GetTier()
 		rankInTier := rank.Level - (tier - 1) * 5
-		return fmt.Sprintf("Tier %d Rank %d", tier, rankInTier)
+		// return fmt.Sprintf("Tier %d Rank %d", tier, rankInTier)
+		return fmt.Sprintf("%d-%d", tier, rankInTier)
 	}
 	return "Unranked"
 }

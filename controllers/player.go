@@ -14,6 +14,7 @@ func HandlePlayer(application *system.Application) {
 	application.HandleAPI("/player/set", system.TokenAuthentication, SetPlayer)
 	application.HandleAPI("/player/name", system.TokenAuthentication, SetPlayerName)
 	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
+	application.HandleAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
 
 	// template functions
 	util.AddTemplateFunc("getUserName", templateGetUserName)
@@ -35,12 +36,10 @@ func RefreshUserName(context *system.Context, name string, userID bson.ObjectId,
 
 func templateGetUserName(context *system.Context, userID bson.ObjectId) string {
 	key := fmt.Sprintf("UserName:%s", userID.Hex())
-	name := ""
 
-	if context.Cache.Has(key) {
-		name = context.Cache.GetString(key, "")
-	}
+	name := context.Cache.GetString(key, "")
 
+	// immediately cache latest name
 	if name == "" {
 		user, err := models.GetUserById(context.DB, userID)
 		if err == nil && user != nil {
@@ -53,20 +52,60 @@ func templateGetUserName(context *system.Context, userID bson.ObjectId) string {
 
 func templateGetPlayerName(context *system.Context, playerID bson.ObjectId) string {
 	key := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
-	name := ""
 
-	if context.Cache.Has(key) {
-		name = context.Cache.GetString(key, "")
+	name := context.Cache.GetString(key, "")
+
+	// immediately cache latest name
+	if name == "" {
+		player, _ := models.GetPlayerById(context.DB, playerID)
+		if player != nil {
+			user, _ := models.GetUserById(context.DB, player.UserID)
+			if user != nil {
+				context.Cache.Set(key, user.Name)
+				name = user.Name
+			}
+		}
 	}
+	return name
+}
 
-	// if name == "" { // TODO FIXME...
-	// 	user, err := models.GetUserByPlayerID(context.DB, playerID)
+func templateGetPlayerPlace(context *system.Context, player *models.Player) int {
+	return 0;
+	// key := fmt.Sprintf("UserName:%s", userID.Hex())
+
+	// name := context.Cache.GetString(key, "")
+
+	// // immediately cache latest name
+	// if name == "" {
+	// 	user, err := models.GetUserById(context.DB, userID)
 	// 	if err == nil && user != nil {
 	// 		context.Cache.Set(key, user.Name)
 	// 		name = user.Name
 	// 	}
 	// }
-	return name
+	// return name
+}
+
+func updateAllPlayersPlace(context *system.Context) {
+	var players []*models.Player
+	context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
+
+	for _, player := range players {
+		updatePlayerPlace(context, player)
+	}
+}
+
+func updatePlayerPlace(context *system.Context, player *models.Player) {
+	matches := player.MatchCount
+	if matches > 0 {
+		// calculate placement score
+		winsFactor := player.WinCount * 1000000 / matches
+		matchesFactor := matches * 1000
+		pointsFactor := player.ArenaPoints
+
+		score := winsFactor + matchesFactor + pointsFactor
+		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
+	}
 }
 
 func SetPlayerName(context *system.Context) {

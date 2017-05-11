@@ -120,6 +120,11 @@ func EditUser(context *system.Context) {
 				player.RankPoints = rankPoints
 			}
 
+			arenaPoints := context.Params.GetInt("arenaPoints", -1)
+			if arenaPoints >= 0 {
+				player.ArenaPoints = arenaPoints
+			}
+
 			winCount := context.Params.GetInt("winCount", -1)
 			if winCount >= 0 {
 				player.WinCount = winCount
