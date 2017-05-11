@@ -18,6 +18,7 @@ func HandleAdmin(application *system.Application) {
 	handleAdminTemplate(application, "/admin/dashboard", system.TokenAuthentication, Dashboard, "dashboard.tmpl.html")
 
 	handleAdminUsers(application)
+	handleAdminCards(application)
 	handleAdminAnalytics(application)
 }
 

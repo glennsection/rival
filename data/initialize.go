@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+
+	"bloodtales/util"
 )
 
 // root data directory
@@ -26,6 +28,9 @@ func Load() {
 	loadDataFile("PvPRanking", LoadRanks)
 	loadDataFile("Store", LoadStore)
 	// ------------------------------------------
+
+	// template funcs
+	util.AddTemplateFunc("toDataName", ToDataName)
 }
 
 // load a particular file into a container

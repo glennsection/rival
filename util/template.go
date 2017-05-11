@@ -1,4 +1,4 @@
-package system
+package util
 
 import (
 	"os"
@@ -21,7 +21,7 @@ func AddTemplateFunc(name string, f interface{}) {
 	templateFuncMap[name] = f
 }
 
-func (application *Application) loadTemplates() {
+func LoadTemplates() *template.Template {
 	var templates []string
 
 	// filter to gather all HTML templates
@@ -39,7 +39,7 @@ func (application *Application) loadTemplates() {
 	}
 
 	// preload all HTML templates
-	application.templates = template.Must(template.New("").Funcs(templateFuncMap).ParseFiles(templates...))
+	return template.Must(template.New("").Funcs(templateFuncMap).ParseFiles(templates...))
 }
 
 func templateAdd(a, b int) template.HTML {

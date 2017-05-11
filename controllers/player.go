@@ -5,6 +5,7 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
+	"bloodtales/util"
 	"bloodtales/system"
 	"bloodtales/models"
 )
@@ -15,8 +16,8 @@ func HandlePlayer(application *system.Application) {
 	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
 
 	// template functions
-	system.AddTemplateFunc("getUserName", templateGetUserName)
-	system.AddTemplateFunc("getPlayerName", templateGetPlayerName)
+	util.AddTemplateFunc("getUserName", templateGetUserName)
+	util.AddTemplateFunc("getPlayerName", templateGetPlayerName)
 }
 
 func GetPlayer(context *system.Context) (player *models.Player) {

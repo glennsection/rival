@@ -178,7 +178,7 @@ func (application *Application) Ignore(pattern string) {
 
 func (application *Application) Serve() {
 	// init templates
-	application.loadTemplates()
+	application.templates = util.LoadTemplates()
 
 	// start serving on port
 	port := application.Env.GetRequiredString("PORT")

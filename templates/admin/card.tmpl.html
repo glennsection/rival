@@ -13,7 +13,16 @@
 				<p><span class="game-card-label">Count: </span>{{ $card.CardCount }}</p>
 				<p><span class="game-card-label">Wins: </span>{{ $card.WinCount }}</p>
 				<p><span class="game-card-label">Leader Wins: </span>{{ $card.LeaderWinCount }}</p>
-				<p><a href="/admin/cards/edit?playerId={{ $player.ID.Hex }}&card={{ $index }}">Edit</a></p>
+				<p>
+					<a href="/admin/cards/edit?playerId={{ $player.ID.Hex }}&card={{ $card.DataID }}">Edit</a> |
+					<a href="#"
+					data-href="/admin/cards/delete?playerId={{ $player.ID.Hex }}&card={{ $card.DataID }}"
+					data-toggle="modal"
+					data-body="Do you want to permanently remove the card from this player: {{ toDataName $card.DataID }}?"
+					data-confirm="Delete"
+					data-deny="Cancel"
+					data-target="#confirm-dialog">Delete</a>
+				</p>
 			</td>
 		</tr>
 		<tbody>
