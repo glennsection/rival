@@ -271,6 +271,24 @@
     "awakenLeaderGamesNeeded": "2"
   },
   {
+    "databaseId": "15",
+    "id": "CARD_GREMLINS",
+    "portrait": "UI/Cards/Card_Art/Gremlin",
+    "rarity": "EPIC",
+    "tier": "5",
+    "type": "TROOP",
+    "units": "[GREMLINS]",
+    "numUnits": "2",
+    "manaCost": "5",
+    "leaderAbilityType": "SCRIPT",
+    "dataFile": "GameData/Cards/GremlinCard",
+    "cooldown": "30",
+    "abilityStartPercent": "100",
+    "abilityCooldown": "0",
+    "awakenGamesNeeded": "10",
+    "awakenLeaderGamesNeeded": "2"
+  },
+  {
     "databaseId": "16",
     "id": "CARD_HELLHOUND",
     "portrait": "UI/Cards/Card_Art/Hell_Hound",
