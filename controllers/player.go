@@ -56,7 +56,15 @@ func GetPlayer(context *system.Context) {
 		
 		// set successful response
 		context.Message("Found player")
-		context.Data = player
+		context.SetDirty([]int64{	models.UpdateMask_Name, 
+									models.UpdateMask_Currency, 
+									models.UpdateMask_XP, 
+									models.UpdateMask_Cards, 
+									models.UpdateMask_Deck,
+									models.UpdateMask_Loadout,
+									models.UpdateMask_Tomes,
+									models.UpdateMask_Stars,
+    								models.UpdateMask_Quests})
 	} else {
 		context.Fail(fmt.Sprintf("Failed to find player for username: %v", context.User.Username))
 	}

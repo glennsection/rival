@@ -86,9 +86,9 @@ func (deck *Deck) SetLeaderCard(card data.DataId) {
 	}
 
 	//card is in the deck, swap
-	for _, deckCard := range deck.CardIDs {
+	for i, deckCard := range deck.CardIDs {
 		if deckCard == card {
-			deckCard = deck.LeaderCardID
+			deck.CardIDs[i] = deck.LeaderCardID
 			deck.LeaderCardID = card
 			return
 		}

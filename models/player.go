@@ -15,6 +15,19 @@ import (
 const PlayerCollectionName = "players"
 const MinutesToUnlockFreeTome = 240
 
+const (
+	UpdateMask_None int64 = 0x0
+	UpdateMask_Name = 0x1
+	UpdateMask_Currency = 0x2
+	UpdateMask_XP = 0x4
+	UpdateMask_Cards = 0x8
+	UpdateMask_Deck = 0x10
+	UpdateMask_Loadout = 0x20
+	UpdateMask_Tomes = 0x40
+	UpdateMask_Stars = 0x80
+    UpdateMask_Quests = 0x100
+)
+
 type Player struct {
 	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
@@ -289,4 +302,56 @@ func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
 		cardMap[card.DataID] = index
 	}
 	return cardMap
+}
+
+func (player *Player) HandleUpdateMask(updateMask int64, dataMap *map[string]interface{}) {
+	if updateMask == UpdateMask_None {
+		return
+	}
+
+	if (updateMask & UpdateMask_Name) == UpdateMask_Name {
+		(*dataMap)["name"] = player.Name
+	}
+
+	if (updateMask & UpdateMask_Currency) == UpdateMask_Currency {
+		(*dataMap)["standardCurrency"] = player.StandardCurrency
+		(*dataMap)["premiumCurrency"] = player.PremiumCurrency
+	}
+
+	if (updateMask & UpdateMask_XP) == UpdateMask_XP {
+		(*dataMap)["level"] = player.Level
+		(*dataMap)["xp"] = player.Xp
+	}
+	
+	if (updateMask & UpdateMask_Cards) == UpdateMask_Cards {
+		(*dataMap)["cards"] = player.Cards
+	}
+	
+	if (updateMask & UpdateMask_Deck) == UpdateMask_Deck {
+		(*dataMap)["decks"] = player.Decks
+	}
+	
+	if (updateMask & UpdateMask_Loadout) == UpdateMask_Loadout {
+		(*dataMap)["currentDeck"] = player.CurrentDeck
+	}
+	
+	if (updateMask & UpdateMask_Tomes) == UpdateMask_Tomes {
+		(*dataMap)["tomes"] = player.Tomes
+		(*dataMap)["arenaPoints"] = player.ArenaPoints
+		(*dataMap)["freeTomes"] = player.FreeTomes
+		(*dataMap)["freeTomeUnlockTime"] = player.FreeTomeUnlockTime
+	}
+	
+	if (updateMask & UpdateMask_Stars) == UpdateMask_Stars {
+		(*dataMap)["rankPoints"] = player.RankPoints
+		(*dataMap)["rating"] = player.Rating
+		(*dataMap)["winCount"] = player.WinCount
+		(*dataMap)["lossCount"] = player.LossCount
+		(*dataMap)["matchCount"] = player.MatchCount
+	}
+	
+    if (updateMask & UpdateMask_Quests) == UpdateMask_Quests {
+    	(*dataMap)["quests"] = player.Quests
+	}
+	
 }

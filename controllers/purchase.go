@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bloodtales/system"
+	"bloodtales/models"
 	"bloodtales/data"
 )
 
@@ -44,9 +45,11 @@ func Purchase(context *system.Context) {
 
 	case data.StoreCategoryPremiumCurrency:
 		player.PremiumCurrency += storeItem.Quantity
+		context.SetDirty([]int64{models.UpdateMask_Currency})
 
 	case data.StoreCategoryStandardCurrency:
 		player.StandardCurrency += storeItem.Quantity
+		context.SetDirty([]int64{models.UpdateMask_Currency})
 
 	case data.StoreCategoryTomes:
 		// claim tome
@@ -60,6 +63,9 @@ func Purchase(context *system.Context) {
 			return
 		}
 
+		context.SetDirty([]int64{models.UpdateMask_Currency,
+								 models.UpdateMask_Cards, 
+								 models.UpdateMask_Tomes})
 		context.Data = reward
 
 	case data.StoreCategoryCards:

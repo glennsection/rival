@@ -21,23 +21,27 @@ import (
 	"bloodtales/util"
 )
 
-type Context struct {
-	Application *Application         `json:"-"`
-	Config      *config.Config       `json:"-"`
-	DBSession   *mgo.Session         `json:"-"`
-	DB          *mgo.Database        `json:"-"`
-	Session     *Session             `json:"-"`
-	Cache       *Cache               `json:"-"`
-	Client      *Client              `json:"-"`
-	Request     *http.Request        `json:"-"`
-	Params      *Stream              `json:"-"`
-	User		*models.User         `json:"-"`
-	Template    string               `json:"-"`
+const EMPTY_UPDATE_MASK = 0x0
 
-	Token       string               `json:"token"`
-	Success     bool                 `json:"success"`
-	Messages    []string             `json:"messages"`
-	Data        interface{}          `json:"data"`
+type Context struct {
+	Application *Application       	   `json:"-"`
+	Config      *config.Config     	   `json:"-"`
+	DBSession   *mgo.Session       	   `json:"-"`
+	DB          *mgo.Database      	   `json:"-"`
+	Session     *Session           	   `json:"-"`
+	Cache       *Cache             	   `json:"-"`
+	Client      *Client           	   `json:"-"`
+	Request     *http.Request     	   `json:"-"`
+	Params      *Stream           	   `json:"-"`
+	User		*models.User      	   `json:"-"`
+	Template    string            	   `json:"-"`
+
+	Token       string            	   `json:"token"`
+	Success     bool             	   `json:"success"`
+	Messages    []string         	   `json:"messages"`
+	UpdateMask	int64			  	   `json:"updateMask"`
+	PlayerData 	map[string]interface{} `json:"playerData"`
+	Data        interface{}			   `json:"data"`
 
 	// internal
 	responseWriter  http.ResponseWriter
@@ -123,6 +127,21 @@ func (source ContextStreamSource) Get(name string) interface{} {
 
 	// then use request params
 	return source.context.Request.FormValue(name)
+}
+
+func (context *Context) SetDirty(updates []int64) {
+	for _, update := range updates {
+		context.UpdateMask |= update;
+	}
+}
+
+func (context *Context) HandleUpdateMask() {
+	if context.PlayerData == nil {
+		context.PlayerData = map[string]interface{} {}
+	}
+
+	player := context.GetPlayer();
+	player.HandleUpdateMask(context.UpdateMask, &context.PlayerData)
 }
 
 func (context *Context) GetPlayer() (player *models.Player) {
@@ -287,6 +306,11 @@ func (context *Context) EndRequest(startTime time.Time) {
 				context.Redirect(fmt.Sprintf("/error?message=%s", responseString), 302) // TODO - can remove parameter once session flashes are working
 			}
 		} else {
+			// handle dirty flags in context.UpdatedData
+			if(context.UpdateMask != EMPTY_UPDATE_MASK) {
+				context.HandleUpdateMask()
+			}
+
 			// serialize API response to json
 			var responseString string
 			raw, err := json.Marshal(context)

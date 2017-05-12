@@ -64,6 +64,8 @@ func MatchResult(context *system.Context) {
 	}
 
 	if reward != nil {
+		context.SetDirty([]int64{models.UpdateMask_Tomes,
+								 models.UpdateMask_Stars})
 		context.Data = reward
 	}
 

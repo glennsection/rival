@@ -39,9 +39,7 @@ func UnlockTome(context *system.Context) {
 			return
 		}
 
-		var data *models.Tome 
-		data = &player.Tomes[index]
-		context.Data = data
+		context.SetDirty([]int64{models.UpdateMask_Tomes})
 	} else {
 		context.Fail("Already unlocking a tome.")
 	}
@@ -66,6 +64,9 @@ func OpenTome(context *system.Context) {
 		panic(err)
 	}
 
+	context.SetDirty([]int64{models.UpdateMask_Currency,
+							 models.UpdateMask_Cards, 
+							 models.UpdateMask_Tomes})
 	context.Data = reward
 }
 
@@ -91,6 +92,9 @@ func RushTome(context *system.Context) {
 		panic(err)
 	}
 
+	context.SetDirty([]int64{models.UpdateMask_Currency,
+							 models.UpdateMask_Cards, 
+							 models.UpdateMask_Tomes})
 	context.Data = reward
 }
 
@@ -107,6 +111,9 @@ func ClaimFreeTome(context *system.Context) {
 		return
 	}
 
+	context.SetDirty([]int64{models.UpdateMask_Currency,
+							 models.UpdateMask_Cards, 
+							 models.UpdateMask_Tomes})
 	context.Data = reward
 }
 
@@ -123,6 +130,9 @@ func ClaimArenaTome(context *system.Context) {
 		return
 	}
 
+	context.SetDirty([]int64{models.UpdateMask_Currency,
+							 models.UpdateMask_Cards, 
+							 models.UpdateMask_Tomes})
 	context.Data = reward
 }
 

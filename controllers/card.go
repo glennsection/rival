@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bloodtales/system"
+	"bloodtales/models"
 	"bloodtales/data"
 )
 
@@ -39,6 +40,10 @@ func UpgradeCard(context *system.Context) {
 	card.CardCount -= levelData.CardsNeeded
 	card.Level += 1
 
+	context.SetDirty([]int64{models.UpdateMask_XP, 
+										 models.UpdateMask_Currency,
+										 models.UpdateMask_Cards})
 	context.Data = card
+
 	player.Update(context.DB)
 }

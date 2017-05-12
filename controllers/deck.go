@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bloodtales/data"
+	"bloodtales/models"
 	"bloodtales/system"
 )
 
@@ -29,7 +30,8 @@ func SetLeaderCard(context *system.Context) {
 
 	deck := &(player.Decks[player.CurrentDeck])
 	deck.SetLeaderCard(cardDataId)
-	context.Data = deck
+
+	context.SetDirty([]int64{models.UpdateMask_Deck})
 
 	player.Update(context.DB)
 }
@@ -59,7 +61,8 @@ func SetDeckCard(context *system.Context) {
 
 	deck := &(player.Decks[player.CurrentDeck])
 	deck.SetDeckCard(cardDataId, deckIndex)
-	context.Data = deck
+
+	context.SetDirty([]int64{models.UpdateMask_Deck})
 
 	player.Update(context.DB)
 }
@@ -78,5 +81,8 @@ func SwitchDeck(context *system.Context) {
 	}
 
 	player.CurrentDeck = currentDeck
+
+	context.SetDirty([]int64{models.UpdateMask_Loadout})
+
 	player.Update(context.DB)
 }
