@@ -13,15 +13,12 @@ import (
 	"encoding/json"
 
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/config"
 	"bloodtales/models"
 	"bloodtales/log"
 	"bloodtales/util"
 )
-
-const EMPTY_UPDATE_MASK = 0x0
 
 type Context struct {
 	Application *Application       	   `json:"-"`
@@ -133,64 +130,6 @@ func (context *Context) SetDirty(updates []int64) {
 	for _, update := range updates {
 		context.UpdateMask |= update;
 	}
-}
-
-func (context *Context) HandleUpdateMask() {
-	if context.PlayerData == nil {
-		context.PlayerData = map[string]interface{} {}
-	}
-
-	player := context.GetPlayer();
-	player.HandleUpdateMask(context.UpdateMask, &context.PlayerData)
-}
-
-func (context *Context) GetPlayer() (player *models.Player) {
-	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
-	return
-}
-
-func (context *Context) RefreshPlayerName(player *models.Player) {
-	playerKey := fmt.Sprintf("PlayerName:%s", player.ID.Hex())
-	userKey := fmt.Sprintf("UserPlayerName:%s", player.UserID.Hex())
-
-	context.Cache.Set(playerKey, player.Name)
-	context.Cache.Set(userKey, player.Name)
-}
-
-func (context *Context) GetUserPlayerName(userID bson.ObjectId) string {
-	key := fmt.Sprintf("UserPlayerName:%s", userID.Hex())
-	name := "[None]"
-
-	if context.Cache.Has(key) {
-		name = context.Cache.GetString(key, "[None]")
-	}
-
-	if name == "[None]" {
-		player, err := models.GetPlayerByUser(context.DB, userID)
-		if err == nil && player != nil {
-			context.Cache.Set(key, player.Name)
-			name = player.Name
-		}
-	}
-	return name
-}
-
-func (context *Context) GetPlayerName(playerID bson.ObjectId) string {
-	key := fmt.Sprintf("PlayerName:%s", playerID.Hex())
-	name := "[None]"
-
-	if context.Cache.Has(key) {
-		name = context.Cache.GetString(key, "[None]")
-	}
-
-	if name == "[None]" {
-		player, err := models.GetPlayerById(context.DB, playerID)
-		if err == nil && player != nil {
-			context.Cache.Set(key, player.Name)
-			name = player.Name
-		}
-	}
-	return name
 }
 
 func (context *Context) Message(message string) {
@@ -306,11 +245,6 @@ func (context *Context) EndRequest(startTime time.Time) {
 				context.Redirect(fmt.Sprintf("/error?message=%s", responseString), 302) // TODO - can remove parameter once session flashes are working
 			}
 		} else {
-			// handle dirty flags in context.UpdatedData
-			if(context.UpdateMask != EMPTY_UPDATE_MASK) {
-				context.HandleUpdateMask()
-			}
-
 			// serialize API response to json
 			var responseString string
 			raw, err := json.Marshal(context)

@@ -11,10 +11,10 @@ import (
 )
 
 func HandlePlayer(application *system.Application) {
-	application.HandleAPI("/player/set", system.TokenAuthentication, SetPlayer)
-	application.HandleAPI("/player/name", system.TokenAuthentication, SetPlayerName)
-	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
-	application.HandleAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
+	HandleGameAPI(application, "/player/set", system.TokenAuthentication, SetPlayer)
+	HandleGameAPI(application, "/player/name", system.TokenAuthentication, SetPlayerName)
+	//HandleGameAPI(application, "/player/get", system.TokenAuthentication, GetPlayer)
+	HandleGameAPI(application, "/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
 
 	// template functions
 	util.AddTemplateFunc("getUserName", templateGetUserName)
@@ -22,7 +22,14 @@ func HandlePlayer(application *system.Application) {
 }
 
 func GetPlayer(context *system.Context) (player *models.Player) {
-	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
+	player, ok := context.Params.Get("_player").(*models.Player)
+	if ok == false {
+		player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
+
+		if player != nil {
+			context.Params.Set("_player", player)
+		}
+	}
 	return
 }
 
@@ -151,7 +158,7 @@ func FetchPlayer(context *system.Context) {
 	if player != nil {
 		// update rewards
 		err := player.UpdateRewards(context.DB)
-		if(err != nil) {
+		if err != nil {
 			panic(err)
 		}
 

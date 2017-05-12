@@ -7,11 +7,11 @@ import (
 )
 
 func HandleTome(application *system.Application) {
-	application.HandleAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
-	application.HandleAPI("/tome/open", system.TokenAuthentication, OpenTome)
-	application.HandleAPI("/tome/rush", system.TokenAuthentication, RushTome)
-	application.HandleAPI("/tome/free", system.TokenAuthentication, ClaimFreeTome)
-	application.HandleAPI("/tome/arena", system.TokenAuthentication, ClaimArenaTome)
+	HandleGameAPI(application, "/tome/unlock", system.TokenAuthentication, UnlockTome)
+	HandleGameAPI(application, "/tome/open", system.TokenAuthentication, OpenTome)
+	HandleGameAPI(application, "/tome/rush", system.TokenAuthentication, RushTome)
+	HandleGameAPI(application, "/tome/free", system.TokenAuthentication, ClaimFreeTome)
+	HandleGameAPI(application, "/tome/arena", system.TokenAuthentication, ClaimArenaTome)
 }
 
 func UnlockTome(context *system.Context) {

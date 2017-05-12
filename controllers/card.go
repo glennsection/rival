@@ -7,7 +7,7 @@ import (
 )
 
 func HandleCard(application *system.Application) {
-	application.HandleAPI("/card/upgrade", system.TokenAuthentication, UpgradeCard)
+	HandleGameAPI(application, "/card/upgrade", system.TokenAuthentication, UpgradeCard)
 }
 
 func UpgradeCard(context *system.Context) {

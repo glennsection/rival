@@ -6,10 +6,10 @@ import (
 )
 
 func HandleMatch(application *system.Application) {
-	application.HandleAPI("/match/clear", system.TokenAuthentication, MatchClear)
-	application.HandleAPI("/match/find", system.TokenAuthentication, MatchFind)
-	application.HandleAPI("/match/fail", system.TokenAuthentication, MatchFail)
-	application.HandleAPI("/match/result", system.TokenAuthentication, MatchResult)
+	HandleGameAPI(application, "/match/clear", system.TokenAuthentication, MatchClear)
+	HandleGameAPI(application, "/match/find", system.TokenAuthentication, MatchFind)
+	HandleGameAPI(application, "/match/fail", system.TokenAuthentication, MatchFail)
+	HandleGameAPI(application, "/match/result", system.TokenAuthentication, MatchResult)
 }
 
 func MatchClear(context *system.Context) {
