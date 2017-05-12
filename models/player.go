@@ -31,7 +31,7 @@ const (
 type Player struct {
 	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
-	Name            	string        `bson:"nm" json:"name"`
+	Name                string        `bson:"-" json:"name"`
 	Level           	int           `bson:"lv" json:"level"`
 	Xp 					int 		  `bson:"xp" json:"xp"`
 	RankPoints          int           `bson:"rk" json:"rankPoints"`
@@ -56,15 +56,14 @@ type Player struct {
 func ensureIndexPlayer(database *mgo.Database) {
 	c := database.C(PlayerCollectionName)
 
-	index := mgo.Index {
+	// username index
+	err := c.EnsureIndex(mgo.Index {
 		Key:        []string { "us" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	}
-
-	err := c.EnsureIndex(index)
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -82,12 +81,11 @@ func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Play
 	return
 }
 
-func CreatePlayer(userID bson.ObjectId, name string) (player *Player) {
+func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	player = &Player {}
 	player.Initialize()
 	player.ID = bson.NewObjectId()
 	player.UserID = userID
-	player.Name = name
 	return
 }
 
@@ -103,7 +101,7 @@ func UpdatePlayer(database *mgo.Database, user *User, data string) (player *Play
 	
 	// initialize new player if none exists
 	if player == nil {
-		player = CreatePlayer(user.ID, user.Username)
+		player = CreatePlayer(user.ID)
 	}
 	
 	// parse updated data
@@ -274,6 +272,17 @@ func (player *Player) Delete(database *mgo.Database) (err error) {
 	return database.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
 }
 
+func (player *Player) GetDrawCount() int {
+	return player.MatchCount - player.WinCount - player.LossCount
+}
+
+func (player *Player) GetWinRatio() string {
+	if player.MatchCount > 0 {
+		return fmt.Sprintf("%d%%", player.WinCount * 100 / player.MatchCount)
+	}
+	return "-"
+}
+
 func (player *Player) GetRankData() *data.RankData {
 	return data.GetRank(player.RankPoints)
 }
@@ -291,7 +300,8 @@ func (player *Player) GetRankName() string {
 	if rank != nil {
 		tier := rank.GetTier()
 		rankInTier := rank.Level - (tier - 1) * 5
-		return fmt.Sprintf("Tier %d Rank %d", tier, rankInTier)
+		// return fmt.Sprintf("Tier %d Rank %d", tier, rankInTier)
+		return fmt.Sprintf("%d-%d", tier, rankInTier)
 	}
 	return "Unranked"
 }

@@ -13,7 +13,7 @@ func HandleCard(application *system.Application) {
 func UpgradeCard(context *system.Context) {
 	id := context.Params.GetRequiredString("cardId")
 
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 	cardIndexes := player.GetMapOfCardIndexes()
 	index, valid := cardIndexes[data.ToDataId(id)]
 	if !valid {

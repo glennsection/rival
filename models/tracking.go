@@ -21,16 +21,15 @@ type Tracking struct {
 func ensureIndexTracking(database *mgo.Database) {
 	c := database.C(TrackingCollectionName)
 
-	index := mgo.Index {
+	// user index
+	err := c.EnsureIndex(mgo.Index {
 		Key:          []string { "us" },
 		Unique:       false,
 		DropDups:     false,
 		Background:   true,
 		Sparse:       true,
 		//ExpiresAfter: time.Duration { ... },
-	}
-
-	err := c.EnsureIndex(index)
+	})
 	if err != nil {
 		panic(err)
 	}

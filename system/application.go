@@ -74,8 +74,8 @@ func (application *Application) Initialize() {
 	// init profiling
 	HandleProfiling(application.handleProfiler)
 
-	// init templates
-	application.loadTemplates()
+	// // init templates
+	// application.loadTemplates()
 	
 	// connect database
 	application.initializeDatabase()
@@ -105,6 +105,9 @@ func (application *Application) Initialize() {
 
 	// init player tags
 	application.initializeTags()
+
+	// init table sort
+	application.initializeSort()
 }
 
 func (application *Application) Close() {
@@ -174,6 +177,9 @@ func (application *Application) Ignore(pattern string) {
 }
 
 func (application *Application) Serve() {
+	// init templates
+	application.templates = util.LoadTemplates()
+
 	// start serving on port
 	port := application.Env.GetRequiredString("PORT")
 

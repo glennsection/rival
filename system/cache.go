@@ -133,3 +133,41 @@ func (cache *Cache) Close() {
 	// close redis connection
 	cache.redis.Close()
 }
+
+func (cache *Cache) SetScore(group string, id string, score int) {
+	_, err := cache.redis.Do("ZADD", group, score, id)
+	if err != nil {
+		log.Errorf("Redis error: %v", err)
+	}
+}
+
+func (cache *Cache) GetScore(group string, id string) int {
+	result, err := redis.Int(cache.redis.Do("ZSCORE", group, id))
+	if err != nil {
+		log.Errorf("Redis error: %v", err)
+	}
+	return result
+}
+
+func (cache *Cache) RemoveScore(group string, id string) {
+	_, err := cache.redis.Do("ZREM", group, id)
+	if err != nil {
+		log.Errorf("Redis error: %v", err)
+	}
+}
+
+func (cache *Cache) GetRank(group string, id string) int {
+	result, err := redis.Int(cache.redis.Do("ZRANK", group, id))
+	if err != nil {
+		log.Errorf("Redis error: %v", err)
+	}
+	return result
+}
+
+func (cache *Cache) GetRankRange(group string, start int, stop int) []string {
+	result, err := redis.Strings(cache.redis.Do("ZREVRANGE", group, start, stop))
+	if err != nil {
+		log.Errorf("Redis error: %v", err)
+	}
+	return result
+}

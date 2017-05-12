@@ -81,15 +81,13 @@ func ensureIndexMatch(database *mgo.Database) {
 	c := database.C(MatchCollectionName)
 
 	// player index
-	index := mgo.Index {
+	err := c.EnsureIndex(mgo.Index {
 		Key:        []string { "id1", "id2", "state" },
 		Unique:     false,
 		DropDups:   false,
 		Background: true,
 		Sparse:     true,
-	}
-
-	err := c.EnsureIndex(index)
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -230,7 +228,7 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome MatchOutcome, playerScore int, opponentScore int) (matchReward *MatchReward, err error) {
+func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome MatchOutcome, playerScore int, opponentScore int) (match *Match, matchReward *MatchReward, err error) {
 	// prepare match change
 	change := mgo.Change {
 		Upsert: false,
@@ -279,7 +277,6 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 
 	// find active match for player, and update if found
 	foundActiveMatch := true
-	var match *Match
 	_, err = database.C(MatchCollectionName).Find(bson.M {
 		idField: player.ID,
 		"st": MatchActive,
@@ -370,17 +367,23 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 }
 
 func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error) {
-	if match.PlayerID.Valid() {
-		return GetPlayerById(database, match.PlayerID)
+	err = nil
+	if match.player == nil {
+		if match.PlayerID.Valid() {
+			match.player, err = GetPlayerById(database, match.PlayerID)
+		}
 	}
-	return nil, nil
+	return match.player, err
 }
 
 func (match *Match) GetOpponent(database *mgo.Database) (player *Player, err error) {
-	if match.OpponentID.Valid() {
-		return GetPlayerById(database, match.OpponentID)
+	err = nil
+	if match.opponent == nil {
+		if match.OpponentID.Valid() {
+			match.opponent, err = GetPlayerById(database, match.OpponentID)
+		}
 	}
-	return nil, nil
+	return match.opponent, err
 }
 
 func (match *Match) GetTypeName() string {

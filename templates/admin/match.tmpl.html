@@ -32,29 +32,41 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Player 1</label>
-												<input type="text" class="form-control" disabled value="{{ $.GetPlayerName $match.PlayerID }}">
+												<label>State</label>
+												<input type="text" class="form-control" disabled value="{{ $match.GetStateName }}">
 											</div>
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Player 2</label>
-												<input type="text" class="form-control" disabled value="{{ $.GetPlayerName $match.OpponentID }}">
+												<label>Room</label>
+												<input type="text" class="form-control" disabled value="{{ $match.RoomID }}">
 											</div>
 										</div>
 									</div>
 
 									<div class="row">
-										<div class="col-md-6">
+										<div class="col-md-3">
 											<div class="form-group">
-												<label>State</label>
-												<input type="text" class="form-control" disabled value="{{ $match.GetStateName }}">
+												<label>Player 1</label>
+												<input type="text" class="form-control" disabled value="{{ getPlayerName $ $match.PlayerID }}">
 											</div>
 										</div>
-										<div class="col-md-6">
+										<div class="col-md-3">
 											<div class="form-group">
-												<label>Room</label>
-												<input type="text" class="form-control" disabled value="{{ $match.RoomID }}">
+												<label>Player 1 Score</label>
+												<input type="text" class="form-control" disabled value="{{ $match.PlayerScore }}">
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label>Player 2</label>
+												<input type="text" class="form-control" disabled value="{{ getPlayerName $ $match.OpponentID }}">
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label>Player 2 Score</label>
+												<input type="text" class="form-control" disabled value="{{ $match.OpponentScore }}">
 											</div>
 										</div>
 									</div>

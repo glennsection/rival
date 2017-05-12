@@ -31,8 +31,8 @@ span.pagination-summary {
 }
 
 .game-card-portrait {
-    width: 100%;
-    max-width: 100px;
+	width: 100px;
+	height: 123.828px;
 }
 
 .game-card p {
@@ -43,12 +43,31 @@ span.pagination-summary {
 	font-size: 14px;
 }
 
+.game-card table {
+	width: 100%;
+}
+
 .game-card-title {
 	font-size: 18px;
 }
 
 .game-card p span {
 	text-transform: uppercase;
+}
+
+.game-card-label {
+	float: left;
+	width: 120px;
+}
+
+.game-card input.form-control {
+	height: 30px;
+	width: 40px;
+}
+
+.game-card .btn {
+	font-size: 12px;
+	padding: 6px 8px;
 }
 
 /* Tomes */
@@ -126,7 +145,7 @@ span.pagination-summary {
 
 .card.leaderboard table.table > tbody > tr > td {
 	font-weight: bolder;
-	font-size: 160%;
+	font-size: 140%;
 }
 
 .card.leaderboard table.table > tbody > tr > td > a {

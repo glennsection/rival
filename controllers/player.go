@@ -3,6 +3,9 @@ package controllers
 import (
 	"fmt"
 
+	"gopkg.in/mgo.v2/bson"
+
+	"bloodtales/util"
 	"bloodtales/system"
 	"bloodtales/models"
 )
@@ -11,24 +14,122 @@ func HandlePlayer(application *system.Application) {
 	application.HandleAPI("/player/set", system.TokenAuthentication, SetPlayer)
 	application.HandleAPI("/player/name", system.TokenAuthentication, SetPlayerName)
 	//application.HandleAPI("/player/get", system.TokenAuthentication, GetPlayer)
+	application.HandleAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
+
+	// template functions
+	util.AddTemplateFunc("getUserName", templateGetUserName)
+	util.AddTemplateFunc("getPlayerName", templateGetPlayerName)
+}
+
+func GetPlayer(context *system.Context) (player *models.Player) {
+	player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
+	return
+}
+
+func RefreshUserName(context *system.Context, name string, userID bson.ObjectId, playerID bson.ObjectId) {
+	userKey := fmt.Sprintf("UserName:%s", userID.Hex())
+	playerKey := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
+
+	context.Cache.Set(userKey, name)
+	context.Cache.Set(playerKey, name)
+}
+
+func templateGetUserName(context *system.Context, userID bson.ObjectId) string {
+	key := fmt.Sprintf("UserName:%s", userID.Hex())
+
+	name := context.Cache.GetString(key, "")
+
+	// immediately cache latest name
+	if name == "" {
+		user, err := models.GetUserById(context.DB, userID)
+		if err == nil && user != nil {
+			context.Cache.Set(key, user.Name)
+			name = user.Name
+		}
+	}
+	return name
+}
+
+func templateGetPlayerName(context *system.Context, playerID bson.ObjectId) string {
+	key := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
+
+	name := context.Cache.GetString(key, "")
+
+	// immediately cache latest name
+	if name == "" {
+		player, _ := models.GetPlayerById(context.DB, playerID)
+		if player != nil {
+			user, _ := models.GetUserById(context.DB, player.UserID)
+			if user != nil {
+				context.Cache.Set(key, user.Name)
+				name = user.Name
+			}
+		}
+	}
+	return name
+}
+
+func templateGetPlayerPlace(context *system.Context, player *models.Player) int {
+	return 0;
+	// key := fmt.Sprintf("UserName:%s", userID.Hex())
+
+	// name := context.Cache.GetString(key, "")
+
+	// // immediately cache latest name
+	// if name == "" {
+	// 	user, err := models.GetUserById(context.DB, userID)
+	// 	if err == nil && user != nil {
+	// 		context.Cache.Set(key, user.Name)
+	// 		name = user.Name
+	// 	}
+	// }
+	// return name
+}
+
+func updateAllPlayersPlace(context *system.Context) {
+	var players []*models.Player
+	context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
+
+	for _, player := range players {
+		updatePlayerPlace(context, player)
+	}
+}
+
+func updatePlayerPlace(context *system.Context, player *models.Player) {
+	matches := player.MatchCount
+	if matches > 0 {
+		// calculate placement score
+		winsFactor := player.WinCount * 1000000 / matches
+		matchesFactor := matches * 1000
+		pointsFactor := player.ArenaPoints
+
+		score := winsFactor + matchesFactor + pointsFactor
+		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
+	}
 }
 
 func SetPlayerName(context *system.Context) {
 	// parse parameters
 	name := context.Params.GetRequiredString("name")
 
-	// get player
-	player := context.GetPlayer()
+	// get user
+	user := context.User
 
 	// set name and update
-	player.Name = name
-	err := player.Update(context.DB)
+	user.Name = name
+	err := user.Update(context.DB)
+	if err != nil {
+		panic(err)
+	}
+
+	// get player
+	player, err := models.GetPlayerByUser(context.DB, user.ID)
 	if err != nil {
 		panic(err)
 	}
 
 	// refresh cached name
-	context.RefreshPlayerName(player)
+	RefreshUserName(context, name, user.ID, player.ID)
 }
 
 func SetPlayer(context *system.Context) {
@@ -44,15 +145,18 @@ func SetPlayer(context *system.Context) {
 	context.Message("Player updated successfully")
 }
 
-func GetPlayer(context *system.Context) {
+func FetchPlayer(context *system.Context) {
 	// get player
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 	if player != nil {
-
+		// update rewards
 		err := player.UpdateRewards(context.DB)
 		if(err != nil) {
 			panic(err)
 		}
+
+		// add in user name
+		player.Name = context.User.Name
 		
 		// set successful response
 		context.Message("Found player")
