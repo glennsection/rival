@@ -1,7 +1,6 @@
 package system
 
 import (
-	//"log"
 	"encoding/gob"
 )
 
@@ -22,7 +21,6 @@ func (context *Context) loadClient() (client *Client) {
 		//log.Println("Creating fresh client for session")
 		client = &Client {}
 	}
-	//log.Printf("loaded client version: %s", client.Version)
 
 	client.context = context
 	return

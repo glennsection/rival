@@ -7,9 +7,9 @@ import (
 )
 
 func HandleDeck(application *system.Application) {
-	application.HandleAPI("/deck/setLeader", system.TokenAuthentication, SetLeaderCard)
-	application.HandleAPI("/deck/setCard", system.TokenAuthentication, SetDeckCard)
-	application.HandleAPI("/deck/switch", system.TokenAuthentication, SwitchDeck)
+	HandleGameAPI(application, "/deck/setLeader", system.TokenAuthentication, SetLeaderCard)
+	HandleGameAPI(application, "/deck/setCard", system.TokenAuthentication, SetDeckCard)
+	HandleGameAPI(application, "/deck/switch", system.TokenAuthentication, SwitchDeck)
 }
 
 func SetLeaderCard(context *system.Context) {

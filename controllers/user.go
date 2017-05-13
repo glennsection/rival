@@ -2,18 +2,31 @@ package controllers
 
 import (
 	"bloodtales/system"
+	"bloodtales/util"
 )
 
 func HandleUser(application *system.Application) {
-	application.HandleAPI("/connect", system.NoAuthentication, UserConnect)
-	//application.HandleAPI("/register", system.NoAuthentication, UserRegister)
-	application.HandleAPI("/login", system.DeviceAuthentication, UserLogin)
-	application.HandleAPI("/logout", system.TokenAuthentication, UserLogout)
+	HandleGameAPI(application, "/connect", system.NoAuthentication, UserConnect)
+	//HandleGameAPI(application, "/register", system.NoAuthentication, UserRegister)
+	HandleGameAPI(application, "/login", system.DeviceAuthentication, UserLogin)
+	HandleGameAPI(application, "/logout", system.TokenAuthentication, UserLogout)
 }
 
 func UserConnect(context *system.Context) {
 	// parse parameters
 	version := context.Params.GetRequiredString("version")
+
+	// check version (major and minor)
+	compatibility := util.CompareVersion(context.Config.Platform.Version, version, 2)
+	switch compatibility {
+
+	case -1:
+		context.Fail("Client version is behind server.  Please update client!")
+
+	case 1:
+		context.Fail("Client version is ahead of server.  Please update server!")
+
+	}
 
 	// update client values
 	context.Client.Version = version

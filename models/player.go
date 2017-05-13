@@ -363,5 +363,4 @@ func (player *Player) HandleUpdateMask(updateMask int64, dataMap *map[string]int
     if (updateMask & UpdateMask_Quests) == UpdateMask_Quests {
     	(*dataMap)["quests"] = player.Quests
 	}
-	
 }

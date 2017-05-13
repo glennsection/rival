@@ -165,7 +165,7 @@ func (tome *Tome) GetUnlockRemaining() string {
 func (tome *Tome) GetUnlockCost() int {
 	tomeData := data.GetTome(tome.DataID)
 
-	if(tome.State != TomeUnlocking) {
+	if tome.State != TomeUnlocking {
 		return tomeData.GemsToUnlock
 	}
 

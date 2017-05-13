@@ -1,4 +1,7 @@
 {
+	"Platform": {
+		"Version": "1.3"
+	},
 	"Authentication": {
 		"TokenSecret": "5UP3R-53CR3T-T0K3N",
 		"TokenExpiration": 2,

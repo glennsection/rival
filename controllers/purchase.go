@@ -7,7 +7,7 @@ import (
 )
 
 func HandlePurchase(application *system.Application) {
-	application.HandleAPI("/purchase", system.TokenAuthentication, Purchase)
+	HandleGameAPI(application, "/purchase", system.TokenAuthentication, Purchase)
 }
 
 func Purchase(context *system.Context) {

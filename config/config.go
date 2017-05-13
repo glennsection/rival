@@ -14,6 +14,9 @@ const (
 )
 
 type Config struct {
+	Platform struct {
+		Version           string           `json:"Version"`
+	}
 	Authentication struct {
 		TokenSecret       string           `json:"TokenSecret"`
 		TokenExpiration   time.Duration    `json:"TokenExpiration,int"`
