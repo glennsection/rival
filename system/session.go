@@ -2,6 +2,8 @@ package system
 
 import (
 	"github.com/gorilla/sessions"
+
+	"bloodtales/util"
 )
 
 type Session struct {
@@ -51,10 +53,8 @@ func (application *Application) initializeSessions() {
 func (context *Context) getSession() (session *Session) {
 	// get cookis session from store
 	cookieSession, err := cookieStore.Get(context.Request, "session")
-	if err != nil {
-		panic(err)
-	}
-
+	util.Must(err)
+	
 	// stream source
 	source := SessionStreamSource {
 		session: cookieSession,

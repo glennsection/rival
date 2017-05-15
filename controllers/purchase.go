@@ -4,6 +4,7 @@ import (
 	"bloodtales/system"
 	"bloodtales/models"
 	"bloodtales/data"
+	"bloodtales/util"
 )
 
 func HandlePurchase(application *system.Application) {
@@ -55,9 +56,8 @@ func Purchase(context *system.Context) {
 		// claim tome
 		tomeId := storeItem.ItemID
 		reward, err := player.ClaimTome(context.DB, tomeId)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
+		
 		if reward == nil {
 			context.Fail("Invalid store tome purchase: " + tomeId)
 			return
@@ -72,5 +72,5 @@ func Purchase(context *system.Context) {
 
 	}
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }

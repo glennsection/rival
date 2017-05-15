@@ -6,19 +6,18 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
-func (context *Context) Track(message string, data bson.M, lifetime time.Duration) {
+func (context *Context) Track(message string, data bson.M, expires time.Time) {
 	// create tracking
 	tracking := &models.Tracking {
-		UserID:   context.User.ID,
-		Lifetime: lifetime,
-		Message:  message,
-		Data:     data,
+		UserID:    context.User.ID,
+		ExpiresAt: expires,
+		Message:   message,
+		Data:      data,
 	}
 
 	// insert tracking
-	if err := models.InsertTracking(context.DB, tracking); err != nil {
-		panic(err)
-	}
+	util.Must(tracking.Insert(context.DB))
 }

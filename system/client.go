@@ -2,6 +2,8 @@ package system
 
 import (
 	"encoding/gob"
+
+	"bloodtales/util"
 )
 
 type Client struct {
@@ -28,8 +30,5 @@ func (context *Context) loadClient() (client *Client) {
 
 func (client *Client) Save() {
 	client.context.Session.Set("_client", client)
-	err := client.context.Session.Save()
-	if err != nil {
-		panic(err)
-	}
+	util.Must(client.context.Session.Save())
 }

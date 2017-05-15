@@ -4,6 +4,7 @@ import (
 	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/system"
+	"bloodtales/util"
 )
 
 func HandleTome(application *system.Application) {
@@ -33,11 +34,7 @@ func UnlockTome(context *system.Context) {
 	if !busy {
 		(&player.Tomes[index]).StartUnlocking()
 
-		err := player.Update(context.DB)
-		if err != nil {
-			panic(err)
-			return
-		}
+		util.Must(player.Save(context.DB))
 
 		context.SetDirty([]int64{models.UpdateMask_Tomes})
 	} else {
@@ -60,9 +57,7 @@ func OpenTome(context *system.Context) {
 	}
 
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	context.SetDirty([]int64{models.UpdateMask_Currency,
 							 models.UpdateMask_Cards, 
@@ -88,9 +83,7 @@ func RushTome(context *system.Context) {
 	player.PremiumCurrency -= cost
 
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	context.SetDirty([]int64{models.UpdateMask_Currency,
 							 models.UpdateMask_Cards, 
@@ -101,10 +94,7 @@ func RushTome(context *system.Context) {
 func ClaimFreeTome(context *system.Context) {
 	player := GetPlayer(context)
 	reward, err := player.ClaimFreeTome(context.DB)
-
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	if reward == nil {
 		context.Fail("No free tomes available")
@@ -120,10 +110,7 @@ func ClaimFreeTome(context *system.Context) {
 func ClaimArenaTome(context *system.Context) {
 	player := GetPlayer(context)
 	reward, err := player.ClaimArenaTome(context.DB)
-
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	if reward == nil {
 		context.Fail("Not enough arena points")

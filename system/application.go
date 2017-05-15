@@ -185,8 +185,5 @@ func (application *Application) Serve() {
 
 	log.Printf("[cyan]Server application ready for incoming requests on port: %s[-]", port)
 
-	err := http.ListenAndServe(":" + port, nil)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(http.ListenAndServe(":" + port, nil))
 }

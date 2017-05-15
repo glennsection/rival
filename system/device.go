@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
 func (context *Context) authenticateDevice(required bool) (err error) {
@@ -28,16 +29,11 @@ func (context *Context) authenticateDevice(required bool) (err error) {
 
 				// insert new user
 				context.User, err = models.InsertUserWithUUID(context.DB, uuid, tag)
-				if err != nil {
-					panic(err)
-				}
+				util.Must(err)
 
 				// insert new player
 				player := models.CreatePlayer(context.User.ID)
-				err = player.Update(context.DB)
-				if err != nil {
-					panic(err)
-				}
+				util.Must(player.Save(context.DB))
 			}
 
 			err = context.AppendAuthToken()

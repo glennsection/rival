@@ -45,5 +45,5 @@ func UpgradeCard(context *system.Context) {
 										 models.UpdateMask_Cards})
 	context.Data = card
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }

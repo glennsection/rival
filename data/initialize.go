@@ -37,14 +37,10 @@ func Load() {
 func loadDataFile(fileName string, processor func([]byte)) {
 	// read file
 	path, err := filepath.Abs(fmt.Sprintf(rootDirectory, fileName))
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// process
 	processor(raw)

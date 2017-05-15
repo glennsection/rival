@@ -9,6 +9,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/heroku"
 	gocontext "golang.org/x/net/context"
+
+	"bloodtales/util"
 )
 
 var (
@@ -54,17 +56,15 @@ func handleAuthCallback(context *Context) {
 	// exchange with default context
 	ctx := gocontext.Background()
 	token, err := oauthConfig.Exchange(ctx, code)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
+
 	// session, err := context.application.cookies.Get(r, "heroku-oauth-example-go")
 	// if err != nil {
 	// 	panic(err)
 	// }
 	// session.Values["heroku-oauth-token"] = token
 	context.Session.Set("oauth-token", token)
-	if err := context.Session.Save(); err != nil {
-		panic(err)
-	}
+	util.Must(context.Session.Save())
+
 	context.Redirect("/user", http.StatusFound) // TODO - where should it redirect for mobile?
 }

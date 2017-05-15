@@ -124,16 +124,12 @@ func SetPlayerName(context *system.Context) {
 
 	// set name and update
 	user.Name = name
-	err := user.Update(context.DB)
-	if err != nil {
-		panic(err)
-	}
+	err := user.Save(context.DB)
+	util.Must(err)
 
 	// get player
 	player, err := models.GetPlayerByUser(context.DB, user.ID)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// refresh cached name
 	RefreshUserName(context, name, user.ID, player.ID)
@@ -145,9 +141,7 @@ func SetPlayer(context *system.Context) {
 
 	// update data
 	_, err := models.UpdatePlayer(context.DB, context.User, data)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	context.Message("Player updated successfully")
 }
@@ -157,10 +151,7 @@ func FetchPlayer(context *system.Context) {
 	player := GetPlayer(context)
 	if player != nil {
 		// update rewards
-		err := player.UpdateRewards(context.DB)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(player.UpdateRewards(context.DB))
 
 		// add in user name
 		player.Name = context.User.Name

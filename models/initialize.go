@@ -13,6 +13,7 @@ func Initialize(database *mgo.Database) {
 	ensureIndexPlayer(database)
 	ensureIndexTracking(database)
 	ensureIndexMatch(database)
+	ensureIndexNotification(database);
 }
 
 // create new player data

@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/data"
+	"bloodtales/util"
 )
 
 const PlayerCollectionName = "players"
@@ -57,16 +58,13 @@ func ensureIndexPlayer(database *mgo.Database) {
 	c := database.C(PlayerCollectionName)
 
 	// username index
-	err := c.EnsureIndex(mgo.Index {
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "us" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	})
-	if err != nil {
-		panic(err)
-	}
+	}))
 }
 
 func GetPlayerById(database *mgo.Database, id bson.ObjectId) (player *Player, err error) {
@@ -84,7 +82,6 @@ func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Play
 func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	player = &Player {}
 	player.Initialize()
-	player.ID = bson.NewObjectId()
 	player.UserID = userID
 	return
 }
@@ -92,7 +89,7 @@ func CreatePlayer(userID bson.ObjectId) (player *Player) {
 func (player *Player) Reset(database *mgo.Database) (err error) {
 	// reset player and update in database
 	player.Initialize()
-	return player.Update(database)
+	return player.Save(database)
 }
 
 func UpdatePlayer(database *mgo.Database, user *User, data string) (player *Player, err error) {
@@ -108,12 +105,16 @@ func UpdatePlayer(database *mgo.Database, user *User, data string) (player *Play
 	err = json.Unmarshal([]byte(data), &player)
 	if err == nil {
 		// update database
-		err = player.Update(database)
+		err = player.Save(database)
 	}
 	return
 }
 
-func (player *Player) Update(database *mgo.Database) (err error) {
+func (player *Player) Save(database *mgo.Database) (err error) {
+	if !player.ID.Valid() {
+		player.ID = bson.NewObjectId()
+	}
+
 	// update entire player to database
 	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
 	return
@@ -154,7 +155,7 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
 		}
 	}
 
-	player.Update(database)
+	player.Save(database)
 
 	return
 }
@@ -186,7 +187,7 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 		}
 	}
 
-	err = player.Update(database)
+	err = player.Save(database)
 	
 	return
 }
@@ -205,7 +206,7 @@ func (player *Player) UpdateRewards(database *mgo.Database) (err error){
 		(&player.Tomes[i]).UpdateTome()
 	}
 
-	err = player.Update(database)
+	err = player.Save(database)
 
 	return
 }

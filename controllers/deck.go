@@ -33,7 +33,7 @@ func SetLeaderCard(context *system.Context) {
 
 	context.SetDirty([]int64{models.UpdateMask_Deck})
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }
 
 func SetDeckCard(context *system.Context) {
@@ -64,7 +64,7 @@ func SetDeckCard(context *system.Context) {
 
 	context.SetDirty([]int64{models.UpdateMask_Deck})
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }
 
 func SwitchDeck(context *system.Context) {
@@ -84,5 +84,5 @@ func SwitchDeck(context *system.Context) {
 
 	context.SetDirty([]int64{models.UpdateMask_Loadout})
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }

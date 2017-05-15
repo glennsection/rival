@@ -7,6 +7,7 @@ import (
 
 	"bloodtales/system"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
 func handleAdminAnalytics(application *system.Application) {
@@ -35,12 +36,9 @@ func ShowLeaderboard(context *system.Context) {
 
 	// get players
 	var unsortedPlayers []*models.Player
-	err := context.DB.C(models.PlayerCollectionName).Find(bson.M {
+	util.Must(context.DB.C(models.PlayerCollectionName).Find(bson.M {
 		"_id": bson.M { "$in": playerObjectIds, },
-	}).All(&unsortedPlayers)
-	if err != nil {
-		panic(err)
-	}
+	}).All(&unsortedPlayers))
 	
 	// reorder
 	players := make([]*models.Player, len(unsortedPlayers))
@@ -99,16 +97,11 @@ func ShowLeaderboard(context *system.Context) {
 func ShowMatches(context *system.Context) {
 	// paginate players query (TODO - use redis!)
 	pagination, err := context.Paginate(context.DB.C(models.MatchCollectionName).Find(nil).Sort("-t0"), DefaultPageSize)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// get resulting matches
 	var matches []*models.Match
-	err = pagination.All(&matches)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(pagination.All(&matches))
 
 	// set template bindings
 	context.Data = matches
@@ -119,9 +112,7 @@ func EditMatch(context *system.Context) {
 	matchId := context.Params.GetRequiredID("matchId")
 
 	match, err := models.GetMatchById(context.DB, matchId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// handle request method
 	switch context.Request.Method {
@@ -139,9 +130,7 @@ func DeleteMatch(context *system.Context) {
 	page := context.Params.GetInt("page", 1)
 
 	match, err := models.GetMatchById(context.DB, matchId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	match.Delete(context.DB)
 
@@ -160,13 +149,13 @@ func ResetMatches(context *system.Context) {
 	// reset all players (TODO - use db.Run() bulk API)
 	for _, player := range players {
 		player.Initialize()
-		player.Update(context.DB)
+		player.Save(context.DB)
 	}
 	*/
 
 	// bulk reset of match data
 	var result bson.D
-	err := context.DB.Run(bson.D {
+	util.Must(context.DB.Run(bson.D {
 		bson.DocElem { "update",  models.PlayerCollectionName },
 		bson.DocElem { "updates",  []bson.M {
 			bson.M {
@@ -190,10 +179,7 @@ func ResetMatches(context *system.Context) {
 			"wtimeout": 1000,
 		} },
 		bson.DocElem { "ordered", false },
-	}, &result)
-	if err != nil {
-		panic(err)
-	}
+	}, &result))
 
 	context.Redirect("/admin/leaderboard", 302)
 }

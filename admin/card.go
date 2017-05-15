@@ -9,6 +9,7 @@ import (
 	"bloodtales/system"
 	"bloodtales/data"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
 func handleAdminCards(application *system.Application) {
@@ -22,9 +23,7 @@ func EditCard(context *system.Context) {
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
 	player, err := models.GetPlayerById(context.DB, playerId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	for i, card := range player.Cards {
 		if card.DataID == cardId {
@@ -33,7 +32,7 @@ func EditCard(context *system.Context) {
 			player.Cards[i].WinCount = context.Params.GetRequiredInt("winCount")
 			player.Cards[i].LeaderWinCount = context.Params.GetRequiredInt("leaderWinCount")
 
-			player.Update(context.DB)
+			player.Save(context.DB)
 		}
 	}
 	
@@ -46,9 +45,7 @@ func DeleteCard(context *system.Context) {
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
 	player, err := models.GetPlayerById(context.DB, playerId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// make sure player will maintain min cards
 	if len(player.Cards) > 9 {
@@ -78,7 +75,7 @@ func DeleteCard(context *system.Context) {
 			}
 
 			// update DB
-			player.Update(context.DB)
+			player.Save(context.DB)
 		}
 	} else {
 		context.Fail("Must maintain minimum of 9 cards for each player")

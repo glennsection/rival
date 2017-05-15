@@ -33,10 +33,7 @@ func LoadTemplates() *template.Template {
 	}
 
 	// gather all HTML templates
-	err := filepath.Walk("templates", fn)
-	if err != nil {
-		panic(err)
-	}
+	Must(filepath.Walk("templates", fn))
 
 	// preload all HTML templates
 	return template.Must(template.New("").Funcs(templateFuncMap).ParseFiles(templates...))

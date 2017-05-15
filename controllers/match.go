@@ -3,6 +3,7 @@ package controllers
 import (
 	"bloodtales/system"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
 func HandleMatch(application *system.Application) {
@@ -16,10 +17,7 @@ func MatchClear(context *system.Context) {
 	player := GetPlayer(context)
 
 	// clear invalid matches
-	err := models.ClearMatches(context.DB, player)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(models.ClearMatches(context.DB, player))
 }
 
 func MatchFind(context *system.Context) {
@@ -30,9 +28,7 @@ func MatchFind(context *system.Context) {
 
 	// find or queue match
 	match, err := models.FindMatch(context.DB, player, matchType)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// respond
 	context.Data = match
@@ -42,10 +38,7 @@ func MatchFail(context *system.Context) {
 	player := GetPlayer(context)
 
 	// fail any current match
-	err := models.FailMatch(context.DB, player)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(models.FailMatch(context.DB, player))
 }
 
 func MatchResult(context *system.Context) {
@@ -59,15 +52,11 @@ func MatchResult(context *system.Context) {
 	
 	// update match as complete
 	match, reward, err := models.CompleteMatch(context.DB, player, host, outcome, playerScore, opponentScore)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// get opponent
 	opponent, err := match.GetOpponent(context.DB)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// update leaderboards
 	updatePlayerPlace(context, player)

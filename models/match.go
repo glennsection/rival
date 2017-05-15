@@ -81,16 +81,13 @@ func ensureIndexMatch(database *mgo.Database) {
 	c := database.C(MatchCollectionName)
 
 	// player index
-	err := c.EnsureIndex(mgo.Index {
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "id1", "id2", "state" },
 		Unique:     false,
 		DropDups:   false,
 		Background: true,
 		Sparse:     true,
-	})
-	if err != nil {
-		panic(err)
-	}
+	}))
 }
 
 // custom marshalling
@@ -128,7 +125,11 @@ func GetMatchById(database *mgo.Database, id bson.ObjectId) (match *Match, err e
 	return
 }
 
-func (match *Match) Update(database *mgo.Database) (err error) {
+func (match *Match) Save(database *mgo.Database) (err error) {
+	if !match.ID.Valid() {
+		match.ID = bson.NewObjectId()
+	}
+
 	// update match in database
 	_, err = database.C(MatchCollectionName).Upsert(bson.M { "_id": match.ID }, match)
 	return
@@ -177,7 +178,6 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 	} else {
 		// queue new match
 		match = &Match {
-			ID: bson.NewObjectId(),
 			PlayerID: player.ID,
 			Type: matchType,
 			RoomID: util.GenerateUUID(),
@@ -188,7 +188,7 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 	}
 
 	// update database
-	err = match.Update(database)
+	err = match.Save(database)
 	return
 }
 
@@ -219,7 +219,7 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 					match.OpponentID = bson.ObjectId("")
 				}
 				match.State = MatchOpen
-				match.Update(database)
+				match.Save(database)
 			} else {
 				match.Delete(database)
 			}
@@ -294,20 +294,6 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 	}
 
 	if foundActiveMatch {
-		// update match outcome
-		// match.State = MatchCompleting
-		// match.Outcome = outcome
-		// match.PlayerScore = playerScore
-		// match.OpponentScore = opponentScore
-		// match.EndTime = time.Now()
-
-		// // update database
-		// err = match.Update(database)
-		// if err != nil {
-		// 	err = util.NewError(err)
-		// 	return
-		// }
-
 		// update player stats
 		err = match.ProcessMatchResults(database)
 		if err != nil {
@@ -341,7 +327,7 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 			match.State = MatchInvalid
 
 			// update as invalid
-			match.Update(database)
+			match.Save(database)
 
 			err = util.NewError("Non-symmetrical match outcomes reported by clients!")
 
@@ -538,11 +524,11 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 		player.LossCount += 1
 		opponent.WinCount += 1
 	}
-	err = player.Update(database)
+	err = player.Save(database)
 	if err != nil {
 		return
 	}
-	err = opponent.Update(database)
+	err = opponent.Save(database)
 	if err != nil {
 		return
 	}
