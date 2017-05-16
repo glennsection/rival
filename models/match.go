@@ -350,7 +350,7 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 		if (host && match.Outcome == MatchWin) || (!host && match.Outcome == MatchLoss) {
 			matchReward.Tome = player.AddVictoryTome(database)
 		} else {
-			player.Update(database)
+			player.Save(database)
 		}
 	} 
 
