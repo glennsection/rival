@@ -12,7 +12,7 @@ import (
 var rootDirectory string = "./resources/data/%v.json"
 
 // initialize data system
-func Load() {
+func init() {
 	// create data table
 	dataIdMap = map[DataId]string {}
 

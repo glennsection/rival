@@ -10,7 +10,7 @@ import (
 	"bloodtales/util"
 )
 
-func (application *Application) initializeSort() {
+func init() {
 	util.AddTemplateFunc("sortHeader", templateSortHeader)
 }
 

@@ -4,16 +4,19 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
-	"gopkg.in/mgo.v2"
+	"bloodtales/util"
 )
 
 // initialize models and collections
-func Initialize(database *mgo.Database) {
-	ensureIndexUser(database)
-	ensureIndexPlayer(database)
-	ensureIndexTracking(database)
-	ensureIndexMatch(database)
-	ensureIndexNotification(database);
+func init() {
+	db := util.GetDatabaseConnection()
+	defer db.Session.Close()
+
+	ensureIndexUser(db)
+	ensureIndexPlayer(db)
+	ensureIndexTracking(db)
+	ensureIndexMatch(db)
+	ensureIndexNotification(db);
 }
 
 // create new player data

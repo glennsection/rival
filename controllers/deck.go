@@ -6,10 +6,10 @@ import (
 	"bloodtales/system"
 )
 
-func HandleDeck(application *system.Application) {
-	HandleGameAPI(application, "/deck/setLeader", system.TokenAuthentication, SetLeaderCard)
-	HandleGameAPI(application, "/deck/setCard", system.TokenAuthentication, SetDeckCard)
-	HandleGameAPI(application, "/deck/switch", system.TokenAuthentication, SwitchDeck)
+func HandleDeck() {
+	HandleGameAPI("/deck/setLeader", system.TokenAuthentication, SetLeaderCard)
+	HandleGameAPI("/deck/setCard", system.TokenAuthentication, SetDeckCard)
+	HandleGameAPI("/deck/switch", system.TokenAuthentication, SwitchDeck)
 }
 
 func SetLeaderCard(context *system.Context) {

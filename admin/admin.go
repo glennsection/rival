@@ -8,22 +8,22 @@ import (
 
 var DefaultPageSize int = 20
 
-func HandleAdmin(application *system.Application) {
-	application.Redirect("/admin", "/admin/home", 301)
-	handleAdminTemplate(application, "/error", system.NoAuthentication, Error, "error.tmpl.html")
-	handleAdminTemplate(application, "/admin/home", system.NoAuthentication, Home, "home.tmpl.html")
-	handleAdminTemplate(application, "/admin/login", system.NoAuthentication, Login, "login.tmpl.html")
-	handleAdminTemplate(application, "/admin/login/go", system.PasswordAuthentication, Login, "login.tmpl.html")
-	handleAdminTemplate(application, "/admin/logout", system.NoAuthentication, Logout, "")
-	handleAdminTemplate(application, "/admin/dashboard", system.TokenAuthentication, Dashboard, "dashboard.tmpl.html")
+func HandleAdmin() {
+	system.App.Redirect("/admin", "/admin/home", 301)
+	handleAdminTemplate("/error", system.NoAuthentication, Error, "error.tmpl.html")
+	handleAdminTemplate("/admin/home", system.NoAuthentication, Home, "home.tmpl.html")
+	handleAdminTemplate("/admin/login", system.NoAuthentication, Login, "login.tmpl.html")
+	handleAdminTemplate("/admin/login/go", system.PasswordAuthentication, Login, "login.tmpl.html")
+	handleAdminTemplate("/admin/logout", system.NoAuthentication, Logout, "")
+	handleAdminTemplate("/admin/dashboard", system.TokenAuthentication, Dashboard, "dashboard.tmpl.html")
 
-	handleAdminUsers(application)
-	handleAdminCards(application)
-	handleAdminAnalytics(application)
+	handleAdminUsers()
+	handleAdminCards()
+	handleAdminAnalytics()
 }
 
-func handleAdminTemplate(application *system.Application, pattern string, authType system.AuthenticationType, handler func(*system.Context), template string) {
-	application.HandleTemplate(pattern, authType, func(context *system.Context) {
+func handleAdminTemplate(pattern string, authType system.AuthenticationType, handler func(*system.Context), template string) {
+	system.App.HandleTemplate(pattern, authType, func(context *system.Context) {
 		initializeAdmin(context)
 		handler(context)
 	}, template)
@@ -99,7 +99,9 @@ func Login(context *system.Context) {
 	switch context.Request.Method {
 	case "POST":
 		if context.Success {
-			if context.User.Admin == true {
+			user := system.GetUser(context)
+
+			if user.Admin == true {
 				context.Message("User logged in successfully")
 				context.Redirect("/admin/dashboard", 302)
 			} else {

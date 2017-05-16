@@ -6,11 +6,11 @@ import (
 	"bloodtales/util"
 )
 
-func HandleMatch(application *system.Application) {
-	HandleGameAPI(application, "/match/clear", system.TokenAuthentication, MatchClear)
-	HandleGameAPI(application, "/match/find", system.TokenAuthentication, MatchFind)
-	HandleGameAPI(application, "/match/fail", system.TokenAuthentication, MatchFail)
-	HandleGameAPI(application, "/match/result", system.TokenAuthentication, MatchResult)
+func HandleMatch() {
+	HandleGameAPI("/match/clear", system.TokenAuthentication, MatchClear)
+	HandleGameAPI("/match/find", system.TokenAuthentication, MatchFind)
+	HandleGameAPI("/match/fail", system.TokenAuthentication, MatchFail)
+	HandleGameAPI("/match/result", system.TokenAuthentication, MatchResult)
 }
 
 func MatchClear(context *system.Context) {

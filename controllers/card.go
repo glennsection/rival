@@ -6,8 +6,8 @@ import (
 	"bloodtales/data"
 )
 
-func HandleCard(application *system.Application) {
-	HandleGameAPI(application, "/card/upgrade", system.TokenAuthentication, UpgradeCard)
+func HandleCard() {
+	HandleGameAPI("/card/upgrade", system.TokenAuthentication, UpgradeCard)
 }
 
 func UpgradeCard(context *system.Context) {

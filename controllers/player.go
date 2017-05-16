@@ -10,11 +10,11 @@ import (
 	"bloodtales/models"
 )
 
-func HandlePlayer(application *system.Application) {
-	HandleGameAPI(application, "/player/set", system.TokenAuthentication, SetPlayer)
-	HandleGameAPI(application, "/player/name", system.TokenAuthentication, SetPlayerName)
-	//HandleGameAPI(application, "/player/get", system.TokenAuthentication, GetPlayer)
-	HandleGameAPI(application, "/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
+func HandlePlayer() {
+	HandleGameAPI("/player/set", system.TokenAuthentication, SetPlayer)
+	HandleGameAPI("/player/name", system.TokenAuthentication, SetPlayerName)
+	//HandleGameAPI("/player/get", system.TokenAuthentication, GetPlayer)
+	HandleGameAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
 
 	// template functions
 	util.AddTemplateFunc("getUserName", templateGetUserName)
@@ -24,7 +24,8 @@ func HandlePlayer(application *system.Application) {
 func GetPlayer(context *system.Context) (player *models.Player) {
 	player, ok := context.Params.Get("_player").(*models.Player)
 	if ok == false {
-		player, _ = models.GetPlayerByUser(context.DB, context.User.ID)
+		user := system.GetUser(context)
+		player, _ = models.GetPlayerByUser(context.DB, user.ID)
 
 		if player != nil {
 			context.Params.Set("_player", player)
@@ -120,7 +121,7 @@ func SetPlayerName(context *system.Context) {
 	name := context.Params.GetRequiredString("name")
 
 	// get user
-	user := context.User
+	user := system.GetUser(context)
 
 	// set name and update
 	user.Name = name
@@ -140,21 +141,24 @@ func SetPlayer(context *system.Context) {
 	data := context.Params.GetRequiredString("data")
 
 	// update data
-	_, err := models.UpdatePlayer(context.DB, context.User, data)
+	user := system.GetUser(context)
+	_, err := models.UpdatePlayer(context.DB, user, data)
 	util.Must(err)
 
 	context.Message("Player updated successfully")
 }
 
 func FetchPlayer(context *system.Context) {
-	// get player
+	// get user and player
+	user := system.GetUser(context)
 	player := GetPlayer(context)
+	
 	if player != nil {
 		// update rewards
 		util.Must(player.UpdateRewards(context.DB))
 
 		// add in user name
-		player.Name = context.User.Name
+		player.Name = user.Name
 		
 		// set successful response
 		context.Message("Found player")
@@ -168,6 +172,6 @@ func FetchPlayer(context *system.Context) {
 									models.UpdateMask_Stars,
     								models.UpdateMask_Quests})
 	} else {
-		context.Fail(fmt.Sprintf("Failed to find player for username: %v", context.User.Username))
+		context.Fail(fmt.Sprintf("Failed to find player for username: %v", user.Username))
 	}
 }

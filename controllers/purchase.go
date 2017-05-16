@@ -7,8 +7,8 @@ import (
 	"bloodtales/util"
 )
 
-func HandlePurchase(application *system.Application) {
-	HandleGameAPI(application, "/purchase", system.TokenAuthentication, Purchase)
+func HandlePurchase() {
+	HandleGameAPI("/purchase", system.TokenAuthentication, Purchase)
 }
 
 func Purchase(context *system.Context) {

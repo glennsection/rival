@@ -5,9 +5,19 @@ import (
 	"bloodtales/models"
 )
 
-func HandleGameAPI(application *system.Application, pattern string, authType system.AuthenticationType, handler func(*system.Context)) {
+func HandleGame() {
+	HandleUser()
+	HandlePlayer()
+	HandleTome()
+	HandleCard()
+	HandleDeck()
+	HandleMatch()
+	HandlePurchase()
+}
+
+func HandleGameAPI(pattern string, authType system.AuthenticationType, handler func(*system.Context)) {
 	// all template requests start here
-	application.HandleAPI(pattern, authType, func(context *system.Context) {
+	system.App.HandleAPI(pattern, authType, func(context *system.Context) {
 		handler(context)
 
 		// handle dirty flags in context.UpdatedData

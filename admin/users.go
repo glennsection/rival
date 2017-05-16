@@ -11,11 +11,11 @@ import (
 	"bloodtales/util"
 )
 
-func handleAdminUsers(application *system.Application) {
-	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
-	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
-	handleAdminTemplate(application, "/admin/users/reset", system.TokenAuthentication, ResetUser, "")
-	handleAdminTemplate(application, "/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
+func handleAdminUsers() {
+	handleAdminTemplate("/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
+	handleAdminTemplate("/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
+	handleAdminTemplate("/admin/users/reset", system.TokenAuthentication, ResetUser, "")
+	handleAdminTemplate("/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
 }
 
 func ShowUsers(context *system.Context) {

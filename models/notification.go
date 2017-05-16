@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"encoding/json"
 	
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -11,16 +12,28 @@ import (
 
 const NotificationCollectionName = "notifications"
 
-type Notification struct {
-	ID             bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	SenderID       bson.ObjectId `bson:"sid,omitempty" json:"-"`
-	ReceiverID     bson.ObjectId `bson:"rid,omitempty" json:"-"`
-	CreatedAt      time.Time     `bson:"t0" json:"created"`
-	ExpiresAt      time.Time     `bson:"exp" json:"expires"`
-	Message        string        `bson:"ms" json:"message"`
-	Data           bson.M        `bson:"dt,omitempty" json:"data"`
+type NotificationType int
+const (
+	DefaultNotification NotificationType = iota
+	SystemNotification
+	NewsNotification
+	EventNotification
+	FriendNotification
+	GuildNotification
+)
 
-	SenderName     string        `bson:"-" json"sender"`
+type Notification struct {
+	ID             bson.ObjectId    `bson:"_id,omitempty" json:"-"`
+	SenderID       bson.ObjectId    `bson:"sid,omitempty" json:"-"`
+	ReceiverID     bson.ObjectId    `bson:"rid,omitempty" json:"-"`
+	CreatedAt      time.Time        `bson:"t0" json:"created"`
+	ExpiresAt      time.Time        `bson:"exp" json:"expires"`
+	Type           NotificationType `bson:"tp" json:"type"`
+	Image          string           `bson:"im" json:"image"`
+	Message        string           `bson:"ms" json:"message"`
+	Data           bson.M           `bson:"dt,omitempty" json:"data"`
+
+	SenderName     string           `bson:"-" json"sender"`
 }
 
 func ensureIndexNotification(database *mgo.Database) {
@@ -53,6 +66,19 @@ func ensureIndexNotification(database *mgo.Database) {
 		Sparse:       true,
 		ExpireAfter:  1,
 	}))
+}
+
+// custom marshalling
+func (notification* Notification) MarshalJSON() ([]byte, error) {
+	// get sender name
+	if notification.SenderID.Valid() {
+		notification.SenderName = "" // TODO
+	} else {
+		notification.SenderName = ""
+	}
+	
+	// marshal to json
+	return json.Marshal(notification)
 }
 
 func (notification* Notification) Save(database *mgo.Database) (err error) {

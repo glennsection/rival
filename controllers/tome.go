@@ -7,12 +7,12 @@ import (
 	"bloodtales/util"
 )
 
-func HandleTome(application *system.Application) {
-	HandleGameAPI(application, "/tome/unlock", system.TokenAuthentication, UnlockTome)
-	HandleGameAPI(application, "/tome/open", system.TokenAuthentication, OpenTome)
-	HandleGameAPI(application, "/tome/rush", system.TokenAuthentication, RushTome)
-	HandleGameAPI(application, "/tome/free", system.TokenAuthentication, ClaimFreeTome)
-	HandleGameAPI(application, "/tome/arena", system.TokenAuthentication, ClaimArenaTome)
+func HandleTome() {
+	HandleGameAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
+	HandleGameAPI("/tome/open", system.TokenAuthentication, OpenTome)
+	HandleGameAPI("/tome/rush", system.TokenAuthentication, RushTome)
+	HandleGameAPI("/tome/free", system.TokenAuthentication, ClaimFreeTome)
+	HandleGameAPI("/tome/arena", system.TokenAuthentication, ClaimArenaTome)
 }
 
 func UnlockTome(context *system.Context) {

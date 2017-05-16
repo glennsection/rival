@@ -10,13 +10,13 @@ import (
 	"bloodtales/util"
 )
 
-func handleAdminAnalytics(application *system.Application) {
-	handleAdminTemplate(application, "/admin/leaderboard", system.NoAuthentication, ShowLeaderboard, "leaderboard.tmpl.html")
+func handleAdminAnalytics() {
+	handleAdminTemplate("/admin/leaderboard", system.NoAuthentication, ShowLeaderboard, "leaderboard.tmpl.html")
 
-	handleAdminTemplate(application, "/admin/matches", system.TokenAuthentication, ShowMatches, "matches.tmpl.html")
-	handleAdminTemplate(application, "/admin/matches/edit", system.TokenAuthentication, EditMatch, "match.tmpl.html")
-	handleAdminTemplate(application, "/admin/matches/delete", system.TokenAuthentication, DeleteMatch, "")
-	handleAdminTemplate(application, "/admin/matches/reset", system.TokenAuthentication, ResetMatches, "")
+	handleAdminTemplate("/admin/matches", system.TokenAuthentication, ShowMatches, "matches.tmpl.html")
+	handleAdminTemplate("/admin/matches/edit", system.TokenAuthentication, EditMatch, "match.tmpl.html")
+	handleAdminTemplate("/admin/matches/delete", system.TokenAuthentication, DeleteMatch, "")
+	handleAdminTemplate("/admin/matches/reset", system.TokenAuthentication, ResetMatches, "")
 }
 
 func ShowLeaderboard(context *system.Context) {
@@ -41,44 +41,20 @@ func ShowLeaderboard(context *system.Context) {
 	}).All(&unsortedPlayers))
 	
 	// reorder
-	players := make([]*models.Player, len(unsortedPlayers))
-	for _, player := range unsortedPlayers {
-		for j, playerId := range playerObjectIds {
+	var players []*models.Player
+	for _, playerId := range playerObjectIds {
+		for _, player := range unsortedPlayers {
 			if playerId == player.ID {
-				players[j] = player
+				players = append(players, player)
 				break
 			}
 		}
 	}
 
 
-	// get players (TODO - aggregation if addFields worked)
-	// var players []*models.Player
-	// err := context.DB.C(models.PlayerCollectionName).Pipe([]bson.M {
-	// 	bson.M {
-	// 		"$match": bson.M {
-	// 			"_id": bson.M { "$in": playerObjectIds, },
-	// 		},
-	// 	},
-	// 	bson.M {
-	// 		"$addFields": bson.M {
-	// 			"__order": bson.M { "$indexOfArray": []interface{} { playerObjectIds, "$name" }, },
-	// 		},
-	// 	},
-	// 	bson.M {
-	// 		"$sort": bson.M {
-	// 			"__order": 1,
-	// 		},
-	// 	},
-	// }).All(&players)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-
 
 	// paginate players query
-	// pagination, err := context.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rk"), DefaultPageSize)
+	// pagination, err := context.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("lb"), DefaultPageSize)
 	// if err != nil {
 	// 	panic(err)
 	// }

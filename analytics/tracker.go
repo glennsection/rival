@@ -1,4 +1,4 @@
-package system
+package analytics
 
 import (
 	"time"
@@ -10,9 +10,11 @@ import (
 )
 
 func (context *Context) Track(message string, data bson.M, expires time.Time) {
+	user := system.GetUser(context)
+
 	// create tracking
 	tracking := &models.Tracking {
-		UserID:    context.User.ID,
+		UserID:    user.ID,
 		ExpiresAt: expires,
 		Message:   message,
 		Data:      data,

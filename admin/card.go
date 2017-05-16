@@ -12,9 +12,9 @@ import (
 	"bloodtales/util"
 )
 
-func handleAdminCards(application *system.Application) {
-	handleAdminTemplate(application, "/admin/cards/edit", system.TokenAuthentication, EditCard, "")
-	handleAdminTemplate(application, "/admin/cards/delete", system.TokenAuthentication, DeleteCard, "")
+func handleAdminCards() {
+	handleAdminTemplate("/admin/cards/edit", system.TokenAuthentication, EditCard, "")
+	handleAdminTemplate("/admin/cards/delete", system.TokenAuthentication, DeleteCard, "")
 }
 
 func EditCard(context *system.Context) {

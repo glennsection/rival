@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"time"
 	"fmt"
-	"sync"
 	"strings"
 	"net/http"
 	"net/http/httputil"
@@ -15,22 +14,17 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"bloodtales/config"
-	"bloodtales/models"
 	"bloodtales/log"
 	"bloodtales/util"
 )
 
 type Context struct {
-	Application *Application       	   `json:"-"`
-	Config      *config.Config     	   `json:"-"`
-	DBSession   *mgo.Session       	   `json:"-"`
 	DB          *mgo.Database      	   `json:"-"`
-	Session     *Session           	   `json:"-"`
-	Cache       *Cache             	   `json:"-"`
-	Client      *Client           	   `json:"-"`
+	Session     *util.Session          `json:"-"`
+	Cache       *util.Cache            `json:"-"`
+	Client      *util.Client           `json:"-"`
 	Request     *http.Request     	   `json:"-"`
-	Params      *Stream           	   `json:"-"`
-	User		*models.User      	   `json:"-"`
+	Params      *util.Stream           `json:"-"`
 	Template    string            	   `json:"-"`
 
 	Token       string            	   `json:"token"`
@@ -45,49 +39,24 @@ type Context struct {
 	responseWritten bool
 }
 
-type ContextStreamSource struct {
-	bindings        map[string]interface{}
-	mutex           sync.RWMutex
-	context         *Context
-}
-
 func CreateContext(application *Application, w http.ResponseWriter, r *http.Request) *Context {
-	// create concurrent database session
-	contextDBSession := application.dbSession.Copy()
-	contextDB := application.db.With(contextDBSession)
-
-	// get concurrent cache connection
-	cache := application.GetCache()
+	// cookies session
+	session := util.GetSession(w, r)
 
 	// create context
 	context := &Context {
-		Application: application,
-		Config: &application.Config,
-		DBSession: contextDBSession,
-		DB: contextDB,
-		Cache: cache,
+		DB: util.GetDatabaseConnection(),
+		Session: session,
+		Cache: util.GetCacheConnection(),
+		Client: util.LoadClient(session),
 		Request: r,
+		Params: util.NewParamsStream(r),
 
 		// internal
 		responseWriter: w,
 
-		User: nil,
 		Token: "",
 		Success: true,
-	}
-
-	// create concurrent cookie session
-	context.Session = context.getSession()
-
-	// load client info
-	context.Client = context.loadClient()
-
-	// create request params stream
-	context.Params = &Stream {
-		source: ContextStreamSource {
-			context: context,
-			bindings: map[string]interface{} {},
-		},
 	}
 
 	return context
@@ -97,33 +66,6 @@ func (context *Context) Write(p []byte) (n int, err error) {
 	// remember custom was response written
 	context.responseWritten = true
 	return context.responseWriter.Write(p)
-}
-
-func (source ContextStreamSource) Has(name string) bool {
-	// check bindings
-	source.mutex.RLock()
-	defer source.mutex.RUnlock()
-	_, ok := source.bindings[name]
-	return ok
-}
-
-func (source ContextStreamSource) Set(name string, value interface{}) {
-	// set bindings
-	source.mutex.Lock()
-	defer source.mutex.Unlock()
-	source.bindings[name] = value
-}
-
-func (source ContextStreamSource) Get(name string) interface{} {
-	// first check bindings
-	source.mutex.RLock()
-	defer source.mutex.RUnlock()
-	if val, ok := source.bindings[name]; ok {
-		return val
-	}
-
-	// then use request params
-	return source.context.Request.FormValue(name)
 }
 
 func (context *Context) SetDirty(updates []int64) {
@@ -158,7 +100,7 @@ func (context *Context) BeginRequest(authType AuthenticationType, template strin
 	context.Template = template
 
 	// initial request logging
-	switch context.Config.Logging.Requests {
+	switch config.Config.Logging.Requests {
 	case config.BriefLogging:
 		// log basic request info with truncated query
 		query := context.Request.URL.RawQuery
@@ -191,7 +133,7 @@ func (context *Context) BeginRequest(authType AuthenticationType, template strin
 
 func (context *Context) EndRequest(startTime time.Time) {
 	// cleanup connection
-	defer context.DBSession.Close()
+	defer context.DB.Session.Close()
 
 	// handle any panics which occurred during request
 	redirected := false
@@ -228,7 +170,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 
 			// render template to buffer
 			var output bytes.Buffer
-			err := context.Application.templates.ExecuteTemplate(&output, context.Template, context)
+			err := util.GetTemplates().ExecuteTemplate(&output, context.Template, context)
 
 			var responseString string
 			if err == nil {
@@ -262,7 +204,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 	}
 
 	// show response profiling info
-	switch context.Config.Logging.Requests {
+	switch config.Config.Logging.Requests {
 	case config.BriefLogging, config.FullLogging:
 		successMessage := "Success"
 		successColor := "green!"
@@ -270,7 +212,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 			successMessage = "Failed"
 			successColor = "red!"
 		}
-		Profile(log.Sprintf("[cyan]Request handled: %v/%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
+		util.Profile(log.Sprintf("[cyan]Request handled: %v/%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
 	}
 
 	// show the error caught eariler
