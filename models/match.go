@@ -36,7 +36,8 @@ const (
 // match outcome
 type MatchOutcome int
 const (
-	MatchLoss MatchOutcome = -1
+	MatchSurrender MatchOutcome = -2
+	MatchLoss = -1
 	MatchDraw = 0
 	MatchWin = 1
 )
@@ -321,7 +322,7 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 
 		// validate match outcome
 		log.Printf("%v:%v %d:%d %d:%d", match.Outcome, outcome, match.PlayerScore, playerScore, match.OpponentScore, opponentScore)
-		if match.Outcome == outcome && match.PlayerScore == playerScore && match.OpponentScore == opponentScore {
+		if (match.Outcome == outcome && match.PlayerScore == playerScore && match.OpponentScore == opponentScore) || match.Outcome == MatchSurrender || outcome == MatchSurrender {
 			// match.State = MatchComplete
 		} else {
 			match.State = MatchInvalid
@@ -335,17 +336,21 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 		}
 	}
 
-	if match.State != MatchInvalid && err == nil {
+	if match.State != MatchInvalid && err == nil && outcome != MatchSurrender {
 		matchReward = &MatchReward {}
 
 		if host {
+			player.ModifyArenaPoints(match.PlayerScore)
 			matchReward.ArenaPoints = match.PlayerScore
 		} else {
+			player.ModifyArenaPoints(match.OpponentScore)
 			matchReward.ArenaPoints = match.OpponentScore
 		}
 
 		if (host && match.Outcome == MatchWin) || (!host && match.Outcome == MatchLoss) {
 			matchReward.Tome = player.AddVictoryTome(database)
+		} else {
+			player.Update(database)
 		}
 	} 
 
@@ -435,6 +440,8 @@ func (match *Match) GetOutcomeName() string {
 
 func invertOutcome(outcome MatchOutcome) MatchOutcome {
 	switch outcome {
+	case MatchSurrender:
+		return MatchSurrender
 	case MatchLoss:
 		return MatchWin
 	case MatchWin:
@@ -472,6 +479,11 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 	case MatchRanked:
 		// update stats
 		rankChange := int(match.Outcome)
+
+		if (rankChange == -2) { // handle surrender - players should never lose more than one rank
+			rankChange = -1
+		}
+
 		if rankChange > 0 || player.GetRankTier() > 1 {
 			player.RankPoints += rankChange
 		}
@@ -511,10 +523,8 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 
 	}
 
-	// modify win/loss counts, add arena points, and update database
-	player.ModifyArenaPoints(match.PlayerScore)
+	// modify win/loss counts and update database
 	player.MatchCount += 1
-	opponent.ModifyArenaPoints(match.OpponentScore)
 	opponent.MatchCount += 1
 	switch match.Outcome {
 	case MatchWin:
