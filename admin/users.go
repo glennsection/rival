@@ -55,7 +55,7 @@ func ShowUsers(context *system.Context) {
 
 func EditUser(context *system.Context) {
 	// parse parameters
-	userId := context.Params.GetRequiredID("userId")
+	userId := context.Params.GetRequiredId("userId")
 
 	user, err := models.GetUserById(context.DB, userId)
 	util.Must(err)
@@ -172,7 +172,7 @@ func ResetUser(context *system.Context) {
 
 func DeleteUser(context *system.Context) {
 	// parse parameters
-	userId := context.Params.GetRequiredID("userId")
+	userId := context.Params.GetRequiredId("userId")
 	page := context.Params.GetInt("page", 1)
 
 	user, err := models.GetUserById(context.DB, userId)

@@ -17,11 +17,12 @@ func HandlePlayer() {
 	HandleGameAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
 
 	// template functions
-	util.AddTemplateFunc("getUserName", templateGetUserName)
-	util.AddTemplateFunc("getPlayerName", templateGetPlayerName)
+	util.AddTemplateFunc("getUserName", GetUserName)
+	util.AddTemplateFunc("getPlayerName", GetPlayerName)
 }
 
 func GetPlayer(context *system.Context) (player *models.Player) {
+	// get player for current context, with cache in params
 	player, ok := context.Params.Get("_player").(*models.Player)
 	if ok == false {
 		user := system.GetUser(context)
@@ -34,17 +35,36 @@ func GetPlayer(context *system.Context) (player *models.Player) {
 	return
 }
 
-func RefreshUserName(context *system.Context, name string, userID bson.ObjectId, playerID bson.ObjectId) {
-	userKey := fmt.Sprintf("UserName:%s", userID.Hex())
-	playerKey := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
+func SetPlayerName(context *system.Context) {
+	// parse parameters
+	name := context.Params.GetRequiredString("name")
 
+	// get user
+	user := system.GetUser(context)
+
+	// set name and update
+	user.Name = name
+	err := user.Save(context.DB)
+	util.Must(err)
+
+	// get player
+	player, err := models.GetPlayerByUser(context.DB, user.ID)
+	util.Must(err)
+
+	// get cache keys
+	userKey := fmt.Sprintf("UserName:%s", user.ID.Hex())
+	playerKey := fmt.Sprintf("UserPlayerName:%s", player.ID.Hex())
+
+	// refresh cached names
 	context.Cache.Set(userKey, name)
 	context.Cache.Set(playerKey, name)
 }
 
-func templateGetUserName(context *system.Context, userID bson.ObjectId) string {
+func GetUserName(context *system.Context, userID bson.ObjectId) string {
+	// get cache key
 	key := fmt.Sprintf("UserName:%s", userID.Hex())
 
+	// get cached name
 	name := context.Cache.GetString(key, "")
 
 	// immediately cache latest name
@@ -58,9 +78,11 @@ func templateGetUserName(context *system.Context, userID bson.ObjectId) string {
 	return name
 }
 
-func templateGetPlayerName(context *system.Context, playerID bson.ObjectId) string {
+func GetPlayerName(context *system.Context, playerID bson.ObjectId) string {
+	// get cache key
 	key := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
 
+	// get cached name
 	name := context.Cache.GetString(key, "")
 
 	// immediately cache latest name
@@ -77,8 +99,8 @@ func templateGetPlayerName(context *system.Context, playerID bson.ObjectId) stri
 	return name
 }
 
-func templateGetPlayerPlace(context *system.Context, player *models.Player) int {
-	return 0;
+func GetPlayerPlace(context *system.Context, player *models.Player) int {
+	return 0; // TODO - cache this
 	// key := fmt.Sprintf("UserName:%s", userID.Hex())
 
 	// name := context.Cache.GetString(key, "")
@@ -114,26 +136,6 @@ func updatePlayerPlace(context *system.Context, player *models.Player) {
 		score := winsFactor + matchesFactor + pointsFactor
 		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
 	}
-}
-
-func SetPlayerName(context *system.Context) {
-	// parse parameters
-	name := context.Params.GetRequiredString("name")
-
-	// get user
-	user := system.GetUser(context)
-
-	// set name and update
-	user.Name = name
-	err := user.Save(context.DB)
-	util.Must(err)
-
-	// get player
-	player, err := models.GetPlayerByUser(context.DB, user.ID)
-	util.Must(err)
-
-	// refresh cached name
-	RefreshUserName(context, name, user.ID, player.ID)
 }
 
 func SetPlayer(context *system.Context) {

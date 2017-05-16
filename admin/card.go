@@ -19,7 +19,7 @@ func handleAdminCards() {
 
 func EditCard(context *system.Context) {
 	// parse parameters
-	playerId := context.Params.GetRequiredID("playerId")
+	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
 	player, err := models.GetPlayerById(context.DB, playerId)
@@ -41,7 +41,7 @@ func EditCard(context *system.Context) {
 
 func DeleteCard(context *system.Context) {
 	// parse parameters
-	playerId := context.Params.GetRequiredID("playerId")
+	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
 	player, err := models.GetPlayerById(context.DB, playerId)

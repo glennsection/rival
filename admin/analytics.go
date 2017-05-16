@@ -85,7 +85,7 @@ func ShowMatches(context *system.Context) {
 
 func EditMatch(context *system.Context) {
 	// parse parameters
-	matchId := context.Params.GetRequiredID("matchId")
+	matchId := context.Params.GetRequiredId("matchId")
 
 	match, err := models.GetMatchById(context.DB, matchId)
 	util.Must(err)
@@ -102,7 +102,7 @@ func EditMatch(context *system.Context) {
 
 func DeleteMatch(context *system.Context) {
 	// parse parameters
-	matchId := context.Params.GetRequiredID("matchId")
+	matchId := context.Params.GetRequiredId("matchId")
 	page := context.Params.GetInt("page", 1)
 
 	match, err := models.GetMatchById(context.DB, matchId)
