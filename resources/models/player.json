@@ -30,7 +30,7 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_ARMY_CAPTAIN",
+            "cardId": "CARD_MARKSMAN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -141,7 +141,7 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_CAPTAIN",
-                "CARD_ARMY_CAPTAIN",
+                "CARD_MARKSMAN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GARGOYLE",
                 "CARD_GOLEM",
@@ -154,7 +154,7 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_CAPTAIN",
-                "CARD_ARMY_CAPTAIN",
+                "CARD_MARKSMAN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GARGOYLE",
                 "CARD_GOLEM",
@@ -167,7 +167,7 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_CAPTAIN",
-                "CARD_ARMY_CAPTAIN",
+                "CARD_MARKSMAN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GARGOYLE",
                 "CARD_GOLEM",
