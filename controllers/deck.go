@@ -6,10 +6,10 @@ import (
 	"bloodtales/system"
 )
 
-func HandleDeck(application *system.Application) {
-	HandleGameAPI(application, "/deck/setLeader", system.TokenAuthentication, SetLeaderCard)
-	HandleGameAPI(application, "/deck/setCard", system.TokenAuthentication, SetDeckCard)
-	HandleGameAPI(application, "/deck/switch", system.TokenAuthentication, SwitchDeck)
+func HandleDeck() {
+	HandleGameAPI("/deck/setLeader", system.TokenAuthentication, SetLeaderCard)
+	HandleGameAPI("/deck/setCard", system.TokenAuthentication, SetDeckCard)
+	HandleGameAPI("/deck/switch", system.TokenAuthentication, SwitchDeck)
 }
 
 func SetLeaderCard(context *system.Context) {
@@ -33,7 +33,7 @@ func SetLeaderCard(context *system.Context) {
 
 	context.SetDirty([]int64{models.UpdateMask_Deck})
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }
 
 func SetDeckCard(context *system.Context) {
@@ -64,7 +64,7 @@ func SetDeckCard(context *system.Context) {
 
 	context.SetDirty([]int64{models.UpdateMask_Deck})
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }
 
 func SwitchDeck(context *system.Context) {
@@ -84,5 +84,5 @@ func SwitchDeck(context *system.Context) {
 
 	context.SetDirty([]int64{models.UpdateMask_Loadout})
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }

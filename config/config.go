@@ -2,6 +2,7 @@ package config
 
 import (
 	"time"
+	"fmt"
 	"io/ioutil"
 	"encoding/json"
 )
@@ -13,7 +14,7 @@ const (
 	FullLogging = "FullLogging"
 )
 
-type Config struct {
+type Configuration struct {
 	Platform struct {
 		Version           string           `json:"Version"`
 	}
@@ -38,7 +39,9 @@ type Config struct {
 	}                                      `json:"Logging"`
 }
 
-func Load(path string, config *Config) (err error) {
+var Config Configuration
+
+func Load(path string, config *Configuration) (err error) {
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		return
@@ -46,4 +49,13 @@ func Load(path string, config *Config) (err error) {
 
 	err = json.Unmarshal(file, config)
 	return
+}
+
+func init() {
+	// load config
+	configPath := "./config.json"
+	err := Load(configPath, &Config)
+	if err != nil {
+		panic(fmt.Sprintf("Config file (%s) failed to load: %v", configPath, err))
+	}
 }

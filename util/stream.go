@@ -1,4 +1,4 @@
-package system
+package util
 
 import (
 	"fmt"
@@ -228,7 +228,7 @@ func (stream *Stream) GetID(name string) bson.ObjectId {
 	return bson.ObjectId("")
 }
 
-func (stream *Stream) GetRequiredID(name string) bson.ObjectId {
+func (stream *Stream) GetRequiredId(name string) bson.ObjectId {
 	value := stream.source.Get(name)
 
 	if stringValue, ok := value.(string); ok {

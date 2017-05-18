@@ -3,18 +3,21 @@
 package system
 
 import (
+	"bloodtales/config"
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
-func (application *Application) initializeAuthentication() {
-	// init admin user
-	admin, _ := models.GetUserByUsername(application.db, application.Config.Authentication.AdminUsername)
-	if admin == nil {
-		models.InsertUserWithUsername(application.db, application.Config.Authentication.AdminUsername, application.Config.Authentication.AdminPassword, true)
-	}
+func init() {
+	// get database connection
+	db := util.GetDatabaseConnection()
+	defer db.Session.Close()
 
-	application.initializeToken()
-	application.initializeOAuth()
+	// init admin user
+	admin, _ := models.GetUserByUsername(db, config.Config.Authentication.AdminUsername)
+	if admin == nil {
+		models.InsertUserWithUsername(db, config.Config.Authentication.AdminUsername, config.Config.Authentication.AdminPassword, true)
+	}
 }
 
 func (context *Context) authenticate(authType AuthenticationType) (err error) {

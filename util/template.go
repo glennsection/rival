@@ -10,36 +10,39 @@ import (
 )
 
 var (
-	// default template functions
+	// internal
 	templateFuncMap = template.FuncMap {
+		// defaults
 		"add": templateAdd,
 		"shortTime": templateShortTime,
 	}
+	templates *template.Template
 )
 
 func AddTemplateFunc(name string, f interface{}) {
 	templateFuncMap[name] = f
 }
 
-func LoadTemplates() *template.Template {
-	var templates []string
+func LoadTemplates() {
+	var templatePaths []string
 
 	// filter to gather all HTML templates
 	fn := func(path string, f os.FileInfo, err error) error {
 		if f.IsDir() != true && strings.HasSuffix(f.Name(), ".html") {
-			templates = append(templates, path)
+			templatePaths = append(templatePaths, path)
 		}
 		return nil
 	}
 
 	// gather all HTML templates
-	err := filepath.Walk("templates", fn)
-	if err != nil {
-		panic(err)
-	}
+	Must(filepath.Walk("templates", fn))
 
 	// preload all HTML templates
-	return template.Must(template.New("").Funcs(templateFuncMap).ParseFiles(templates...))
+	templates = template.Must(template.New("").Funcs(templateFuncMap).ParseFiles(templatePaths...))
+}
+
+func GetTemplates() *template.Template {
+	return templates
 }
 
 func templateAdd(a, b int) template.HTML {

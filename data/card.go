@@ -4,6 +4,8 @@ import (
 	"strings"
 	"fmt"
 	"encoding/json"
+
+	"bloodtales/util"
 )
 
 type CardData struct {
@@ -57,9 +59,7 @@ func LoadCards(raw []byte) {
 
 		// map name to ID
 		id, err := mapDataName(name)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
 
 		// insert into table
 		cards[id] = &container.Cards[i]

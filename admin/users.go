@@ -8,13 +8,14 @@ import (
 
 	"bloodtales/system"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
-func handleAdminUsers(application *system.Application) {
-	handleAdminTemplate(application, "/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
-	handleAdminTemplate(application, "/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
-	handleAdminTemplate(application, "/admin/users/reset", system.TokenAuthentication, ResetUser, "")
-	handleAdminTemplate(application, "/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
+func handleAdminUsers() {
+	handleAdminTemplate("/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
+	handleAdminTemplate("/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
+	handleAdminTemplate("/admin/users/reset", system.TokenAuthentication, ResetUser, "")
+	handleAdminTemplate("/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
 }
 
 func ShowUsers(context *system.Context) {
@@ -42,16 +43,11 @@ func ShowUsers(context *system.Context) {
 
 	// paginate users query
 	pagination, err := context.Paginate(query, DefaultPageSize)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// get resulting users
 	var users []*models.User
-	err = pagination.All(&users)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(pagination.All(&users))
 
 	// set template bindings
 	context.Data = users
@@ -59,12 +55,10 @@ func ShowUsers(context *system.Context) {
 
 func EditUser(context *system.Context) {
 	// parse parameters
-	userId := context.Params.GetRequiredID("userId")
+	userId := context.Params.GetRequiredId("userId")
 
 	user, err := models.GetUserById(context.DB, userId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	player, err := models.GetPlayerByUser(context.DB, userId)
 	if err != nil {
@@ -91,7 +85,7 @@ func EditUser(context *system.Context) {
 		}
 
 		if userUpdated {
-			user.Update(context.DB)
+			user.Save(context.DB)
 		}
 
 		if player != nil {
@@ -140,7 +134,7 @@ func EditUser(context *system.Context) {
 				player.MatchCount = matchCount
 			}
 
-			player.Update(context.DB)
+			player.Save(context.DB)
 		}
 
 		context.Message("Player updated!")
@@ -158,9 +152,7 @@ func ResetUser(context *system.Context) {
 
 	if userId.Valid() {
 		player, err := models.GetPlayerByUser(context.DB, userId)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
 
 		player.Reset(context.DB)
 
@@ -180,18 +172,14 @@ func ResetUser(context *system.Context) {
 
 func DeleteUser(context *system.Context) {
 	// parse parameters
-	userId := context.Params.GetRequiredID("userId")
+	userId := context.Params.GetRequiredId("userId")
 	page := context.Params.GetInt("page", 1)
 
 	user, err := models.GetUserById(context.DB, userId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	player, err := models.GetPlayerByUser(context.DB, userId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	user.Delete(context.DB)
 	player.Delete(context.DB)

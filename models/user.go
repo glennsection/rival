@@ -7,6 +7,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
+
+	"bloodtales/util"
 )
 
 const UserCollectionName = "users"
@@ -29,40 +31,31 @@ func ensureIndexUser(database *mgo.Database) {
 	c := database.C(UserCollectionName)
 
 	// Username index
-	err := c.EnsureIndex(mgo.Index {
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "un" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	})
-	if err != nil {
-		panic(err)
-	}
+	}))
 
 	// UUID index
-	err = c.EnsureIndex(mgo.Index {
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "uuid" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	})
-	if err != nil {
-		panic(err)
-	}
+	}))
 
 	// Tag index
-	err = c.EnsureIndex(mgo.Index {
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "tag" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	})
-	if err != nil {
-		panic(err)
-	}
+	}))
 }
 
 func (user *User) HashPassword(password string) {
@@ -137,7 +130,7 @@ func GetUserByUsername(database *mgo.Database, username string) (user *User, err
 	return
 }
 
-func (user *User) Update(database *mgo.Database) (err error) {
+func (user *User) Save(database *mgo.Database) (err error) {
 	// update user in database
 	_, err = database.C(UserCollectionName).Upsert(bson.M { "_id": user.ID }, user)
 	return

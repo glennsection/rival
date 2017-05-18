@@ -1,15 +1,15 @@
 package controllers
 
 import (
+	"bloodtales/config"
 	"bloodtales/system"
 	"bloodtales/util"
 )
 
-func HandleUser(application *system.Application) {
-	HandleGameAPI(application, "/connect", system.NoAuthentication, UserConnect)
-	//HandleGameAPI(application, "/register", system.NoAuthentication, UserRegister)
-	HandleGameAPI(application, "/login", system.DeviceAuthentication, UserLogin)
-	HandleGameAPI(application, "/logout", system.TokenAuthentication, UserLogout)
+func HandleUser() {
+	HandleGameAPI("/connect", system.NoAuthentication, UserConnect)
+	HandleGameAPI("/login", system.DeviceAuthentication, UserLogin)
+	HandleGameAPI("/logout", system.TokenAuthentication, UserLogout)
 }
 
 func UserConnect(context *system.Context) {
@@ -17,7 +17,7 @@ func UserConnect(context *system.Context) {
 	version := context.Params.GetRequiredString("version")
 
 	// check version (major and minor)
-	compatibility := util.CompareVersion(context.Config.Platform.Version, version, 2)
+	compatibility := util.CompareVersion(config.Config.Platform.Version, version, 2)
 	switch compatibility {
 
 	case -1:

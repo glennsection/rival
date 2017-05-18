@@ -7,15 +7,16 @@ import (
 
 	"bloodtales/system"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
-func handleAdminAnalytics(application *system.Application) {
-	handleAdminTemplate(application, "/admin/leaderboard", system.NoAuthentication, ShowLeaderboard, "leaderboard.tmpl.html")
+func handleAdminAnalytics() {
+	handleAdminTemplate("/admin/leaderboard", system.NoAuthentication, ShowLeaderboard, "leaderboard.tmpl.html")
 
-	handleAdminTemplate(application, "/admin/matches", system.TokenAuthentication, ShowMatches, "matches.tmpl.html")
-	handleAdminTemplate(application, "/admin/matches/edit", system.TokenAuthentication, EditMatch, "match.tmpl.html")
-	handleAdminTemplate(application, "/admin/matches/delete", system.TokenAuthentication, DeleteMatch, "")
-	handleAdminTemplate(application, "/admin/matches/reset", system.TokenAuthentication, ResetMatches, "")
+	handleAdminTemplate("/admin/matches", system.TokenAuthentication, ShowMatches, "matches.tmpl.html")
+	handleAdminTemplate("/admin/matches/edit", system.TokenAuthentication, EditMatch, "match.tmpl.html")
+	handleAdminTemplate("/admin/matches/delete", system.TokenAuthentication, DeleteMatch, "")
+	handleAdminTemplate("/admin/matches/reset", system.TokenAuthentication, ResetMatches, "")
 }
 
 func ShowLeaderboard(context *system.Context) {
@@ -35,52 +36,25 @@ func ShowLeaderboard(context *system.Context) {
 
 	// get players
 	var unsortedPlayers []*models.Player
-	err := context.DB.C(models.PlayerCollectionName).Find(bson.M {
+	util.Must(context.DB.C(models.PlayerCollectionName).Find(bson.M {
 		"_id": bson.M { "$in": playerObjectIds, },
-	}).All(&unsortedPlayers)
-	if err != nil {
-		panic(err)
-	}
+	}).All(&unsortedPlayers))
 	
 	// reorder
-	players := make([]*models.Player, len(unsortedPlayers))
-	for _, player := range unsortedPlayers {
-		for j, playerId := range playerObjectIds {
+	var players []*models.Player
+	for _, playerId := range playerObjectIds {
+		for _, player := range unsortedPlayers {
 			if playerId == player.ID {
-				players[j] = player
+				players = append(players, player)
 				break
 			}
 		}
 	}
 
 
-	// get players (TODO - aggregation if addFields worked)
-	// var players []*models.Player
-	// err := context.DB.C(models.PlayerCollectionName).Pipe([]bson.M {
-	// 	bson.M {
-	// 		"$match": bson.M {
-	// 			"_id": bson.M { "$in": playerObjectIds, },
-	// 		},
-	// 	},
-	// 	bson.M {
-	// 		"$addFields": bson.M {
-	// 			"__order": bson.M { "$indexOfArray": []interface{} { playerObjectIds, "$name" }, },
-	// 		},
-	// 	},
-	// 	bson.M {
-	// 		"$sort": bson.M {
-	// 			"__order": 1,
-	// 		},
-	// 	},
-	// }).All(&players)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-
 
 	// paginate players query
-	// pagination, err := context.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("-rk"), DefaultPageSize)
+	// pagination, err := context.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("lb"), DefaultPageSize)
 	// if err != nil {
 	// 	panic(err)
 	// }
@@ -99,16 +73,11 @@ func ShowLeaderboard(context *system.Context) {
 func ShowMatches(context *system.Context) {
 	// paginate players query (TODO - use redis!)
 	pagination, err := context.Paginate(context.DB.C(models.MatchCollectionName).Find(nil).Sort("-t0"), DefaultPageSize)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// get resulting matches
 	var matches []*models.Match
-	err = pagination.All(&matches)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(pagination.All(&matches))
 
 	// set template bindings
 	context.Data = matches
@@ -116,12 +85,10 @@ func ShowMatches(context *system.Context) {
 
 func EditMatch(context *system.Context) {
 	// parse parameters
-	matchId := context.Params.GetRequiredID("matchId")
+	matchId := context.Params.GetRequiredId("matchId")
 
 	match, err := models.GetMatchById(context.DB, matchId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// handle request method
 	switch context.Request.Method {
@@ -135,13 +102,11 @@ func EditMatch(context *system.Context) {
 
 func DeleteMatch(context *system.Context) {
 	// parse parameters
-	matchId := context.Params.GetRequiredID("matchId")
+	matchId := context.Params.GetRequiredId("matchId")
 	page := context.Params.GetInt("page", 1)
 
 	match, err := models.GetMatchById(context.DB, matchId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	match.Delete(context.DB)
 
@@ -160,13 +125,13 @@ func ResetMatches(context *system.Context) {
 	// reset all players (TODO - use db.Run() bulk API)
 	for _, player := range players {
 		player.Initialize()
-		player.Update(context.DB)
+		player.Save(context.DB)
 	}
 	*/
 
 	// bulk reset of match data
 	var result bson.D
-	err := context.DB.Run(bson.D {
+	util.Must(context.DB.Run(bson.D {
 		bson.DocElem { "update",  models.PlayerCollectionName },
 		bson.DocElem { "updates",  []bson.M {
 			bson.M {
@@ -190,10 +155,7 @@ func ResetMatches(context *system.Context) {
 			"wtimeout": 1000,
 		} },
 		bson.DocElem { "ordered", false },
-	}, &result)
-	if err != nil {
-		panic(err)
-	}
+	}, &result))
 
 	context.Redirect("/admin/leaderboard", 302)
 }

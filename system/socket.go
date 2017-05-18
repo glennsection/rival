@@ -44,9 +44,9 @@ var (
 )
 
 // socket broadcast handler
-func (application *Application) initializeSockets() {
+func init() {
 	// setup route
-	application.HandleAPI("/socket", NoAuthentication, socketHandler)
+	App.HandleAPI("/socket", NoAuthentication, socketHandler)
 
 	// start main listening routine
 	go func() {

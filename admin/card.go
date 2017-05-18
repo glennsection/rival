@@ -9,22 +9,21 @@ import (
 	"bloodtales/system"
 	"bloodtales/data"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
-func handleAdminCards(application *system.Application) {
-	handleAdminTemplate(application, "/admin/cards/edit", system.TokenAuthentication, EditCard, "")
-	handleAdminTemplate(application, "/admin/cards/delete", system.TokenAuthentication, DeleteCard, "")
+func handleAdminCards() {
+	handleAdminTemplate("/admin/cards/edit", system.TokenAuthentication, EditCard, "")
+	handleAdminTemplate("/admin/cards/delete", system.TokenAuthentication, DeleteCard, "")
 }
 
 func EditCard(context *system.Context) {
 	// parse parameters
-	playerId := context.Params.GetRequiredID("playerId")
+	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
 	player, err := models.GetPlayerById(context.DB, playerId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	for i, card := range player.Cards {
 		if card.DataID == cardId {
@@ -33,7 +32,7 @@ func EditCard(context *system.Context) {
 			player.Cards[i].WinCount = context.Params.GetRequiredInt("winCount")
 			player.Cards[i].LeaderWinCount = context.Params.GetRequiredInt("leaderWinCount")
 
-			player.Update(context.DB)
+			player.Save(context.DB)
 		}
 	}
 	
@@ -42,13 +41,11 @@ func EditCard(context *system.Context) {
 
 func DeleteCard(context *system.Context) {
 	// parse parameters
-	playerId := context.Params.GetRequiredID("playerId")
+	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
 	player, err := models.GetPlayerById(context.DB, playerId)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// make sure player will maintain min cards
 	if len(player.Cards) > 9 {
@@ -78,7 +75,7 @@ func DeleteCard(context *system.Context) {
 			}
 
 			// update DB
-			player.Update(context.DB)
+			player.Save(context.DB)
 		}
 	} else {
 		context.Fail("Must maintain minimum of 9 cards for each player")

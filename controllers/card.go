@@ -6,8 +6,8 @@ import (
 	"bloodtales/data"
 )
 
-func HandleCard(application *system.Application) {
-	HandleGameAPI(application, "/card/upgrade", system.TokenAuthentication, UpgradeCard)
+func HandleCard() {
+	HandleGameAPI("/card/upgrade", system.TokenAuthentication, UpgradeCard)
 }
 
 func UpgradeCard(context *system.Context) {
@@ -45,5 +45,5 @@ func UpgradeCard(context *system.Context) {
 										 models.UpdateMask_Cards})
 	context.Data = card
 
-	player.Update(context.DB)
+	player.Save(context.DB)
 }

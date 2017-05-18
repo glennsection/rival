@@ -1,126 +1,49 @@
 package system
 
 import (
-	"os"
 	"time"
 	"fmt"
 	"net/http"
-	"html/template"
 
-	"gopkg.in/mgo.v2"
-
-	"bloodtales/config"
-	"bloodtales/data"
-	"bloodtales/models"
 	"bloodtales/log"
 	"bloodtales/util"
 )
 
 type Application struct {
-	Config		   config.Config
-	Env			   *Stream
-
-	// internal
-	dbSession	   *mgo.Session
-	db			   *mgo.Database
-	templates	   *template.Template
 }
 
-type EnvStreamSource struct {
-}
+var (
+	App *Application = &Application {}
+)
 
-func (source EnvStreamSource) Has(name string) bool {
-	_, ok := os.LookupEnv(name)
-	return ok
-}
-
-func (source EnvStreamSource) Set(name string, value interface{}) {
-	if err := os.Setenv(name, value.(string)); err != nil {
-		panic(err)
-	}
-}
-
-func (source EnvStreamSource) Get(name string) interface{} {
-	return os.Getenv(name)
-}
-
-func (application *Application) handleErrors() {
+func handleErrors() {
 	// handle any panic errors
 	if err := recover(); err != nil {
 		util.PrintError("Occurred during execution", err)
 	}
 }
 
-func (application *Application) handleProfiler(name string, elapsedTime time.Duration) {
+func handleProfiler(name string, elapsedTime time.Duration) {
 	// application profiling handler
 	log.Printf("%s [%v]", name, elapsedTime)
 }
 
-func (application *Application) Initialize() {
+func init() {
 	log.Println("[cyan!]Starting server application...[-]")
 
-	// load config
-	configPath := "./config.json"
-	err := config.Load(configPath, &application.Config)
-	if err != nil {
-		panic(fmt.Sprintf("Config file (%s) failed to load: %v", configPath, err))
-	}
-
-	// create environment variables stream
-	application.Env = &Stream {
-		source: EnvStreamSource {},
-	}
-
 	// init profiling
-	HandleProfiling(application.handleProfiler)
-
-	// // init templates
-	// application.loadTemplates()
-	
-	// connect database
-	application.initializeDatabase()
-
-	// connect to cache
-	application.initializeCache()
-
-	// init sessions
-	application.initializeSessions()
-
-	// init client
-	application.initializeClient()
-
-	// init models using concurrent session (DB indexes, etc.)
-	tempSession := application.dbSession.Copy()
-	defer tempSession.Close()
-	models.Initialize(application.db.With(tempSession))
-
-	// init auth
-	application.initializeAuthentication()
-
-	// init sockets
-	application.initializeSockets()
-
-	// load data
-	data.Load()
-
-	// init player tags
-	application.initializeTags()
-
-	// init table sort
-	application.initializeSort()
+	util.HandleProfiling(handleProfiler)
 }
 
 func (application *Application) Close() {
 	// handle any remaining application errors
-	defer application.handleErrors()
+	defer handleErrors()
 
 	// cleanup database connection
-	if application.dbSession != nil {
-		application.dbSession.Close()
-	}
+	util.CloseDatabase()
 
 	// cleanup cache
-	application.closeCache()
+	util.CloseCache()
 }
 
 func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*Context)) {
@@ -173,20 +96,18 @@ func (application *Application) Redirect(pattern string, url string, responseCod
 func (application *Application) Ignore(pattern string) {
 	// ignore these requests
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+		http.NotFound(w, r)
 	})
 }
 
 func (application *Application) Serve() {
 	// init templates
-	application.templates = util.LoadTemplates()
+	util.LoadTemplates()
 
 	// start serving on port
-	port := application.Env.GetRequiredString("PORT")
+	port := util.Env.GetRequiredString("PORT")
 
 	log.Printf("[cyan]Server application ready for incoming requests on port: %s[-]", port)
 
-	err := http.ListenAndServe(":" + port, nil)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(http.ListenAndServe(":" + port, nil))
 }

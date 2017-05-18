@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"encoding/json"
+
+	"bloodtales/util"
 )
 
 // server data
@@ -91,9 +93,7 @@ func LoadTomes(raw []byte) {
 
 		// map name to ID
 		id, err := mapDataName(name)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
 
 		// insert into table
 		tomes[id] = &container.Tomes[i]

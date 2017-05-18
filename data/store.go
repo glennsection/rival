@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"encoding/json"
+
+	"bloodtales/util"
 )
 
 // currency type
@@ -103,9 +105,7 @@ func LoadStore(raw []byte) {
 
 		// map name to ID
 		id, err := mapDataName(name)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
 
 		// insert into table
 		storeItems[id] = &container.Store[i]

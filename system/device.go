@@ -3,7 +3,9 @@ package system
 import (
 	"errors"
 
+	"bloodtales/config"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
 func (context *Context) authenticateDevice(required bool) (err error) {
@@ -12,39 +14,43 @@ func (context *Context) authenticateDevice(required bool) (err error) {
 	tag := context.Params.GetString("tag", "")
 	token := context.Params.GetString("debug", "")
 
+	var user *models.User = nil
+
 	if tag != "" {
 		// login using player tag
-		if token == context.Config.Authentication.DebugToken {
-			context.User, err = models.GetUserByTag(context.DB, tag)
+		if token == config.Config.Authentication.DebugToken {
+			user, err = models.GetUserByTag(context.DB, tag)
+
+			if user != nil {
+				SetUser(context, user)
+			}
 		}
 	} else {
 		// handle identifier as UUID
 		if uuid != "" {
 			// find user with UUID
-			context.User, err = models.GetUserByUUID(context.DB, uuid)
-			if required && context.User == nil {
+			user, err = models.GetUserByUUID(context.DB, uuid)
+
+			if required && user == nil {
 				// generate unique player tag
-				tag := GenerateTag()
+				tag := util.GenerateTag()
 
 				// insert new user
-				context.User, err = models.InsertUserWithUUID(context.DB, uuid, tag)
-				if err != nil {
-					panic(err)
-				}
+				user, err = models.InsertUserWithUUID(context.DB, uuid, tag)
+				util.Must(err)
 
 				// insert new player
-				player := models.CreatePlayer(context.User.ID)
-				err = player.Update(context.DB)
-				if err != nil {
-					panic(err)
-				}
+				player := models.CreatePlayer(user.ID)
+				util.Must(player.Save(context.DB))
 			}
-
-			err = context.AppendAuthToken()
 		}
 	}
 
-	if required && context.User == nil {
+	if user != nil {
+		SetUser(context, user)
+
+		err = context.AppendAuthToken()
+	} else if required {
 		err = errors.New("Unauthorized user")
 	}
 	return
