@@ -102,11 +102,11 @@ func GetCard(id DataId) (card *CardData) {
 	return cards[id]
 }
 
-func GetCardsByTieredRarity(tier int, rarity string) []DataId {
+func GetCards(compare func(*CardData) bool) []DataId {
 	cardSlice := make([]DataId, 0)
 
 	for id, cardData := range cards {
-		if cardData.Tier <= tier && cardData.Rarity == rarity {
+		if compare(cardData) {
 			cardSlice = append(cardSlice, id)
 		}
 	}
