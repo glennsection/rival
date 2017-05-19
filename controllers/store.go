@@ -4,36 +4,52 @@ import (
 	"time"
 	"math/rand"
 	"encoding/hex"
+	"sort"
 
 	"bloodtales/data"
 	"bloodtales/system"
 )
 
-func HandleStore(application *system.Application) {
-	HandleGameAPI(application, "/store/offers", system.TokenAuthentication, GetSpecialOffers)
+func HandleStore() {
+	HandleGameAPI("/store/offers", system.TokenAuthentication, GetSpecialOffers)
 }
 
 func GetSpecialOffers(context *system.Context) {
 	player := GetPlayer(context)
 
+	offers := map[string]interface{}{}
+
+	//TODO get banner data
+
+	//TODO get sale data
+
+	// Get Cards
 	//seed random with current utc date + unique identifer
 	year, month, day := time.Now().UTC().Date() 
-	uniqueId, _ := hex.Decode([]byte{}, []byte(player.ID.Hex()))
+	hexId := player.ID.Hex()
+	dst := make([]byte, hex.DecodedLen(len(hexId)))
+	uniqueId, _ := hex.Decode(dst, []byte(hexId))
 	rand.Seed(data.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC)) + int64(uniqueId))
 
-	cards := make([]*data.CardData, 0)
+	cards := make([]string, 0)
 	cards = append(cards, GetStoreCard("COMMON"))
 	cards = append(cards, GetStoreCard("RARE"))
 	cards = append(cards, GetStoreCard("EPIC"))
 
-	context.Data = cards
+	offers["cards"] = cards
+
+	context.Data = offers
 }
 
-func GetStoreCard(rarity string) *data.CardData {
+func GetStoreCard(rarity string) string {
+	//get cards of the desired rarity
 	getCard := func(card *data.CardData) bool {
 		return card.Rarity == rarity
 	}
 	cards := data.GetCards(getCard)
-	card := data.GetCard(cards[rand.Intn(len(cards))])
-	return card
+
+	//since cards in a map are returned in random order, we need to sort these cards to ensure we get the same cards for the generated index every time
+	sort.Sort(data.DataIdCollection(cards))
+
+	return data.GetCard(cards[rand.Intn(len(cards))]).Name
 }

@@ -102,11 +102,11 @@ func GetCard(id DataId) (card *CardData) {
 	return cards[id]
 }
 
-func GetCards(compare func(*CardData) bool) []DataId {
+func GetCards(condition func(*CardData) bool) []DataId {
 	cardSlice := make([]DataId, 0)
 
 	for id, cardData := range cards {
-		if compare(cardData) {
+		if condition(cardData) {
 			cardSlice = append(cardSlice, id)
 		}
 	}

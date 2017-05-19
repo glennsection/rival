@@ -14,6 +14,7 @@ func HandleGame() {
 	HandleMatch()
 	HandlePurchase()
 	HandleNotification()
+	HandleStore()
 }
 
 func HandleGameAPI(pattern string, authType system.AuthenticationType, handler func(*system.Context)) {
