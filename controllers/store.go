@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"encoding/hex"
 	"sort"
+	"fmt"
 
 	"bloodtales/data"
 	"bloodtales/system"
@@ -31,17 +32,22 @@ func GetSpecialOffers(context *system.Context) {
 	uniqueId, _ := hex.Decode(dst, []byte(hexId))
 	rand.Seed(data.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC)) + int64(uniqueId))
 
-	cards := make([]string, 0)
-	cards = append(cards, GetStoreCard("COMMON"))
-	cards = append(cards, GetStoreCard("RARE"))
-	cards = append(cards, GetStoreCard("EPIC"))
+	cards := GetStoreCards()
 
 	offers["cards"] = cards
 
 	context.Data = offers
 }
 
-func GetStoreCard(rarity string) string {
+func GetStoreCards() []data.StoreData {
+	cards := make([]data.StoreData, 0)
+	cards = append(cards, GetStoreCard("COMMON"))
+	cards = append(cards, GetStoreCard("RARE"))
+	cards = append(cards, GetStoreCard("EPIC"))
+	return cards
+}
+
+func GetStoreCard(rarity string) data.StoreData {
 	//get cards of the desired rarity
 	getCard := func(card *data.CardData) bool {
 		return card.Rarity == rarity
@@ -51,5 +57,15 @@ func GetStoreCard(rarity string) string {
 	//since cards in a map are returned in random order, we need to sort these cards to ensure we get the same cards for the generated index every time
 	sort.Sort(data.DataIdCollection(cards))
 
-	return data.GetCard(cards[rand.Intn(len(cards))]).Name
+	card := data.StoreData {
+		Name: fmt.Sprintf("STORE_CARD_%s", rarity),
+		Image: "",
+		Category: data.StoreCategoryCards,
+		ItemID: data.GetCard(cards[rand.Intn(len(cards))]).Name,
+		Quantity: 1,
+		Currency: data.CurrencyPremium,
+		Cost: 1, // TODO get cost from Larry's excel sheet
+	}
+
+	return card
 }
