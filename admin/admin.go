@@ -20,6 +20,7 @@ func HandleAdmin() {
 
 	handleAdminUsers()
 	handleAdminCards()
+	handleAdminMatches()
 	handleAdminAnalytics()
 }
 

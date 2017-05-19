@@ -22,6 +22,13 @@ const (
 //const escape = "\x1b"
 const escape = "\033"
 
+func RawPrint(value string) {
+	prefix := golog.Prefix()
+	golog.SetPrefix("")
+	Print(value)
+	golog.SetPrefix(prefix)
+}
+
 func Print(value string) {
 	golog.Print(Sprintf(value))
 }

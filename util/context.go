@@ -206,7 +206,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 		}
 		Profile(log.Sprintf("[cyan]Request handled: %v%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
 
-		if context.Success == false {
+		if caughtErr == nil && context.Success == false {
 			log.Errorf("Request failed with: %s", context.Messages[0])
 		}
 	}

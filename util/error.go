@@ -3,6 +3,8 @@ package util
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"path/filepath"
 	"runtime/debug"
 
 	"bloodtales/log"
@@ -34,10 +36,44 @@ func (e *errorStack) Error() string {
 func PrintError(message string, err interface{}) {
 	log.Errorf("%s: %v", message, err)
 
-	// show stack (TODO - strip non-local file traces)
+	// get stack
+	var stack string
 	if errStack, ok := err.(*errorStack); ok {
-		log.Printf("[red]%v[-]", string(errStack.stack))
+		stack = string(errStack.stack)
 	} else {
-		log.Printf("[red]%v[-]", string(debug.Stack()))
+		stack = string(debug.Stack())
 	}
+
+	// get root dir
+	rootPath, _ := filepath.Abs(".")
+	rootPath = strings.Replace(rootPath, "\\", "/", -1)
+
+	// process stack lines
+	stacks := strings.Split(stack, "\n")
+	stack = "[red]...[-]"
+	call := ""
+	parity := 1
+	for _, line := range stacks {
+		line = strings.TrimSpace(line)
+		if parity == 1 {
+			if strings.Contains(line, rootPath) {
+				// project path found, add to result
+				stack += fmt.Sprintf("\n[red]%s[-]", call)
+				stack += fmt.Sprintf("\n    [red]%s[-]", line)
+			}
+		} else {
+			// remote call arguments
+			pidx := strings.LastIndex(line, "(")
+			if pidx >= 0 {
+				call = line[:pidx]
+			} else {
+				call = line
+			}
+		}
+		parity = 1 - parity
+	}
+	stack += "\n[red]...[-]"
+
+	// show stack
+	log.RawPrint(stack)
 }

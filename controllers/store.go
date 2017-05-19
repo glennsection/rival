@@ -9,13 +9,14 @@ import (
 
 	"bloodtales/data"
 	"bloodtales/system"
+	"bloodtales/util"
 )
 
 func HandleStore() {
 	HandleGameAPI("/store/offers", system.TokenAuthentication, GetSpecialOffers)
 }
 
-func GetSpecialOffers(context *system.Context) {
+func GetSpecialOffers(context *util.Context) {
 	player := GetPlayer(context)
 
 	offers := map[string]interface{}{}

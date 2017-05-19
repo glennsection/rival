@@ -311,7 +311,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		} else {
 			log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", match.Outcome, outcome, match.HostScore, playerScore, match.OpponentScore, opponentScore)
 			
-			if match.Outcome == MatchSurrender || (match.Outcome == outcome && match.HostScore == playerScore && match.OpponentScore == opponentScore) {
+			if matchResult.Outcome == MatchSurrender || (matchResult.Outcome == outcome && matchResult.HostScore == playerScore && matchResult.OpponentScore == opponentScore) {
 				match.State = MatchComplete
 				match.Outcome = outcome
 				match.HostScore = playerScore
@@ -321,7 +321,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 
 				err = util.NewError("Non-symmetrical match outcomes reported by clients!")
 
-				// TODO - remove victory tome for other player
+				// TODO - remove victory tome from other player
 			}
 
 			// update match in database
@@ -339,10 +339,12 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		}
 	} else {
 		// update results
-		matchResult.MatchID = match.ID
-		matchResult.Outcome = outcome
-		matchResult.HostScore = playerScore
-		matchResult.OpponentScore = opponentScore
+		matchResult = &MatchResult {
+			MatchID: match.ID,
+			Outcome: outcome,
+			HostScore: playerScore,
+			OpponentScore: opponentScore,
+		}
 
 		// set results to cache
 		SetMatchResult(context, roomID, matchResult)
