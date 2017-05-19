@@ -45,3 +45,18 @@ func mapDataName(name string) (id DataId, err error) {
 	dataIdMap[id] = name
 	return
 }
+
+//implementing sort.Interface for use with sort.Sort function
+type DataIdCollection []DataId
+
+func (arr DataIdCollection) Len() int {
+	return len(arr)
+}
+
+func (arr DataIdCollection) Swap(i, j int) {
+	arr[i], arr[j] = arr[j], arr[i]
+}
+
+func (arr DataIdCollection) Less(i, j int) bool {
+	return uint32(arr[i]) < uint32(arr[j])
+}

@@ -198,7 +198,11 @@ func (tome *Tome) OpenTome(tier int) (reward *TomeReward) {
 	reward.NumRewarded = make([]int, 0, 6)
 
 	for i := 0; i < len(tomeData.GuaranteedRarities); i++ {
-		cardSlice := data.GetCardsByTieredRarity(tier, rarities[i])
+		getCards := func(card *data.CardData) bool {
+			return card.Rarity == rarities[i] && card.Tier <= tier
+		}
+
+		cardSlice := data.GetCards(getCards)
 
 		for j := 0; j < tomeData.GuaranteedRarities[i]; j++ {
 			if len(cardSlice) == 0 {
