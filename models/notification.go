@@ -11,18 +11,6 @@ import (
 
 const NotificationCollectionName = "notifications"
 
-// type of notification
-type NotificationType int
-const (
-	DefaultNotification NotificationType = iota
-	SystemNotification
-	NewsNotification
-	EventNotification
-	FriendNotification
-	GuildNotification
-	ChatNotification
-)
-
 // an action associated with notification
 type NotificationAction struct {
 	Name           string               `bson:"nm" json:"name"`
@@ -31,12 +19,13 @@ type NotificationAction struct {
 
 // notification database structure
 type Notification struct {
-	ID             bson.ObjectId        `bson:"_id,omitempty" json:"-"`
+	ID             bson.ObjectId        `bson:"_id,omitempty" json:"id"`
 	SenderID       bson.ObjectId        `bson:"sid,omitempty" json:"-"`
 	ReceiverID     bson.ObjectId        `bson:"rid,omitempty" json:"-"`
+	Guild          bool                 `bson:"gd" json:"guild"`
 	CreatedAt      time.Time            `bson:"t0" json:"created"`
 	ExpiresAt      time.Time            `bson:"exp" json:"expires"`
-	Type           NotificationType     `bson:"tp" json:"type"`
+	Type           string               `bson:"tp" json:"type"`
 	Image          string               `bson:"im" json:"image"`
 	Message        string               `bson:"ms" json:"message"`
 	Actions        []NotificationAction `bson:"ac" json:"actions"`
@@ -51,29 +40,20 @@ func ensureIndexNotification(database *mgo.Database) {
 	// sender index
 	util.Must(c.EnsureIndex(mgo.Index {
 		Key:          []string { "sid" },
-		Unique:       false,
-		DropDups:     false,
 		Background:   true,
-		Sparse:       true,
 	}))
 
 	// receiver index
 	util.Must(c.EnsureIndex(mgo.Index {
 		Key:          []string { "rid" },
-		Unique:       false,
-		DropDups:     false,
 		Background:   true,
-		Sparse:       true,
 	}))
 
 	// expiration
 	util.Must(c.EnsureIndex(mgo.Index {
 		Key:          []string { "exp" },
-		Unique:       false,
-		DropDups:     false,
 		Background:   true,
-		Sparse:       true,
-		ExpireAfter:  1,
+		ExpireAfter:  time.Second,
 	}))
 }
 
@@ -89,31 +69,46 @@ func (notification* Notification) Save(database *mgo.Database) (err error) {
 	return
 }
 
-func GetNotificationById(database *mgo.Database, id bson.ObjectId) (notifications *Notification, err error) {
+func GetNotificationById(database *mgo.Database, id bson.ObjectId) (notification *Notification, err error) {
 	// find notification by ID
-	err = database.C(NotificationCollectionName).Find(bson.M { "_id": id } ).One(&notifications)
+	err = database.C(NotificationCollectionName).Find(bson.M { "_id": id } ).One(&notification)
 	return
 }
 
-func GetSentNotifications(database *mgo.Database, userID bson.ObjectId) (notifications []*Notification, err error) {
+func GetSentNotifications(database *mgo.Database, user *User) (notifications []*Notification, err error) {
 	// get all notifications sent from user
-	err = database.C(NotificationCollectionName).Find(bson.M { "sid": userID } ).Sort("t0").All(&notifications)
+	err = database.C(NotificationCollectionName).Find(bson.M { "sid": user.ID } ).Sort("t0").All(&notifications)
 	return
 }
 
-func GetReceivedNotifications(database *mgo.Database, userID bson.ObjectId) (notifications []*Notification, err error) {
+func GetReceivedNotifications(database *mgo.Database, user *User, player *Player) (notifications []*Notification, err error) {
+	conditions := []bson.M {
+		bson.M { "gd": false, "rid": user.ID, },
+		bson.M { "gd": false, "rid": bson.M { "$exists": false }, },
+	}
+
+	// get guild ID
+	if player.GuildID.Valid() {
+		conditions = append(conditions, bson.M { "gd": true, "rid": player.GuildID })
+	}
+
 	// get all pending notifications sent to user
-	err = database.C(NotificationCollectionName).Find(bson.M { "rid": userID } ).Sort("t0").All(&notifications)
+	err = database.C(NotificationCollectionName).Find(bson.M { "$or": conditions }).Sort("t0").All(&notifications)
 	if err != nil {
 		return
 	}
+	return
+}
 
-	// remove all notifications that require no action from the user
+func ViewNotificationsByIds(database *mgo.Database, ids []bson.ObjectId) (err error) {
+	// remove all viewed notifications that require no action from the user
 	_, err = database.C(NotificationCollectionName).RemoveAll(bson.M {
-		"rid": userID,
+		"_id": bson.M {
+			"$in": ids,
+		},
 		"ac": bson.M {
 			"$size": 0,
 		},
- 	})
+	})
 	return
 }

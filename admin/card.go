@@ -17,7 +17,7 @@ func handleAdminCards() {
 	handleAdminTemplate("/admin/cards/delete", system.TokenAuthentication, DeleteCard, "")
 }
 
-func EditCard(context *system.Context) {
+func EditCard(context *util.Context) {
 	// parse parameters
 	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
@@ -39,7 +39,7 @@ func EditCard(context *system.Context) {
 	context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", player.UserID.Hex()), 302)
 }
 
-func DeleteCard(context *system.Context) {
+func DeleteCard(context *util.Context) {
 	// parse parameters
 	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))

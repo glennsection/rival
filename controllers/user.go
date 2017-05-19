@@ -12,7 +12,7 @@ func HandleUser() {
 	HandleGameAPI("/logout", system.TokenAuthentication, UserLogout)
 }
 
-func UserConnect(context *system.Context) {
+func UserConnect(context *util.Context) {
 	// parse parameters
 	version := context.Params.GetRequiredString("version")
 
@@ -33,7 +33,7 @@ func UserConnect(context *system.Context) {
 	context.Client.Save()
 }
 
-func UserLogin(context *system.Context) {
+func UserLogin(context *util.Context) {
 	if context.Success {
 		// analytics tracking (TODO - integrate with context)
 		//context.Track("Login", bson.M { "mood": "happy" })
@@ -43,9 +43,9 @@ func UserLogin(context *system.Context) {
 	}
 }
 
-func UserLogout(context *system.Context) {
+func UserLogout(context *util.Context) {
 	// clear auth token
-	context.ClearAuthToken()
+	system.ClearAuthToken(context)
 
 	if context.Success {
 		context.Message("User logged out successfully")

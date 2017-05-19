@@ -1,4 +1,4 @@
-package system
+package util
 
 import (
 	"fmt"
@@ -6,12 +6,10 @@ import (
 	"html/template"
 
 	"gopkg.in/mgo.v2"
-
-	"bloodtales/util"
 )
 
 func init() {
-	util.AddTemplateFunc("sortHeader", templateSortHeader)
+	AddTemplateFunc("sortHeader", templateSortHeader)
 }
 
 func templateSortHeader(context *Context, name string, field string) template.HTML {

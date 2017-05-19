@@ -11,7 +11,7 @@ func HandlePurchase() {
 	HandleGameAPI("/purchase", system.TokenAuthentication, Purchase)
 }
 
-func Purchase(context *system.Context) {
+func Purchase(context *util.Context) {
 	// parse parameters
 	itemId := context.Params.GetRequiredString("itemId")
 

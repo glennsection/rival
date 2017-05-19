@@ -8,6 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 
 	"bloodtales/config"
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
@@ -20,7 +21,7 @@ func init() {
 	authenticationSecret = []byte(config.Config.Authentication.TokenSecret)
 }
 
-func (context *Context) authenticateToken(required bool) (err error) {
+func authenticateToken(context *util.Context, required bool) (err error) {
 	// check for token first in URL parameters
 	unparsedToken := context.Params.GetString("token", "")
 	if unparsedToken == "" {
@@ -66,7 +67,7 @@ func (context *Context) authenticateToken(required bool) (err error) {
 	return
 }
 
-func (context *Context) AppendAuthToken() (err error) {
+func AppendAuthToken(context *util.Context) (err error) {
 	user := GetUser(context)
 	if user == nil {
 		err = errors.New("No User set for context to apply auth token")
@@ -90,7 +91,7 @@ func (context *Context) AppendAuthToken() (err error) {
 	return
 }
 
-func (context *Context) ClearAuthToken() {
+func ClearAuthToken(context *util.Context) {
 	// clear auth token from session
 	context.Session.Set("token", "")
 	context.Session.Save()

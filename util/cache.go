@@ -33,7 +33,12 @@ func (source CacheStreamSource) Has(name string) bool {
 }
 
 func (source CacheStreamSource) Set(name string, value interface{}) {
-	_, err := source.redis.Do("SET", name, value)
+	var err error
+	if value == nil {
+		_, err = source.redis.Do("DEL", name)
+	} else {
+		_, err = source.redis.Do("SET", name, value)
+	}
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
 	}

@@ -46,25 +46,34 @@ func (application *Application) Close() {
 	util.CloseCache()
 }
 
-func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*Context)) {
+func (application *Application) HandleAPI(pattern string, authType AuthenticationType, handler func(*util.Context)) {
 	application.handle(pattern, authType, handler, "")
 }
 
-func (application *Application) HandleTemplate(pattern string, authType AuthenticationType, handler func(*Context), template string) {
+func (application *Application) HandleTemplate(pattern string, authType AuthenticationType, handler func(*util.Context), template string) {
 	application.handle(pattern, authType, handler, template)
 }
 
-func (application *Application) handle(pattern string, authType AuthenticationType, handler func(*Context), template string) {
+func (application *Application) handle(pattern string, authType AuthenticationType, handler func(*util.Context), template string) {
 	// all template requests start here
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		// create context
-		context := CreateContext(application, w, r)
+		context := util.CreateContext(w, r)
 
 		// prepare request response
 		defer context.EndRequest(time.Now())
 
 		// init context handling
-		context.BeginRequest(authType, template)
+		context.BeginRequest(template)
+
+		// authentication
+		err := authenticate(context, authType)
+		if err != nil {
+			log.Errorf("Failed to authenticate user: %v", err)
+			context.Fail("Failed to authenticate user")
+
+			context.Redirect("/admin", 302)
+		}
 
 		// handle request if authenticated
 		if context.Success {

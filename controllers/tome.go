@@ -15,7 +15,7 @@ func HandleTome() {
 	HandleGameAPI("/tome/arena", system.TokenAuthentication, ClaimArenaTome)
 }
 
-func UnlockTome(context *system.Context) {
+func UnlockTome(context *util.Context) {
 	//Validate the request
 	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
@@ -42,7 +42,7 @@ func UnlockTome(context *system.Context) {
 	}
 }
 
-func OpenTome(context *system.Context) {
+func OpenTome(context *util.Context) {
 	//Validate the request
 	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
@@ -65,7 +65,7 @@ func OpenTome(context *system.Context) {
 	context.Data = reward
 }
 
-func RushTome(context *system.Context) {
+func RushTome(context *util.Context) {
 	//Validate the request
 	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
@@ -91,7 +91,7 @@ func RushTome(context *system.Context) {
 	context.Data = reward
 }
 
-func ClaimFreeTome(context *system.Context) {
+func ClaimFreeTome(context *util.Context) {
 	player := GetPlayer(context)
 	reward, err := player.ClaimFreeTome(context.DB)
 	util.Must(err)
@@ -107,7 +107,7 @@ func ClaimFreeTome(context *system.Context) {
 	context.Data = reward
 }
 
-func ClaimArenaTome(context *system.Context) {
+func ClaimArenaTome(context *util.Context) {
 	player := GetPlayer(context)
 	reward, err := player.ClaimArenaTome(context.DB)
 	util.Must(err)
@@ -123,7 +123,7 @@ func ClaimArenaTome(context *system.Context) {
 	context.Data = reward
 }
 
-func ValidateTomeRequest(context *system.Context) (index int, player *models.Player, success bool) {
+func ValidateTomeRequest(context *util.Context) (index int, player *models.Player, success bool) {
 	// initialize values
 	player = GetPlayer(context)
 	success = false

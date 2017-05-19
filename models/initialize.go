@@ -1,9 +1,6 @@
 package models
 
 import (
-	"io/ioutil"
-	"encoding/json"
-
 	"bloodtales/util"
 )
 
@@ -11,23 +8,16 @@ import (
 func init() {
 	db := util.GetDatabaseConnection()
 	defer db.Session.Close()
+	defer func() {
+		// handle any panic errors
+		if err := recover(); err != nil {
+			util.PrintError("Occurred during database initialization", err)
+		}
+	}()
 
 	ensureIndexUser(db)
 	ensureIndexPlayer(db)
 	ensureIndexTracking(db)
 	ensureIndexMatch(db)
 	ensureIndexNotification(db);
-}
-
-// create new player data
-func (player *Player) Initialize() {
-	// template for initial player
-	path := "./resources/models/player.json"
-
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(file, player)
 }

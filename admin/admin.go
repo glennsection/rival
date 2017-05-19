@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"bloodtales/system"
+	"bloodtales/util"
 )
 
 var DefaultPageSize int = 20
@@ -22,14 +23,14 @@ func HandleAdmin() {
 	handleAdminAnalytics()
 }
 
-func handleAdminTemplate(pattern string, authType system.AuthenticationType, handler func(*system.Context), template string) {
-	system.App.HandleTemplate(pattern, authType, func(context *system.Context) {
+func handleAdminTemplate(pattern string, authType system.AuthenticationType, handler func(*util.Context), template string) {
+	system.App.HandleTemplate(pattern, authType, func(context *util.Context) {
 		initializeAdmin(context)
 		handler(context)
 	}, template)
 }
 
-func initializeAdmin(context *system.Context) {
+func initializeAdmin(context *util.Context) {
 	// sidebar links
 	links := []struct {
 		Name string
@@ -78,23 +79,23 @@ func initializeAdmin(context *system.Context) {
 	context.Params.Set("links", links)
 }
 
-func Error(context *system.Context) {
+func Error(context *util.Context) {
 	// parse parameters
 	message := context.Params.GetString("message", "Error occurred")
 
 	context.Message(message) // TODO - fix this once session flashes are working
 }
 
-func Home(context *system.Context) {
-	if context.Authenticated() {
+func Home(context *util.Context) {
+	if system.Authenticated(context) {
 		context.Redirect("/admin/dashboard", 302)
 	}
 }
 
-func Dashboard(context *system.Context) {
+func Dashboard(context *util.Context) {
 }
 
-func Login(context *system.Context) {
+func Login(context *util.Context) {
 	// handle request method
 	switch context.Request.Method {
 	case "POST":
@@ -114,9 +115,9 @@ func Login(context *system.Context) {
 	}
 }
 
-func Logout(context *system.Context) {
+func Logout(context *util.Context) {
 	// clear auth token
-	context.ClearAuthToken()
+	system.ClearAuthToken(context)
 
 	context.Message("User logged out successfully")
 	context.Redirect("/admin", 302)

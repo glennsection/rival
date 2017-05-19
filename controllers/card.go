@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bloodtales/system"
+	"bloodtales/util"
 	"bloodtales/models"
 	"bloodtales/data"
 )
@@ -10,7 +11,7 @@ func HandleCard() {
 	HandleGameAPI("/card/upgrade", system.TokenAuthentication, UpgradeCard)
 }
 
-func UpgradeCard(context *system.Context) {
+func UpgradeCard(context *util.Context) {
 	id := context.Params.GetRequiredString("cardId")
 
 	player := GetPlayer(context)
@@ -35,8 +36,7 @@ func UpgradeCard(context *system.Context) {
 	}
 
 	player.StandardCurrency -= levelData.Cost
-	player.Xp += levelData.Xp
-	player.Level = data.GetAccountLevel(player.Xp)
+	player.XP += levelData.XP
 	card.CardCount -= levelData.CardsNeeded
 	card.Level += 1
 

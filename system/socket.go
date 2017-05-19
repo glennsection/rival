@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"bloodtales/util"
 	"bloodtales/log"
 )
 
@@ -86,11 +87,11 @@ func init() {
 }
 
 // socket route handler
-func socketHandler(context *Context) {
+func socketHandler(context *util.Context) {
 	// upgrade to web socket connection
-	connection, err := upgrader.Upgrade(context.responseWriter, context.Request, nil)
+	connection, err := upgrader.Upgrade(context.ResponseWriter, context.Request, nil)
 	if err != nil {
-		//http.NotFound(context.responseWriter, context.Request) // TODO - use API responder
+		//http.NotFound(context.ResponseWriter, context.Request) // TODO - use API responder
 		panic(err)
 	}
 
@@ -108,7 +109,7 @@ func socketHandler(context *Context) {
 	go client.read()
 
 	// prevent further writes
-	context.responseWritten = true
+	context.SetResponseWritten()
 }
 
 // socket client write

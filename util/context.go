@@ -1,4 +1,4 @@
-package system
+package util
 
 import (
 	"bytes"
@@ -15,45 +15,42 @@ import (
 
 	"bloodtales/config"
 	"bloodtales/log"
-	"bloodtales/util"
 )
 
 type Context struct {
-	DB          *mgo.Database      	   `json:"-"`
-	Session     *util.Session          `json:"-"`
-	Cache       *util.Cache            `json:"-"`
-	Client      *util.Client           `json:"-"`
-	Request     *http.Request     	   `json:"-"`
-	Params      *util.Stream           `json:"-"`
-	Template    string            	   `json:"-"`
+	DB              *mgo.Database      	   `json:"-"`
+	Session         *Session               `json:"-"`
+	Cache           *Cache                 `json:"-"`
+	Client          *Client                `json:"-"`
+	Request         *http.Request     	   `json:"-"`
+	ResponseWriter  http.ResponseWriter    `json:"-"`
+	Params          *Stream                `json:"-"`
+	Template        string            	   `json:"-"`
 
-	Token       string            	   `json:"token"`
-	Success     bool             	   `json:"success"`
-	Messages    []string         	   `json:"messages"`
-	UpdateMask	int64			  	   `json:"updateMask"`
-	PlayerData 	map[string]interface{} `json:"playerData"`
-	Data        interface{}			   `json:"data"`
+	Token           string            	   `json:"token"`
+	Success         bool             	   `json:"success"`
+	Messages        []string         	   `json:"messages"`
+	UpdateMask    	int64			  	   `json:"updateMask"`
+	PlayerData     	map[string]interface{} `json:"playerData"`
+	Data            interface{}			   `json:"data"`
 
 	// internal
-	responseWriter  http.ResponseWriter
 	responseWritten bool
 }
 
-func CreateContext(application *Application, w http.ResponseWriter, r *http.Request) *Context {
+func CreateContext(w http.ResponseWriter, r *http.Request) *Context {
 	// cookies session
-	session := util.GetSession(w, r)
+	session := GetSession(w, r)
 
 	// create context
 	context := &Context {
-		DB: util.GetDatabaseConnection(),
+		DB: GetDatabaseConnection(),
 		Session: session,
-		Cache: util.GetCacheConnection(),
-		Client: util.LoadClient(session),
+		Cache: GetCacheConnection(),
+		Client: LoadClient(session),
 		Request: r,
-		Params: util.NewParamsStream(r),
-
-		// internal
-		responseWriter: w,
+		ResponseWriter: w,
+		Params: NewParamsStream(r),
 
 		Token: "",
 		Success: true,
@@ -65,7 +62,11 @@ func CreateContext(application *Application, w http.ResponseWriter, r *http.Requ
 func (context *Context) Write(p []byte) (n int, err error) {
 	// remember custom was response written
 	context.responseWritten = true
-	return context.responseWriter.Write(p)
+	return context.ResponseWriter.Write(p)
+}
+
+func (context *Context) SetResponseWritten() {
+	context.responseWritten = true
 }
 
 func (context *Context) SetDirty(updates []int64) {
@@ -92,10 +93,10 @@ func (context *Context) Fail(message string) {
 }
 
 func (context *Context) Redirect(path string, responseCode int) {
-	http.Redirect(context.responseWriter, context.Request, path, responseCode)
+	http.Redirect(context.ResponseWriter, context.Request, path, responseCode)
 }
 
-func (context *Context) BeginRequest(authType AuthenticationType, template string) {
+func (context *Context) BeginRequest(template string) {
 	// remember defined template
 	context.Template = template
 
@@ -108,7 +109,7 @@ func (context *Context) BeginRequest(authType AuthenticationType, template strin
 			query, _ = url.QueryUnescape(context.Request.URL.RawQuery)
 			query = "?" + strings.Replace(query, "\r\n", "", -1)
 		}
-		message := log.Sprintf("[cyan]Request received: %v/%v%v[-]", context.Request.Host, context.Request.URL.Path, query)
+		message := log.Sprintf("[cyan]Request received: %v%v%v[-]", context.Request.Host, context.Request.URL.Path, query)
 		if len(message) > 472 {
 			message = message[:472] + "..."
 		}
@@ -119,15 +120,6 @@ func (context *Context) BeginRequest(authType AuthenticationType, template strin
 		dump, _ := httputil.DumpRequest(context.Request, true)
 
 		log.Printf("[cyan]Request received: %q[-]", dump)
-	}
-
-	// authentication
-	err := context.authenticate(authType)
-	if err != nil {
-		log.Errorf("Failed to authenticate user: %v", err)
-		context.Fail("Failed to authenticate user")
-
-		context.Redirect("/admin", 302)
 	}
 }
 
@@ -150,7 +142,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 	// catch any panics occurring in this function
 	defer func() {
 		if templateErr := recover(); templateErr != nil {
-			util.PrintError("Occurred during last request", templateErr)
+			PrintError("Occurred during last request", templateErr)
 
 			if context.Template != "" {
 				context.Redirect(fmt.Sprintf("/error?message=%v", templateErr), 302) // TODO - can remove parameter once session flashes are working
@@ -170,7 +162,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 
 			// render template to buffer
 			var output bytes.Buffer
-			err := util.GetTemplates().ExecuteTemplate(&output, context.Template, context)
+			err := GetTemplates().ExecuteTemplate(&output, context.Template, context)
 
 			var responseString string
 			if err == nil {
@@ -178,7 +170,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 				responseString = output.String()
 
 				// write response to stream
-				fmt.Fprint(context.responseWriter, responseString)
+				fmt.Fprint(context.ResponseWriter, responseString)
 			} else {
 				// respond with error
 				responseString = fmt.Sprintf("Processing template (%v): %v", context.Template, err)
@@ -199,7 +191,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 			}
 
 			// write API response to stream
-			fmt.Fprint(context.responseWriter, responseString)
+			fmt.Fprint(context.ResponseWriter, responseString)
 		}
 	}
 
@@ -212,11 +204,15 @@ func (context *Context) EndRequest(startTime time.Time) {
 			successMessage = "Failed"
 			successColor = "red!"
 		}
-		util.Profile(log.Sprintf("[cyan]Request handled: %v/%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
+		Profile(log.Sprintf("[cyan]Request handled: %v%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
+
+		if context.Success == false {
+			log.Errorf("Request failed with: %s", context.Messages[0])
+		}
 	}
 
 	// show the error caught eariler
 	if caughtErr != nil {
-		util.PrintError("Occurred during last request", caughtErr)
+		PrintError("Occurred during last request", caughtErr)
 	}
 }

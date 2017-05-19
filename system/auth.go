@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"errors"
 
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
@@ -17,11 +18,15 @@ const (
 	TokenAuthentication
 )
 
-func SetUser(context *Context, user *models.User) {
+func init() {
+	util.AddTemplateFunc("authenticated", Authenticated)
+}
+
+func SetUser(context *util.Context, user *models.User) {
 	context.Params.Set("user", user)
 }
 
-func GetUser(context *Context) *models.User {
+func GetUser(context *util.Context) *models.User {
 	if user, ok := context.Params.Get("user").(*models.User); ok {
 		return user
 	}
@@ -29,12 +34,12 @@ func GetUser(context *Context) *models.User {
 }
 
 // check if context is authenticated
-func (context *Context) Authenticated() bool {
+func Authenticated(context *util.Context) bool {
 	return GetUser(context) != nil
 }
 
 // basic username/password auth
-func (context *Context) authenticatePassword(required bool) (err error) {
+func authenticatePassword(context *util.Context, required bool) (err error) {
 	// parse login parameters
 	username, password := context.Params.GetString("username", ""), context.Params.GetString("password", "")
 
@@ -50,7 +55,7 @@ func (context *Context) authenticatePassword(required bool) (err error) {
 		// set user in context
 		SetUser(context, user)
 
-		err = context.AppendAuthToken()
+		err = AppendAuthToken(context)
 	} else {
 		if required {
 			err = errors.New("Invalid Username/Password submitted")

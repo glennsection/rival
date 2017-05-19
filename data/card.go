@@ -27,7 +27,7 @@ type CardProgressionData struct {
 	Level 					int 		  `json:"level,string"`
 	CardsNeeded 			int 		  `json:"cardsNeeded,string"`
 	Cost 					int 		  `json:"cost,string"`
-	Xp 						int 		  `json:"xp,string"`
+	XP 						int 		  `json:"xp,string"`
 }
 
 // data map

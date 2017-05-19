@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 	"math"
 	"encoding/json"
@@ -45,22 +46,22 @@ const (
 // server model
 type Match struct {
 	ID              bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	PlayerID     	bson.ObjectId `bson:"id1" json:"-"`
+	HostID          bson.ObjectId `bson:"id1" json:"-"`
 	OpponentID      bson.ObjectId `bson:"id2,omitempty" json:"-"`
 	Type            MatchType     `bson:"tp" json:"-"`
 	RoomID          string        `bson:"rm" json:"roomId"`
 	State           MatchState    `bson:"st" json:"state"`
 	Outcome       	MatchOutcome  `bson:"oc" json:"outcome"`
-	PlayerScore		int 		  `bson:"ps" json:"playerScore"`
-	OpponentScore 	int 		  `bson:"os" json:"opponentScore"`
+	HostScore		int 		  `bson:"s1" json:"hostScore"`
+	OpponentScore 	int 		  `bson:"s2" json:"opponentScore"`
 	StartTime	    time.Time     `bson:"t0" json:"-"`
 	EndTime	        time.Time     `bson:"t1" json:"-"`
 
 	// client
-	Host            bool          `bson:"-" json:"host"`
+	Hosting         bool          `bson:"-" json:"hosting"`
 
 	// internal
-	player          *Player
+	host            *Player
 	opponent        *Player
 }
 
@@ -70,6 +71,14 @@ type MatchClient struct {
 	State           string        `json:"state"`
 
 	*MatchClientAlias
+}
+
+// cached match results
+type MatchResult struct {
+	MatchID         bson.ObjectId `json:"mid"`
+	Outcome       	MatchOutcome  `json:"oc"`
+	HostScore		int 		  `json:"s1"`
+	OpponentScore 	int 		  `json:"s2"`
 }
 
 // client rewards
@@ -83,11 +92,16 @@ func ensureIndexMatch(database *mgo.Database) {
 
 	// player index
 	util.Must(c.EnsureIndex(mgo.Index {
-		Key:        []string { "id1", "id2", "state" },
-		Unique:     false,
-		DropDups:   false,
+		Key:        []string { "rm" },
+		Unique:     true,
+		DropDups:   true,
 		Background: true,
-		Sparse:     true,
+	}))
+
+	// player index
+	util.Must(c.EnsureIndex(mgo.Index {
+		Key:        []string { "id1", "st", "tp" },
+		Background: true,
 	}))
 }
 
@@ -140,6 +154,36 @@ func (match *Match) Delete(database *mgo.Database) (err error) {
 	return database.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
 }
 
+func (matchResult *MatchResult) String() string {
+	raw, err := json.Marshal(matchResult)
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	return string(raw)
+}
+
+func GetMatchResultByMatchId(context *util.Context, roomID string) (matchResult *MatchResult, ok bool) {
+	// get cache key
+	key := fmt.Sprintf("MatchResult:%s", roomID)
+
+	// get cached result
+	ok = context.Cache.GetJSON(key, &matchResult)
+	return
+}
+
+func SetMatchResult(context *util.Context, roomID string, matchResult *MatchResult) {
+	// get cache key
+	key := fmt.Sprintf("MatchResult:%s", roomID)
+
+	// get cached result
+	context.Cache.Set(key, matchResult)
+}
+
+func ClearMatchResult(context *util.Context, roomID string) {
+	SetMatchResult(context, roomID, nil)
+}
+
 func ClearMatches(database *mgo.Database, player *Player) (err error) {
 	// find and remove all invalid matches with player
 	_, err = database.C(MatchCollectionName).RemoveAll(bson.M {
@@ -175,16 +219,16 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 		match.OpponentID = player.ID
 		match.State = MatchActive
 		match.StartTime = time.Now()
-		match.Host = false
+		match.Hosting = false
 	} else {
 		// queue new match
 		match = &Match {
-			PlayerID: player.ID,
+			HostID: player.ID,
 			Type: matchType,
 			RoomID: util.GenerateUUID(),
 			State: MatchOpen,
 			StartTime: time.Now(),
-			Host: true,
+			Hosting: true,
 		}
 	}
 
@@ -213,14 +257,14 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 		// fix all found matches
 		for _, match := range matches {
 			if match.State == MatchActive {
-				if match.PlayerID == player.ID {
-					match.PlayerID = match.OpponentID
-					match.OpponentID = bson.ObjectId("")
-				} else {
-					match.OpponentID = bson.ObjectId("")
+				if match.HostID == player.ID {
+					match.HostID = match.OpponentID
 				}
+				match.OpponentID = bson.ObjectId("")
 				match.State = MatchOpen
 				match.Save(database)
+
+				// TODO FIXME - need to send (via websocket), to new host, the fact that they are now the host
 			} else {
 				match.Delete(database)
 			}
@@ -229,7 +273,82 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 	return
 }
 
-func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome MatchOutcome, playerScore int, opponentScore int) (match *Match, matchReward *MatchReward, err error) {
+func CompleteMatch(context *util.Context, player *Player, roomID string, outcome MatchOutcome, playerScore int, opponentScore int) (match *Match, matchReward *MatchReward, err error) {
+	database := context.DB
+
+	// get match from database
+	err = database.C(MatchCollectionName).Find(bson.M {
+		"rm": roomID,
+	}).One(&match)
+	if err != nil {
+		return
+	}
+
+	// verify that player was in match
+	host := (match.HostID == player.ID)
+	guest := (match.OpponentID == player.ID)
+	if !host && !guest {
+		err = util.NewError("Player attempting to affect a match which they don't belong to")
+	}
+
+	// look for cached match result
+	matchResult, foundResult := GetMatchResultByMatchId(context, roomID)
+
+	// invert outcome and scores for guest
+	if guest {
+		outcome = invertOutcome(outcome)
+
+		temp := playerScore
+		playerScore = opponentScore
+		opponentScore = temp
+	}
+
+	// check if opponent's result has already been submitted
+	if foundResult {
+		// validate outcome
+		if outcome == MatchSurrender {
+			// do nothing
+		} else {
+			log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", match.Outcome, outcome, match.HostScore, playerScore, match.OpponentScore, opponentScore)
+			
+			if match.Outcome == MatchSurrender || (match.Outcome == outcome && match.HostScore == playerScore && match.OpponentScore == opponentScore) {
+				match.State = MatchComplete
+				match.Outcome = outcome
+				match.HostScore = playerScore
+				match.OpponentScore = opponentScore
+			} else {
+				match.State = MatchInvalid
+
+				err = util.NewError("Non-symmetrical match outcomes reported by clients!")
+
+				// TODO - remove victory tome for other player
+			}
+
+			// update match in database
+			saveErr := match.Save(database)
+			if saveErr != nil {
+				log.Error(saveErr)
+			}
+		}
+
+		ClearMatchResult(context, roomID)
+
+		// after results are validated, process player stats for both players
+		if match.State != MatchInvalid {
+			err = match.ProcessMatchResults(database)
+		}
+	} else {
+		// update results
+		matchResult.MatchID = match.ID
+		matchResult.Outcome = outcome
+		matchResult.HostScore = playerScore
+		matchResult.OpponentScore = opponentScore
+
+		// set results to cache
+		SetMatchResult(context, roomID, matchResult)
+	}
+
+/*
 	// prepare match change
 	change := mgo.Change {
 		Upsert: false,
@@ -238,7 +357,7 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 
 	// check if host or guest
 	var idField string
-	if host {
+	if hosting {
 		// prepare host query
 		idField = "id1"
 
@@ -247,8 +366,8 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 			"$set": bson.M {
 				"st": MatchCompleting,
 				"oc": outcome,
-				"ps": playerScore,
-				"os": opponentScore,
+				"s1": playerScore,
+				"s2": opponentScore,
 				"t1": time.Now(),
 			},
 		}
@@ -269,8 +388,8 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 			"$set": bson.M {
 				"st": MatchCompleting,
 				"oc": outcome,
-				"ps": playerScore,
-				"os": opponentScore,
+				"s1": playerScore,
+				"s2": opponentScore,
 				"t1": time.Now(),
 			},
 		}
@@ -280,6 +399,7 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 	foundActiveMatch := true
 	_, err = database.C(MatchCollectionName).Find(bson.M {
 		idField: player.ID,
+		"rm": roomID,
 		"st": MatchActive,
 	}).Apply(change, &match)
 	if err != nil {
@@ -312,63 +432,69 @@ func CompleteMatch(database *mgo.Database, player *Player, host bool, outcome Ma
 		// find completing match, and set to completed if found
 		_, err = database.C(MatchCollectionName).Find(bson.M {
 			idField: player.ID,
+			"rm": roomID,
 			"st": MatchCompleting,
 		}).Apply(change, &match)
 		if err != nil {
-			err = util.NewError(err)
+			if err.Error() == "not found" {
+				err = util.NewError("Match not found")
+			} else {
+				err = util.NewError(err)
+			}
 			return
 		}
-		// TODO - make sure we check if match was found
 
-		// validate match outcome
-		log.Printf("%v:%v %d:%d %d:%d", match.Outcome, outcome, match.PlayerScore, playerScore, match.OpponentScore, opponentScore)
-		if (match.Outcome == outcome && match.PlayerScore == playerScore && match.OpponentScore == opponentScore) || match.Outcome == MatchSurrender || outcome == MatchSurrender {
-			// match.State = MatchComplete
+		if match.Outcome == MatchSurrender || outcome == MatchSurrender {
+			// surrender
 		} else {
-			match.State = MatchInvalid
+			// validate match outcome
+			log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", match.Outcome, outcome, match.HostScore, playerScore, match.OpponentScore, opponentScore)
+			if match.Outcome == outcome && match.HostScore == playerScore && match.OpponentScore == opponentScore {
+				// match.State = MatchComplete
+			} else {
+				match.State = MatchInvalid
 
-			// update as invalid
-			match.Save(database)
+				// update as invalid
+				match.Save(database)
 
-			err = util.NewError("Non-symmetrical match outcomes reported by clients!")
+				err = util.NewError("Non-symmetrical match outcomes reported by clients!")
 
-			// TODO - roll back player stats!
+				// TODO - roll back player stats!
+			}
 		}
 	}
-
+*/
 	if match.State != MatchInvalid && err == nil && outcome != MatchSurrender {
 		matchReward = &MatchReward {}
 
 		if host {
-			player.ModifyArenaPoints(match.PlayerScore)
-			matchReward.ArenaPoints = match.PlayerScore
+			// player.ModifyArenaPoints(match.HostScore)
+			matchReward.ArenaPoints = playerScore
 		} else {
-			player.ModifyArenaPoints(match.OpponentScore)
-			matchReward.ArenaPoints = match.OpponentScore
+			// player.ModifyArenaPoints(match.OpponentScore)
+			matchReward.ArenaPoints = opponentScore
 		}
 
-		if (host && match.Outcome == MatchWin) || (!host && match.Outcome == MatchLoss) {
-			matchReward.Tome = player.AddVictoryTome(database)
+		if (host && outcome == MatchWin) || (!host && outcome == MatchLoss) {
+			matchReward.Tome, err = player.AddVictoryTome(database)
 		} else {
-			player.Save(database)
+			//err = player.Save(database)
 		}
 	} 
 
 	return
 }
 
-func (match *Match) GetPlayer(database *mgo.Database) (player *Player, err error) {
-	err = nil
-	if match.player == nil {
-		if match.PlayerID.Valid() {
-			match.player, err = GetPlayerById(database, match.PlayerID)
+func (match *Match) GetHost(database *mgo.Database) (player *Player, err error) {
+	if match.host == nil {
+		if match.HostID.Valid() {
+			match.host, err = GetPlayerById(database, match.HostID)
 		}
 	}
-	return match.player, err
+	return match.host, err
 }
 
 func (match *Match) GetOpponent(database *mgo.Database) (player *Player, err error) {
-	err = nil
 	if match.opponent == nil {
 		if match.OpponentID.Valid() {
 			match.opponent, err = GetPlayerById(database, match.OpponentID)
@@ -464,7 +590,7 @@ func getKFactor(playerRating int, opponentRating int) float64 {
 
 func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 	// get players
-	player, err := match.GetPlayer(database)
+	host, err := match.GetHost(database)
 	if err != nil {
 		return
 	}
@@ -484,8 +610,8 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 			rankChange = -1
 		}
 
-		if rankChange > 0 || player.GetRankTier() > 1 {
-			player.RankPoints += rankChange
+		if rankChange > 0 || host.GetRankTier() > 1 {
+			host.RankPoints += rankChange
 		}
 		if rankChange < 0 || opponent.GetRankTier() > 1 {
 			opponent.RankPoints -= rankChange
@@ -493,10 +619,10 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 
 	case MatchElite:
 		// get k-factor
-		kFactor := getKFactor(player.Rating, opponent.Rating)
+		kFactor := getKFactor(host.Rating, opponent.Rating)
 
 		// transformed ratings
-		q1 := math.Pow10(player.Rating / 400)
+		q1 := math.Pow10(host.Rating / 400)
 		q2 := math.Pow10(opponent.Rating / 400)
 		qs := q1 + q2
 
@@ -509,13 +635,13 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 		s2 := 1 - s1
 
 		// resulting ratings
-		r1 := player.Rating + util.RoundToInt(kFactor * (s1 - e1))
+		r1 := host.Rating + util.RoundToInt(kFactor * (s1 - e1))
 		r2 := opponent.Rating + util.RoundToInt(kFactor * (s2 - e2))
 
-		//log.Printf("Elite Match Results: [%v(%v) + %v:%v => %v] vs. [%v(%v) + %v:%v => %v]", player.Rating, q1, e1, s1, r1, opponent.Rating, q2, e2, s2, r2)
+		//log.Printf("Elite Match Results: [%v(%v) + %v:%v => %v] vs. [%v(%v) + %v:%v => %v]", host.Rating, q1, e1, s1, r1, opponent.Rating, q2, e2, s2, r2)
 		
 		// update stats
-		player.Rating = r1
+		host.Rating = r1
 		opponent.Rating = r2
 
 	case MatchTournament:
@@ -523,24 +649,25 @@ func (match *Match) ProcessMatchResults(database *mgo.Database) (err error) {
 
 	}
 
-	// modify win/loss counts and update database
-	player.MatchCount += 1
+	// modify player stats
+	host.MatchCount += 1
 	opponent.MatchCount += 1
 	switch match.Outcome {
 	case MatchWin:
-		player.WinCount += 1
+		host.WinCount += 1
 		opponent.LossCount += 1
 	case MatchLoss:
-		player.LossCount += 1
+		host.LossCount += 1
 		opponent.WinCount += 1
 	}
-	err = player.Save(database)
+	host.ModifyArenaPoints(match.HostScore)
+	opponent.ModifyArenaPoints(match.OpponentScore)
+
+	// update database
+	err = host.Save(database)
 	if err != nil {
 		return
 	}
 	err = opponent.Save(database)
-	if err != nil {
-		return
-	}
 	return
 }

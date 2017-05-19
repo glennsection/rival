@@ -44,7 +44,7 @@ func init() {
 	App.HandleAPI("/auth/callback", NoAuthentication, handleAuthCallback)
 }
 
-func handleAuthCallback(context *Context) {
+func handleAuthCallback(context *util.Context) {
 	// parse parameters
 	state := context.Params.GetRequiredString("state")
 	code := context.Params.GetRequiredString("code")

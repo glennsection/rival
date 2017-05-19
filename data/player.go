@@ -6,7 +6,7 @@ import (
 
 type LevelProgression struct {
 	ID 				int 		`json:"id,string"`
-	XpRequired 		int 		`json:"xpRequired,string"`
+	XPRequired 		int 		`json:"xpRequired,string"`
 }
 
 var playerLevelProgression []LevelProgression
@@ -28,7 +28,7 @@ func LoadPlayerLevelProgression(raw []byte) {
 
 func GetAccountLevel(xp int) (level int) {
 	for _, levelProgression := range playerLevelProgression {
-		if xp >= levelProgression.XpRequired {
+		if xp >= levelProgression.XPRequired {
 			level = levelProgression.ID
 		} else {
 			break

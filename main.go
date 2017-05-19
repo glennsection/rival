@@ -2,6 +2,7 @@ package main
 
 import (
 	"bloodtales/system"
+	"bloodtales/util"
 	"bloodtales/controllers"
 	"bloodtales/admin"
 )
@@ -24,7 +25,7 @@ func main() {
 	application.Serve()
 }
 
-func root(context *system.Context) {
+func root(context *util.Context) {
 	// root is invalid for now
 	context.Fail("Invalid request")
 }

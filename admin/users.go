@@ -18,7 +18,7 @@ func handleAdminUsers() {
 	handleAdminTemplate("/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
 }
 
-func ShowUsers(context *system.Context) {
+func ShowUsers(context *util.Context) {
 	// parse parameters
 	search := context.Params.GetString("search", "")
 
@@ -53,7 +53,7 @@ func ShowUsers(context *system.Context) {
 	context.Data = users
 }
 
-func EditUser(context *system.Context) {
+func EditUser(context *util.Context) {
 	// parse parameters
 	userId := context.Params.GetRequiredId("userId")
 
@@ -99,9 +99,9 @@ func EditUser(context *system.Context) {
 				player.PremiumCurrency = premiumCurrency
 			}
 
-			level := context.Params.GetInt("level", -1)
-			if level >= 0 {
-				player.Level = level
+			xp := context.Params.GetInt("xp", -1)
+			if xp >= 0 {
+				player.XP = xp
 			}
 
 			rating := context.Params.GetInt("rating", -1)
@@ -146,9 +146,9 @@ func EditUser(context *system.Context) {
 	context.Params.Set("player", player)
 }
 
-func ResetUser(context *system.Context) {
+func ResetUser(context *util.Context) {
 	// parse parameters
-	userId := context.Params.GetID("userId")
+	userId := context.Params.GetId("userId")
 
 	if userId.Valid() {
 		player, err := models.GetPlayerByUser(context.DB, userId)
@@ -170,7 +170,7 @@ func ResetUser(context *system.Context) {
 	}
 }
 
-func DeleteUser(context *system.Context) {
+func DeleteUser(context *util.Context) {
 	// parse parameters
 	userId := context.Params.GetRequiredId("userId")
 	page := context.Params.GetInt("page", 1)

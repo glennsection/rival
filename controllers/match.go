@@ -13,14 +13,14 @@ func HandleMatch() {
 	HandleGameAPI("/match/result", system.TokenAuthentication, MatchResult)
 }
 
-func MatchClear(context *system.Context) {
+func MatchClear(context *util.Context) {
 	player := GetPlayer(context)
 
 	// clear invalid matches
 	util.Must(models.ClearMatches(context.DB, player))
 }
 
-func MatchFind(context *system.Context) {
+func MatchFind(context *util.Context) {
 	// parse parameters
 	matchType := models.MatchType(context.Params.GetInt("type", int(models.MatchRanked)))
 
@@ -34,37 +34,36 @@ func MatchFind(context *system.Context) {
 	context.Data = match
 }
 
-func MatchFail(context *system.Context) {
+func MatchFail(context *util.Context) {
 	player := GetPlayer(context)
 
 	// fail any current match
 	util.Must(models.FailMatch(context.DB, player))
 }
 
-func MatchResult(context *system.Context) {
+func MatchResult(context *util.Context) {
 	// parse parameters
 	outcome := models.MatchOutcome(context.Params.GetRequiredInt("outcome"))
 	playerScore := context.Params.GetRequiredInt("playerScore")
 	opponentScore := context.Params.GetRequiredInt("opponentScore")
-	host := context.Params.GetRequiredBool("host")
+	roomID := context.Params.GetRequiredString("roomId")
 
 	player := GetPlayer(context)
 	
 	// update match as complete
-	match, reward, err := models.CompleteMatch(context.DB, player, host, outcome, playerScore, opponentScore)
+	_, reward, err := models.CompleteMatch(context, player, roomID, outcome, playerScore, opponentScore)
 	util.Must(err)
 
 	// get opponent
-	opponent, err := match.GetOpponent(context.DB)
-	util.Must(err)
+	// opponent, err := match.GetOpponent(context.DB)
+	// util.Must(err)
 
 	// update leaderboards
 	updatePlayerPlace(context, player)
-	updatePlayerPlace(context, opponent)
+	// updatePlayerPlace(context, opponent)
 
 	if reward != nil {
-		context.SetDirty([]int64{models.UpdateMask_Tomes,
-								 models.UpdateMask_Stars})
+		context.SetDirty([]int64 { models.UpdateMask_Tomes, models.UpdateMask_Stars })
 		context.Data = reward
 	}
 

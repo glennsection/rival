@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"encoding/json"
+	"io/ioutil"
 	
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -33,10 +34,10 @@ type Player struct {
 	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
 	Name                string        `bson:"-" json:"name"`
-	Level           	int           `bson:"lv" json:"level"`
-	Xp 					int 		  `bson:"xp" json:"xp"`
+	XP 					int 		  `bson:"xp" json:"xp"`
 	RankPoints          int           `bson:"rk" json:"rankPoints"`
 	Rating          	int           `bson:"rt" json:"rating"`
+
 	WinCount       		int           `bson:"wc" json:"winCount"`
 	LossCount       	int           `bson:"lc" json:"lossCount"`
 	MatchCount       	int           `bson:"mc" json:"matchCount"`
@@ -52,6 +53,8 @@ type Player struct {
 	FreeTomeUnlockTime  int64 		  `bson:"fu" json:"freeTomeUnlockTime"`
 
 	Quests              string        `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
+
+	GuildID             bson.ObjectId `bson:"gd,omitempty" json:"-"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -79,16 +82,29 @@ func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Play
 	return
 }
 
+func (player *Player) initialize() {
+	// template for initial player
+	path := "./resources/models/player.json"
+
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(file, player)
+}
+
 func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	player = &Player {}
-	player.Initialize()
+	player.initialize()
+	
 	player.UserID = userID
 	return
 }
 
 func (player *Player) Reset(database *mgo.Database) (err error) {
 	// reset player and update in database
-	player.Initialize()
+	player.initialize()
 	return player.Save(database)
 }
 
@@ -120,7 +136,11 @@ func (player *Player) Save(database *mgo.Database) (err error) {
 	return
 }
 
-func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
+func (player *Player) GetLevel() int {
+	return data.GetAccountLevel(player.XP)
+}
+
+func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome, err error) {
 	//first check to see if the player has an available tome slot, else return
 	tome = nil
 	for _, tomeSlot := range player.Tomes {
@@ -155,13 +175,12 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
 		}
 	}
 
-	player.Save(database)
-
+	err = player.Save(database)
 	return
 }
 
 func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *TomeReward, err error) {
-	reward = tome.OpenTome(data.GetAccountLevel(player.Xp))
+	reward = tome.OpenTome(player.GetLevel())
 	player.PremiumCurrency += reward.PremiumCurrency
 	player.StandardCurrency += reward.StandardCurrency
 
@@ -188,11 +207,10 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 	}
 
 	err = player.Save(database)
-	
 	return
 }
 
-func (player *Player) UpdateRewards(database *mgo.Database) (err error){
+func (player *Player) UpdateRewards(database *mgo.Database) error {
 	unlockTime := data.TicksToTime(player.FreeTomeUnlockTime)
 
 	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
@@ -206,12 +224,10 @@ func (player *Player) UpdateRewards(database *mgo.Database) (err error){
 		(&player.Tomes[i]).UpdateTome()
 	}
 
-	err = player.Save(database)
-
-	return
+	return player.Save(database)
 }
 
-func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (reward *TomeReward, err error) {
+func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (*TomeReward, error) {
 	tome := &Tome {
 		DataID: data.ToDataId(tomeId),
 	}
@@ -219,12 +235,10 @@ func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (reward *
 	// check currency
 	// TODO
 
-	reward, err = player.AddRewards(database, tome)
-
-	return
+	return player.AddRewards(database, tome)
 }
 
-func (player *Player) ClaimFreeTome(database *mgo.Database) (reward *TomeReward, err error) {
+func (player *Player) ClaimFreeTome(database *mgo.Database) (tomeReward *TomeReward, err error) {
 	err = player.UpdateRewards(database)
 
 	if player.FreeTomes == 0 || err != nil {
@@ -237,21 +251,17 @@ func (player *Player) ClaimFreeTome(database *mgo.Database) (reward *TomeReward,
 
 	player.FreeTomes--
 
-	reward, err = player.ClaimTome(database, "TOME_COMMON")
-
-	return
+	return player.ClaimTome(database, "TOME_COMMON")
 }
 
-func (player *Player) ClaimArenaTome(database *mgo.Database) (reward *TomeReward, err error) {
+func (player *Player) ClaimArenaTome(database *mgo.Database) (tomeReward *TomeReward, err error) {
 	if player.ArenaPoints < 10 {
 		return
 	}
 
 	player.ArenaPoints = 0;
 
-	reward, err = player.ClaimTome(database, "TOME_RARE")
-
-	return
+	return player.ClaimTome(database, "TOME_RARE")
 }
 
 func (player *Player) ModifyArenaPoints(val int) {
@@ -264,8 +274,6 @@ func (player *Player) ModifyArenaPoints(val int) {
 	if player.ArenaPoints > 10 {
 		player.ArenaPoints = 10
 	}
-
-	return
 }
 
 func (player *Player) Delete(database *mgo.Database) (err error) {
@@ -330,8 +338,8 @@ func (player *Player) HandleUpdateMask(updateMask int64, dataMap *map[string]int
 	}
 
 	if (updateMask & UpdateMask_XP) == UpdateMask_XP {
-		(*dataMap)["level"] = player.Level
-		(*dataMap)["xp"] = player.Xp
+		(*dataMap)["level"] = player.GetLevel()
+		(*dataMap)["xp"] = player.XP
 	}
 	
 	if (updateMask & UpdateMask_Cards) == UpdateMask_Cards {

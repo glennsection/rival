@@ -26,8 +26,8 @@
 									<thead>
 										<th>Type</th>
 										<th>State</th>
-										<th>Player 1</th>
-										<th>Player 2</th>
+										<th>Host Player</th>
+										<th>Guest Player</th>
 										<th>Room</th>
 										<th>Start Time</th>
 										<th>End Time</th>
@@ -39,12 +39,12 @@
 										<tr>
 											<td>{{ $match.GetTypeName }}</td>
 											<td>{{ $match.GetStateName }}</td>
-											<td>{{ getPlayerName $ $match.PlayerID }}</td>
+											<td>{{ getPlayerName $ $match.HostID }}</td>
 											<td>{{ getPlayerName $ $match.OpponentID }}</td>
 											<td>{{ $match.RoomID }}</td>
 											<td>{{ shortTime $match.StartTime }}</td>
 											<td>{{ shortTime $match.EndTime }}</td>
-											<td>{{ $match.GetOutcomeName }} ({{ $match.PlayerScore }} : {{ $match.OpponentScore }})</td>
+											<td>{{ $match.GetOutcomeName }} ({{ $match.HostScore }} : {{ $match.OpponentScore }})</td>
 											<td>
 												<a href="/admin/matches/edit?matchId={{ $match.ID.Hex }}">Edit</a> |
 												<a href="/admin/matches/delete?matchId={{ $match.ID.Hex }}&page={{ $.GetPagination.GetPage }}">Delete</a>

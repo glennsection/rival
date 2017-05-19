@@ -4,11 +4,11 @@ import (
 	"errors"
 
 	"bloodtales/config"
-	"bloodtales/models"
 	"bloodtales/util"
+	"bloodtales/models"
 )
 
-func (context *Context) authenticateDevice(required bool) (err error) {
+func authenticateDevice(context *util.Context, required bool) (err error) {
 	// parse parameters
 	uuid := context.Params.GetString("uuid", "")
 	tag := context.Params.GetString("tag", "")
@@ -49,7 +49,7 @@ func (context *Context) authenticateDevice(required bool) (err error) {
 	if user != nil {
 		SetUser(context, user)
 
-		err = context.AppendAuthToken()
+		err = AppendAuthToken(context)
 	} else if required {
 		err = errors.New("Unauthorized user")
 	}

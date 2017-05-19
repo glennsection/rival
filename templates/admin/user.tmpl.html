@@ -46,7 +46,7 @@
 											<div class="col-md-4">
 												<div class="form-group">
 													<label>Player Tag</label>
-													<input type="email" class="form-control" name="tag" value="{{ $user.Tag }}">
+													<input type="text" class="form-control" name="tag" value="{{ $user.Tag }}">
 												</div>
 											</div>
 										</div>
@@ -82,8 +82,15 @@
 											<div class="row">
 												<div class="col-md-3">
 													<div class="form-group">
-														<label>Player Level</label>
-														<input type="text" class="form-control" placeholder="0" name="level" value="{{ $player.Level }}">
+														<label>Player XP (Level)</label>
+															<div class="row">
+																<div class="col-md-6" style="padding-top: 0px">
+																	<input type="text" class="form-control" placeholder="0" name="xp" value="{{ $player.XP }}">
+																</div>
+																<div class="col-md-6" style="padding-top: 0px">
+																	<p style="padding-top: 8px">(Level {{ $player.GetLevel }})</p>
+																</div>
+															</div>
 													</div>
 												</div>
 												<div class="col-md-3">

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bloodtales/data"
+	"bloodtales/util"
 	"bloodtales/models"
 	"bloodtales/system"
 )
@@ -12,7 +13,7 @@ func HandleDeck() {
 	HandleGameAPI("/deck/switch", system.TokenAuthentication, SwitchDeck)
 }
 
-func SetLeaderCard(context *system.Context) {
+func SetLeaderCard(context *util.Context) {
 	// parse parameters
 	cardId := context.Params.GetRequiredString("cardId")
 	cardDataId := data.ToDataId(cardId)
@@ -36,7 +37,7 @@ func SetLeaderCard(context *system.Context) {
 	player.Save(context.DB)
 }
 
-func SetDeckCard(context *system.Context) {
+func SetDeckCard(context *util.Context) {
 	// parse parameters
 	cardId := context.Params.GetRequiredString("cardId")
 	deckIndex := context.Params.GetRequiredInt("index")
@@ -67,7 +68,7 @@ func SetDeckCard(context *system.Context) {
 	player.Save(context.DB)
 }
 
-func SwitchDeck(context *system.Context) {
+func SwitchDeck(context *util.Context) {
 	// parse parameters
 	currentDeck := context.Params.GetRequiredInt("currentDeck")
 

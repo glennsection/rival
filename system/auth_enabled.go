@@ -20,27 +20,27 @@ func init() {
 	}
 }
 
-func (context *Context) authenticate(authType AuthenticationType) (err error) {
+func authenticate(context *util.Context, authType AuthenticationType) (err error) {
 	switch authType {
 
 	case NoAuthentication:
 		return
 
 	case DeviceAuthentication:
-		err = context.authenticateDevice(true)
+		err = authenticateDevice(context, true)
 
 	case PasswordAuthentication:
-		err = context.authenticatePassword(true)
+		err = authenticatePassword(context, true)
 
 	case TokenAuthentication:
-		err = context.authenticateToken(true)
+		err = authenticateToken(context, true)
 
 	case AnyAuthentication:
-		err = context.authenticatePassword(false)
+		err = authenticatePassword(context, false)
 		if err == nil {
-			err = context.authenticateToken(false)
+			err = authenticateToken(context, false)
 			if err == nil {
-				err = context.authenticateDevice(true)
+				err = authenticateDevice(context, true)
 			}
 		}
 	}

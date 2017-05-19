@@ -21,7 +21,7 @@ func HandlePlayer() {
 	util.AddTemplateFunc("getPlayerName", GetPlayerName)
 }
 
-func GetPlayer(context *system.Context) (player *models.Player) {
+func GetPlayer(context *util.Context) (player *models.Player) {
 	// get player for current context, with cache in params
 	player, ok := context.Params.Get("_player").(*models.Player)
 	if ok == false {
@@ -35,7 +35,7 @@ func GetPlayer(context *system.Context) (player *models.Player) {
 	return
 }
 
-func SetPlayerName(context *system.Context) {
+func SetPlayerName(context *util.Context) {
 	// parse parameters
 	name := context.Params.GetRequiredString("name")
 
@@ -60,7 +60,7 @@ func SetPlayerName(context *system.Context) {
 	context.Cache.Set(playerKey, name)
 }
 
-func GetUserName(context *system.Context, userID bson.ObjectId) string {
+func GetUserName(context *util.Context, userID bson.ObjectId) string {
 	// get cache key
 	key := fmt.Sprintf("UserName:%s", userID.Hex())
 
@@ -78,7 +78,7 @@ func GetUserName(context *system.Context, userID bson.ObjectId) string {
 	return name
 }
 
-func GetPlayerName(context *system.Context, playerID bson.ObjectId) string {
+func GetPlayerName(context *util.Context, playerID bson.ObjectId) string {
 	// get cache key
 	key := fmt.Sprintf("UserPlayerName:%s", playerID.Hex())
 
@@ -99,7 +99,7 @@ func GetPlayerName(context *system.Context, playerID bson.ObjectId) string {
 	return name
 }
 
-func GetPlayerPlace(context *system.Context, player *models.Player) int {
+func GetPlayerPlace(context *util.Context, player *models.Player) int {
 	return 0; // TODO - cache this
 	// key := fmt.Sprintf("UserName:%s", userID.Hex())
 
@@ -116,7 +116,7 @@ func GetPlayerPlace(context *system.Context, player *models.Player) int {
 	// return name
 }
 
-func updateAllPlayersPlace(context *system.Context) {
+func updateAllPlayersPlace(context *util.Context) {
 	var players []*models.Player
 	context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
 
@@ -125,7 +125,7 @@ func updateAllPlayersPlace(context *system.Context) {
 	}
 }
 
-func updatePlayerPlace(context *system.Context, player *models.Player) {
+func updatePlayerPlace(context *util.Context, player *models.Player) {
 	matches := player.MatchCount
 	if matches > 0 {
 		// calculate placement score
@@ -138,7 +138,7 @@ func updatePlayerPlace(context *system.Context, player *models.Player) {
 	}
 }
 
-func SetPlayer(context *system.Context) {
+func SetPlayer(context *util.Context) {
 	// parse parameters
 	data := context.Params.GetRequiredString("data")
 
@@ -150,7 +150,7 @@ func SetPlayer(context *system.Context) {
 	context.Message("Player updated successfully")
 }
 
-func FetchPlayer(context *system.Context) {
+func FetchPlayer(context *util.Context) {
 	// get user and player
 	user := system.GetUser(context)
 	player := GetPlayer(context)

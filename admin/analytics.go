@@ -19,7 +19,7 @@ func handleAdminAnalytics() {
 	handleAdminTemplate("/admin/matches/reset", system.TokenAuthentication, ResetMatches, "")
 }
 
-func ShowLeaderboard(context *system.Context) {
+func ShowLeaderboard(context *util.Context) {
 	// parse parameters
 	page := context.Params.GetInt("page", 1)
 
@@ -70,7 +70,7 @@ func ShowLeaderboard(context *system.Context) {
 	context.Data = players
 }
 
-func ShowMatches(context *system.Context) {
+func ShowMatches(context *util.Context) {
 	// paginate players query (TODO - use redis!)
 	pagination, err := context.Paginate(context.DB.C(models.MatchCollectionName).Find(nil).Sort("-t0"), DefaultPageSize)
 	util.Must(err)
@@ -83,7 +83,7 @@ func ShowMatches(context *system.Context) {
 	context.Data = matches
 }
 
-func EditMatch(context *system.Context) {
+func EditMatch(context *util.Context) {
 	// parse parameters
 	matchId := context.Params.GetRequiredId("matchId")
 
@@ -100,7 +100,7 @@ func EditMatch(context *system.Context) {
 	context.Data = match
 }
 
-func DeleteMatch(context *system.Context) {
+func DeleteMatch(context *util.Context) {
 	// parse parameters
 	matchId := context.Params.GetRequiredId("matchId")
 	page := context.Params.GetInt("page", 1)
@@ -113,7 +113,7 @@ func DeleteMatch(context *system.Context) {
 	context.Redirect(fmt.Sprintf("/admin/matches?page=%d", page), 302)
 }
 
-func ResetMatches(context *system.Context) {
+func ResetMatches(context *util.Context) {
 	/*
 	// get all players
 	var players []*models.Player
