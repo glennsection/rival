@@ -62,6 +62,9 @@ type Player struct {
 	GuildID             bson.ObjectId   `bson:"gd,omitempty" json:"-"`
 
 	DirtyMask           util.Bits       `bson:"-" json:"-"`
+
+	CardsPurchased		[3]int 		    `bson:"pu" json:"-"`
+	PurchaseResetTime 	int64 		    `bson:"pr" json:"-"`
 }
 
 // client model
@@ -216,26 +219,8 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 	player.PremiumCurrency += reward.PremiumCurrency
 	player.StandardCurrency += reward.StandardCurrency
 
-	// since we can have up to 6 cards rewarded and they're unsorted, it can take up to O(6n) to see if our card
-	// list already contains the cards we want to add. if we instead create a map of indexes to cards, we incur a 
-	// cost of O(n) to create the map, and then have O(1) access time thereafter at the cost of memory
-	cardMap := player.GetMapOfCardIndexes()
-
 	for i, id := range reward.Cards {
-		//update the card if we already have it, otherwise instantiate a new one and add it in
-		if index, hasCard := cardMap[id]; hasCard {
-			player.Cards[index].CardCount += reward.NumRewarded[i]
-		} else {
-			card := Card{
-				DataID: id,
-				Level: 1,
-				CardCount: reward.NumRewarded[i],
-				WinCount: 0,
-				LeaderWinCount: 0,
-			}
-
-			player.Cards = append(player.Cards, card)
-		}
+		player.AddCards(id, reward.NumRewarded[i])
 	}
 
 	err = player.Save(database)
@@ -345,6 +330,36 @@ func (player *Player) GetRankName() string {
 		return fmt.Sprintf("%d-%d", tier, rankInTier)
 	}
 	return "Unranked"
+}
+
+func (player *Player) HasCard(id data.DataId) (*Card, bool) {
+	for _, card := range player.Cards {
+		if card.DataID == id {
+			return &card, true
+		}
+	}
+
+	return nil, false
+}
+
+func (player *Player) AddCards(id data.DataId, num int) {
+	//update the card if we already have it, otherwise instantiate a new one and add it in
+	for i, card := range player.Cards {
+		if card.DataID == id {
+			player.Cards[i].CardCount += num
+			return
+		}
+	}
+
+	card := Card {
+		DataID: id,
+		Level: 1,
+		CardCount: num,
+		WinCount: 0,
+		LeaderWinCount: 0,
+	}
+
+	player.Cards = append(player.Cards, card)
 }
 
 func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {

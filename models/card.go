@@ -68,3 +68,17 @@ func (card *Card) GetPortraitSrc() string {
 	}
 	return ""
 }
+
+func (card *Card) GetPotentialLevel() (level int) {
+	level = card.Level
+	cardData := card.GetData()
+
+	progressionData := data.GetCardProgressionData(cardData.Rarity, level)
+
+	for card.CardCount >= progressionData.CardsNeeded {
+		level++
+		progressionData = data.GetCardProgressionData(cardData.Rarity, level)
+	}
+
+	return level
+}

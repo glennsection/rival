@@ -2,9 +2,8 @@ package data
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"encoding/json"
+	"strings"
 
 	"bloodtales/util"
 )
@@ -60,22 +59,10 @@ func (tome *TomeData) UnmarshalJSON(raw []byte) error {
 	}
 
 	// server guarantees
-	guaranteedRarities := strings.FieldsFunc(client.GuaranteedRarities, func (r rune) bool {
-		return r == '[' || r == ',' || r == ']'
-	})
-	tome.GuaranteedRarities = make([]int, len(guaranteedRarities))
-	for i, num := range guaranteedRarities {
-		tome.GuaranteedRarities[i], _ = strconv.Atoi(num)
-	}
+	tome.GuaranteedRarities = util.StringToIntArray(client.GuaranteedRarities)
 
 	// server rewards
-	cardsRewarded := strings.FieldsFunc(client.CardsRewarded, func (r rune) bool {
-		return r == '[' || r == ',' || r == ']'
-	})
-	tome.CardsRewarded = make([]int, len(cardsRewarded))
-	for i, num := range cardsRewarded {
-		tome.CardsRewarded[i], _ = strconv.Atoi(num)
-	}
+	tome.CardsRewarded = util.StringToIntArray(client.CardsRewarded)
 
 	return nil
 }

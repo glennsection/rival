@@ -22,9 +22,7 @@ func SetLeaderCard(context *util.Context) {
 	player := GetPlayer(context)
 
 	//validate params
-	cardIndexes := player.GetMapOfCardIndexes()
-	_, valid := cardIndexes[cardDataId]
-	if !valid {
+	if _, hasCard := player.HasCard(cardDataId); !hasCard {
 		context.Fail("Invalid ID")
 		return
 	}
@@ -41,7 +39,6 @@ func SetDeckCard(context *util.Context) {
 	// parse parameters
 	cardId := context.Params.GetRequiredString("cardId")
 	deckIndex := context.Params.GetRequiredInt("index")
-
 	cardDataId := data.ToDataId(cardId)
 
 	// get player
@@ -53,9 +50,7 @@ func SetDeckCard(context *util.Context) {
 		return
 	}
 
-	cardIndexes := player.GetMapOfCardIndexes()
-	_, valid := cardIndexes[cardDataId]
-	if !valid {
+	if _, hasCard := player.HasCard(cardDataId); !hasCard {
 		context.Fail("Invalid ID")
 		return
 	}
