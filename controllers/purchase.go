@@ -15,15 +15,26 @@ func Purchase(context *util.Context) {
 	// parse parameters
 	itemId := context.Params.GetRequiredString("itemId")
 
+	// get player
+	player := GetPlayer(context)
+
 	// get store item
 	storeItem := data.GetStoreItem(data.ToDataId(itemId))
 	if storeItem == nil {
-		context.Fail("Invalid store purchase")
-		return
-	}
+		// item is not a default store item so check to see if it is a card for sale
+		cards := player.GetStoreCards()
+		for _, card := range cards {
+			if itemId == card.Name {
+				storeItem = &card
+				break
+			}
+		}
 
-	// get player
-	player := GetPlayer(context)
+		if storeItem == nil {
+			context.Fail("Invalid store purchase")
+			return
+		}
+	}
 
 	// check store item currency cost
 	switch storeItem.Currency {
@@ -69,7 +80,10 @@ func Purchase(context *util.Context) {
 		context.Data = reward
 
 	case data.StoreCategoryCards:
-
+		player.HandleCardPurchase(storeItem)
+		context.SetDirty([]int64{models.UpdateMask_Currency,
+								 models.UpdateMask_Cards})
+		context.Data = storeItem
 	}
 
 	player.Save(context.DB)

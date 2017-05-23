@@ -31,30 +31,33 @@ const (
 )
 
 type Player struct {
-	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
-	Name                string        `bson:"-" json:"name"`
-	XP 					int 		  `bson:"xp" json:"xp"`
-	RankPoints          int           `bson:"rk" json:"rankPoints"`
-	Rating          	int           `bson:"rt" json:"rating"`
+	ID              		bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	UserID         	 		bson.ObjectId `bson:"us" json:"-"`
+	Name                	string        `bson:"-" json:"name"`
+	XP 						int 		  `bson:"xp" json:"xp"`
+	RankPoints          	int           `bson:"rk" json:"rankPoints"`
+	Rating          		int           `bson:"rt" json:"rating"`
 
-	WinCount       		int           `bson:"wc" json:"winCount"`
-	LossCount       	int           `bson:"lc" json:"lossCount"`
-	MatchCount       	int           `bson:"mc" json:"matchCount"`
+	WinCount       			int           `bson:"wc" json:"winCount"`
+	LossCount       		int           `bson:"lc" json:"lossCount"`
+	MatchCount       		int           `bson:"mc" json:"matchCount"`
 
-	StandardCurrency 	int           `bson:"cs" json:"standardCurrency"`
-	PremiumCurrency 	int           `bson:"cp" json:"premiumCurrency"`
-	Cards           	[]Card        `bson:"cd" json:"cards"`
-	Decks           	[]Deck        `bson:"ds" json:"decks"`
-	CurrentDeck      	int           `bson:"dc" json:"currentDeck"`
-	Tomes           	[]Tome        `bson:"tm" json:"tomes"`
-	ArenaPoints		 	int 		  `bson:"ap" json:"arenaPoints"`
-	FreeTomes		 	int 		  `bson:"ft" json:"freeTomes"`
-	FreeTomeUnlockTime  int64 		  `bson:"fu" json:"freeTomeUnlockTime"`
+	StandardCurrency 		int           `bson:"cs" json:"standardCurrency"`
+	PremiumCurrency 		int           `bson:"cp" json:"premiumCurrency"`
+	Cards           		[]Card        `bson:"cd" json:"cards"`
+	Decks           		[]Deck        `bson:"ds" json:"decks"`
+	CurrentDeck      		int           `bson:"dc" json:"currentDeck"`
+	Tomes           		[]Tome        `bson:"tm" json:"tomes"`
+	ArenaPoints		 		int 		  `bson:"ap" json:"arenaPoints"`
+	FreeTomes		 		int 		  `bson:"ft" json:"freeTomes"`
+	FreeTomeUnlockTime  	int64 		  `bson:"fu" json:"freeTomeUnlockTime"`
 
-	Quests              string        `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
+	Quests              	string        `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
 
-	GuildID             bson.ObjectId `bson:"gd,omitempty" json:"-"`
+	GuildID             	bson.ObjectId `bson:"gd,omitempty" json:"-"`
+
+	cardsPurchased			[3]int 		  `bson:"pu" json:"-"`
+	purchaseResetTime 		int64 		  `bson:"pr" json:"-"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -184,26 +187,8 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 	player.PremiumCurrency += reward.PremiumCurrency
 	player.StandardCurrency += reward.StandardCurrency
 
-	// since we can have up to 6 cards rewarded and they're unsorted, it can take up to O(6n) to see if our card
-	// list already contains the cards we want to add. if we instead create a map of indexes to cards, we incur a 
-	// cost of O(n) to create the map, and then have O(1) access time thereafter at the cost of memory
-	cardMap := player.GetMapOfCardIndexes()
-
 	for i, id := range reward.Cards {
-		//update the card if we already have it, otherwise instantiate a new one and add it in
-		if index, hasCard := cardMap[id]; hasCard {
-			player.Cards[index].CardCount += reward.NumRewarded[i]
-		} else {
-			card := Card{
-				DataID: id,
-				Level: 1,
-				CardCount: reward.NumRewarded[i],
-				WinCount: 0,
-				LeaderWinCount: 0,
-			}
-
-			player.Cards = append(player.Cards, card)
-		}
+		player.AddCards(id, reward.NumRewarded[i])
 	}
 
 	err = player.Save(database)
@@ -313,6 +298,36 @@ func (player *Player) GetRankName() string {
 		return fmt.Sprintf("%d-%d", tier, rankInTier)
 	}
 	return "Unranked"
+}
+
+func (player *Player) HasCard(id data.DataId) (*Card, bool) {
+	for _, card := range player.Cards {
+		if card.DataID == id {
+			return &card, true
+		}
+	}
+
+	return nil, false
+}
+
+func (player *Player) AddCards(id data.DataId, num int) {
+	//update the card if we already have it, otherwise instantiate a new one and add it in
+	for i, card := range player.Cards {
+		if card.DataID == id {
+			player.Cards[i].CardCount += num
+			return
+		}
+	}
+
+	card := Card {
+		DataID: id,
+		Level: 1,
+		CardCount: num,
+		WinCount: 0,
+		LeaderWinCount: 0,
+	}
+
+	player.Cards = append(player.Cards, card)
 }
 
 func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
