@@ -46,11 +46,11 @@ func Purchase(context *util.Context) {
 
 	case data.StoreCategoryPremiumCurrency:
 		player.PremiumCurrency += storeItem.Quantity
-		context.SetDirty([]int64{models.UpdateMask_Currency})
+		player.SetDirty(models.PlayerDataMask_Currency)
 
 	case data.StoreCategoryStandardCurrency:
 		player.StandardCurrency += storeItem.Quantity
-		context.SetDirty([]int64{models.UpdateMask_Currency})
+		player.SetDirty(models.PlayerDataMask_Currency)
 
 	case data.StoreCategoryTomes:
 		// claim tome
@@ -63,10 +63,8 @@ func Purchase(context *util.Context) {
 			return
 		}
 
-		context.SetDirty([]int64{models.UpdateMask_Currency,
-								 models.UpdateMask_Cards, 
-								 models.UpdateMask_Tomes})
-		context.Data = reward
+		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+		context.SetData("reward", reward)
 
 	case data.StoreCategoryCards:
 

@@ -37,7 +37,7 @@ func GetNotifications(context *util.Context) {
 	}
 
 	// result
-	context.Data = struct { Notifications []*models.Notification } { Notifications: notifications, }
+	context.SetData("notification", struct { Notifications []*models.Notification } { Notifications: notifications, })
 }
 
 func RespondNotification(context *util.Context) {

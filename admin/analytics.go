@@ -59,5 +59,5 @@ func ShowLeaderboard(context *util.Context) {
 	// }
 
 	// set template bindings
-	context.Data = players
+	context.Params.Set("players", players)
 }

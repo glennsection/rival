@@ -3,7 +3,6 @@ package controllers
 import (
 	"bloodtales/system"
 	"bloodtales/util"
-	"bloodtales/models"
 )
 
 func HandleGame() {
@@ -16,6 +15,7 @@ func HandleGame() {
 	HandlePurchase()
 	HandleNotification()
 	HandleStore()
+	HandleGuild()
 }
 
 func HandleGameAPI(pattern string, authType system.AuthenticationType, handler func(*util.Context)) {
@@ -23,18 +23,15 @@ func HandleGameAPI(pattern string, authType system.AuthenticationType, handler f
 	system.App.HandleAPI(pattern, authType, func(context *util.Context) {
 		handler(context)
 
-		// handle dirty flags in context.UpdatedData
-		if context.UpdateMask != models.UpdateMask_None {
-			handleUpdateMask(context)
+		// handle player data deltas
+		player := GetPlayer(context)
+		if player != nil {
+			playerData := player.MarshalDirty(context)
+
+			if playerData != nil {
+				context.SetData("playerData", playerData)
+				context.SetData("playerDataMask", player.DirtyMask)
+			}
 		}
 	})
-}
-
-func handleUpdateMask(context *util.Context) {
-	if context.PlayerData == nil {
-		context.PlayerData = map[string]interface{} {}
-	}
-
-	player := GetPlayer(context);
-	player.HandleUpdateMask(context.UpdateMask, &context.PlayerData)
 }

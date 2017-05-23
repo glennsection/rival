@@ -10,15 +10,59 @@ import (
 const GuildCollectionName = "guilds"
 
 type Guild struct {
-	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	OwnerID        	 	bson.ObjectId `bson:"ow" json:"-"`
-	Name                string        `bson:"nm" json:"name"`
-	XP                  int           `bson:"xp" json:"xp"`
-	Rating          	int           `bson:"rt" json:"rating"`
+	ID              	bson.ObjectId   `bson:"_id,omitempty" json:"-"`
+	OwnerID        	 	bson.ObjectId   `bson:"ow" json:"-"`
+	Name                string          `bson:"nm" json:"name"`
+	XP                  int             `bson:"xp" json:"xp"`
+	Rating          	int             `bson:"rt" json:"rating"`
 
-	WinCount       		int           `bson:"wc" json:"winCount"`
-	LossCount       	int           `bson:"lc" json:"lossCount"`
-	MatchCount       	int           `bson:"mc" json:"matchCount"`
+	WinCount       		int             `bson:"wc" json:"winCount"`
+	LossCount       	int             `bson:"lc" json:"lossCount"`
+	MatchCount       	int             `bson:"mc" json:"matchCount"`
+}
+
+// client model
+type GuildClientAlias Guild
+type GuildClient struct {
+	OwnerIndex          int             `json:"ownerIndex"`
+	Members             []*PlayerClient `json:"members"`
+
+	*GuildClientAlias
+}
+
+func (guild *Guild) CreateGuildClient(database *mgo.Database) (client *GuildClient, err error) {
+	// get member players
+	var memberPlayers []*Player
+	err = database.C(PlayerCollectionName).Find(bson.M { "gd": guild.ID } ).All(&memberPlayers)
+	if err != nil {
+		return
+	}
+
+	// create client member players
+	var ownerIndex int = 0
+	var members []*PlayerClient
+	for i, memberPlayer := range memberPlayers {
+		if memberPlayer.ID == guild.OwnerID {
+			ownerIndex = i
+		}
+
+		var member *PlayerClient
+		member, err = memberPlayer.CreatePlayerClient(database)
+		if err != nil {
+			return
+		}
+
+		members = append(members, member)
+	}
+
+	// create client model
+	client = &GuildClient {
+		OwnerIndex: ownerIndex,
+		Members: members,
+
+		GuildClientAlias: (*GuildClientAlias)(guild),
+	}
+	return
 }
 
 func ensureIndexGuild(database *mgo.Database) {

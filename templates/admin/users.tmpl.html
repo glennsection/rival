@@ -42,7 +42,7 @@
 										<th></th>
 									</thead>
 									<tbody>
-										{{ range $index, $user := .Data }}
+										{{ range $index, $user := .Params.Get "users" }}
 										<tr>
 											<td>{{ $user.Username }}</td>
 											<td>{{ getUserName $ $user.ID }}</td>

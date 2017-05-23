@@ -23,11 +23,11 @@ func init() {
 }
 
 func SetUser(context *util.Context, user *models.User) {
-	context.Params.Set("user", user)
+	context.Params.Set("_user", user)
 }
 
 func GetUser(context *util.Context) *models.User {
-	if user, ok := context.Params.Get("user").(*models.User); ok {
+	if user, ok := context.Params.Get("_user").(*models.User); ok {
 		return user
 	}
 	return nil

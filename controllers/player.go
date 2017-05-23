@@ -26,10 +26,12 @@ func GetPlayer(context *util.Context) (player *models.Player) {
 	player, ok := context.Params.Get("_player").(*models.Player)
 	if ok == false {
 		user := system.GetUser(context)
-		player, _ = models.GetPlayerByUser(context.DB, user.ID)
+		if user != nil {
+			player, _ = models.GetPlayerByUser(context.DB, user.ID)
 
-		if player != nil {
-			context.Params.Set("_player", player)
+			if player != nil {
+				context.Params.Set("_player", player)
+			}
 		}
 	}
 	return
@@ -162,17 +164,8 @@ func FetchPlayer(context *util.Context) {
 		// add in user name
 		player.Name = user.Name
 		
-		// set successful response
-		context.Message("Found player")
-		context.SetDirty([]int64{	models.UpdateMask_Name, 
-									models.UpdateMask_Currency, 
-									models.UpdateMask_XP, 
-									models.UpdateMask_Cards, 
-									models.UpdateMask_Deck,
-									models.UpdateMask_Loadout,
-									models.UpdateMask_Tomes,
-									models.UpdateMask_Stars,
-    								models.UpdateMask_Quests})
+		// set all dirty flags
+		player.SetAllDirty()
 	} else {
 		context.Fail(fmt.Sprintf("Failed to find player for username: %v", user.Username))
 	}

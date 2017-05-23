@@ -18,21 +18,19 @@ import (
 )
 
 type Context struct {
-	DB              *mgo.Database      	   `json:"-"`
+	DB              *mgo.Database          `json:"-"`
 	Session         *Session               `json:"-"`
 	Cache           *Cache                 `json:"-"`
 	Client          *Client                `json:"-"`
-	Request         *http.Request     	   `json:"-"`
+	Request         *http.Request          `json:"-"`
 	ResponseWriter  http.ResponseWriter    `json:"-"`
 	Params          *Stream                `json:"-"`
-	Template        string            	   `json:"-"`
+	Template        string                 `json:"-"`
 
-	Token           string            	   `json:"token"`
-	Success         bool             	   `json:"success"`
-	Messages        []string         	   `json:"messages"`
-	UpdateMask    	int64			  	   `json:"updateMask"`
-	PlayerData     	map[string]interface{} `json:"playerData"`
-	Data            interface{}			   `json:"data"`
+	Token           string                 `json:"token"`
+	Success         bool                   `json:"success"`
+	Messages        []string               `json:"messages"`
+	Data            map[string]interface{} `json:"data"`
 
 	// internal
 	responseWritten bool
@@ -54,6 +52,7 @@ func CreateContext(w http.ResponseWriter, r *http.Request) *Context {
 
 		Token: "",
 		Success: true,
+		Data: map[string]interface{} {},
 	}
 
 	return context
@@ -67,12 +66,6 @@ func (context *Context) Write(p []byte) (n int, err error) {
 
 func (context *Context) SetResponseWritten() {
 	context.responseWritten = true
-}
-
-func (context *Context) SetDirty(updates []int64) {
-	for _, update := range updates {
-		context.UpdateMask |= update;
-	}
 }
 
 func (context *Context) Message(message string) {
@@ -90,6 +83,10 @@ func (context *Context) Messagef(message string, params ...interface{}) {
 func (context *Context) Fail(message string) {
 	context.Success = false
 	context.Message(message)
+}
+
+func (context *Context) SetData(name string, value interface{}) {
+	context.Data[name] = value
 }
 
 func (context *Context) Redirect(path string, responseCode int) {

@@ -27,7 +27,7 @@ func ShowMatches(context *util.Context) {
 	util.Must(pagination.All(&matches))
 
 	// set template bindings
-	context.Data = matches
+	context.Params.Set("matches", matches)
 }
 
 func EditMatch(context *util.Context) {
@@ -44,7 +44,7 @@ func EditMatch(context *util.Context) {
 	}
 	
 	// set template bindings
-	context.Data = match
+	context.Params.Set("match", match)
 }
 
 func DeleteMatch(context *util.Context) {

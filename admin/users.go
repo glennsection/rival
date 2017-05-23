@@ -50,7 +50,7 @@ func ShowUsers(context *util.Context) {
 	util.Must(pagination.All(&users))
 
 	// set template bindings
-	context.Data = users
+	context.Params.Set("users", users)
 }
 
 func EditUser(context *util.Context) {
@@ -141,7 +141,6 @@ func EditUser(context *util.Context) {
 	}
 	
 	// set template bindings
-	context.Data = user
 	context.Params.Set("user", user)
 	context.Params.Set("player", player)
 }

@@ -32,7 +32,7 @@ func SetLeaderCard(context *util.Context) {
 	deck := &(player.Decks[player.CurrentDeck])
 	deck.SetLeaderCard(cardDataId)
 
-	context.SetDirty([]int64{models.UpdateMask_Deck})
+	player.SetDirty(models.PlayerDataMask_Deck)
 
 	player.Save(context.DB)
 }
@@ -63,7 +63,7 @@ func SetDeckCard(context *util.Context) {
 	deck := &(player.Decks[player.CurrentDeck])
 	deck.SetDeckCard(cardDataId, deckIndex)
 
-	context.SetDirty([]int64{models.UpdateMask_Deck})
+	player.SetDirty(models.PlayerDataMask_Deck)
 
 	player.Save(context.DB)
 }
@@ -83,7 +83,7 @@ func SwitchDeck(context *util.Context) {
 
 	player.CurrentDeck = currentDeck
 
-	context.SetDirty([]int64{models.UpdateMask_Loadout})
+	player.SetDirty(models.PlayerDataMask_Loadout)
 
 	player.Save(context.DB)
 }

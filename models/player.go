@@ -12,49 +12,65 @@ import (
 
 	"bloodtales/data"
 	"bloodtales/util"
+	"bloodtales/log"
 )
 
 const PlayerCollectionName = "players"
 const MinutesToUnlockFreeTome = 240
 
 const (
-	UpdateMask_None int64 = 0x0
-	UpdateMask_Name = 0x1
-	UpdateMask_Currency = 0x2
-	UpdateMask_XP = 0x4
-	UpdateMask_Cards = 0x8
-	UpdateMask_Deck = 0x10
-	UpdateMask_Loadout = 0x20
-	UpdateMask_Tomes = 0x40
-	UpdateMask_Stars = 0x80
-    UpdateMask_Quests = 0x100
+	PlayerDataMask_None util.Bits = 0x0
+	PlayerDataMask_All = 0xfffffff
+	PlayerDataMask_Name = 0x1
+	PlayerDataMask_Currency = 0x2
+	PlayerDataMask_XP = 0x4
+	PlayerDataMask_Cards = 0x8
+	PlayerDataMask_Deck = 0x10
+	PlayerDataMask_Loadout = 0x20
+	PlayerDataMask_Tomes = 0x40
+	PlayerDataMask_Stars = 0x80
+	PlayerDataMask_Quests = 0x100
+	PlayerDataMask_Friends = 0x200
+	PlayerDataMask_Guild = 0x400
 )
 
 type Player struct {
-	ID              	bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	UserID         	 	bson.ObjectId `bson:"us" json:"-"`
-	Name                string        `bson:"-" json:"name"`
-	XP 					int 		  `bson:"xp" json:"xp"`
-	RankPoints          int           `bson:"rk" json:"rankPoints"`
-	Rating          	int           `bson:"rt" json:"rating"`
+	ID                  bson.ObjectId   `bson:"_id,omitempty" json:"-"`
+	UserID              bson.ObjectId   `bson:"us" json:"-"`
+	Name                string          `bson:"-" json:"name"`
+	XP                  int             `bson:"xp" json:"xp"`
+	RankPoints          int             `bson:"rk" json:"rankPoints"`
+	Rating              int             `bson:"rt" json:"rating"`
 
-	WinCount       		int           `bson:"wc" json:"winCount"`
-	LossCount       	int           `bson:"lc" json:"lossCount"`
-	MatchCount       	int           `bson:"mc" json:"matchCount"`
+	WinCount            int             `bson:"wc" json:"winCount"`
+	LossCount           int             `bson:"lc" json:"lossCount"`
+	MatchCount          int             `bson:"mc" json:"matchCount"`
 
-	StandardCurrency 	int           `bson:"cs" json:"standardCurrency"`
-	PremiumCurrency 	int           `bson:"cp" json:"premiumCurrency"`
-	Cards           	[]Card        `bson:"cd" json:"cards"`
-	Decks           	[]Deck        `bson:"ds" json:"decks"`
-	CurrentDeck      	int           `bson:"dc" json:"currentDeck"`
-	Tomes           	[]Tome        `bson:"tm" json:"tomes"`
-	ArenaPoints		 	int 		  `bson:"ap" json:"arenaPoints"`
-	FreeTomes		 	int 		  `bson:"ft" json:"freeTomes"`
-	FreeTomeUnlockTime  int64 		  `bson:"fu" json:"freeTomeUnlockTime"`
+	StandardCurrency    int             `bson:"cs" json:"standardCurrency"`
+	PremiumCurrency     int             `bson:"cp" json:"premiumCurrency"`
+	Cards               []Card          `bson:"cd" json:"cards"`
+	Decks               []Deck          `bson:"ds" json:"decks"`
+	CurrentDeck         int             `bson:"dc" json:"currentDeck"`
+	Tomes               []Tome          `bson:"tm" json:"tomes"`
+	ArenaPoints         int             `bson:"ap" json:"arenaPoints"`
+	FreeTomes           int             `bson:"ft" json:"freeTomes"`
+	FreeTomeUnlockTime  int64           `bson:"fu" json:"freeTomeUnlockTime"`
 
-	Quests              string        `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
+	Quests              string          `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
 
-	GuildID             bson.ObjectId `bson:"gd,omitempty" json:"-"`
+	FriendIDs           []bson.ObjectId `bson:"fd,omitempty" json:"-"`
+	GuildID             bson.ObjectId   `bson:"gd,omitempty" json:"-"`
+
+	DirtyMask           util.Bits       `bson:"-" json:"-"`
+}
+
+// client model
+type PlayerClient struct {
+	Name                string   `json:"name"`
+	Tag                 string   `json:"tag"`
+	XP                  int      `json:"xp"`
+	RankPoints          int      `json:"rankPoints"`
+	Rating              int      `json:"rating"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -99,6 +115,22 @@ func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	player.initialize()
 	
 	player.UserID = userID
+	return
+}
+
+func (player *Player) CreatePlayerClient(database *mgo.Database) (client *PlayerClient, err error) {
+	playerUser, err := GetUserById(database, player.UserID)
+	if err != nil {
+		return
+	}
+
+	client = &PlayerClient {
+		Name: playerUser.Name,
+		Tag: playerUser.Tag,
+		XP: player.XP,
+		RankPoints: player.RankPoints,
+		Rating: player.Rating,
+	}
 	return
 }
 
@@ -323,53 +355,90 @@ func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
 	return cardMap
 }
 
-func (player *Player) HandleUpdateMask(updateMask int64, dataMap *map[string]interface{}) {
-	if updateMask == UpdateMask_None {
-		return
+func (player *Player) SetDirty(flags ...util.Bits) {
+	for _, flag := range flags {
+		player.DirtyMask = util.SetMask(player.DirtyMask, flag);
+	}
+}
+
+func (player *Player) SetAllDirty() {
+	player.DirtyMask = PlayerDataMask_All;
+}
+
+func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{} {
+	// check mask
+	dirtyMask := player.DirtyMask
+	if dirtyMask == PlayerDataMask_None {
+		return nil
 	}
 
-	if (updateMask & UpdateMask_Name) == UpdateMask_Name {
-		(*dataMap)["name"] = player.Name
+	// create player data map
+	dataMap := map[string]interface{} {}
+
+	// check all updated data
+	if util.CheckMask(dirtyMask, PlayerDataMask_Name) {
+		dataMap["name"] = player.Name
 	}
 
-	if (updateMask & UpdateMask_Currency) == UpdateMask_Currency {
-		(*dataMap)["standardCurrency"] = player.StandardCurrency
-		(*dataMap)["premiumCurrency"] = player.PremiumCurrency
+	if util.CheckMask(dirtyMask, PlayerDataMask_Currency) {
+		dataMap["standardCurrency"] = player.StandardCurrency
+		dataMap["premiumCurrency"] = player.PremiumCurrency
 	}
 
-	if (updateMask & UpdateMask_XP) == UpdateMask_XP {
-		(*dataMap)["level"] = player.GetLevel()
-		(*dataMap)["xp"] = player.XP
+	if util.CheckMask(dirtyMask, PlayerDataMask_XP) {
+		dataMap["level"] = player.GetLevel()
+		dataMap["xp"] = player.XP
 	}
 	
-	if (updateMask & UpdateMask_Cards) == UpdateMask_Cards {
-		(*dataMap)["cards"] = player.Cards
+	if util.CheckMask(dirtyMask, PlayerDataMask_Cards) {
+		dataMap["cards"] = player.Cards
 	}
 	
-	if (updateMask & UpdateMask_Deck) == UpdateMask_Deck {
-		(*dataMap)["decks"] = player.Decks
+	if util.CheckMask(dirtyMask, PlayerDataMask_Deck) {
+		dataMap["decks"] = player.Decks
 	}
 	
-	if (updateMask & UpdateMask_Loadout) == UpdateMask_Loadout {
-		(*dataMap)["currentDeck"] = player.CurrentDeck
+	if util.CheckMask(dirtyMask, PlayerDataMask_Loadout) {
+		dataMap["currentDeck"] = player.CurrentDeck
 	}
 	
-	if (updateMask & UpdateMask_Tomes) == UpdateMask_Tomes {
-		(*dataMap)["tomes"] = player.Tomes
-		(*dataMap)["arenaPoints"] = player.ArenaPoints
-		(*dataMap)["freeTomes"] = player.FreeTomes
-		(*dataMap)["freeTomeUnlockTime"] = player.FreeTomeUnlockTime
+	if util.CheckMask(dirtyMask, PlayerDataMask_Tomes) {
+		dataMap["tomes"] = player.Tomes
+		dataMap["arenaPoints"] = player.ArenaPoints
+		dataMap["freeTomes"] = player.FreeTomes
+		dataMap["freeTomeUnlockTime"] = player.FreeTomeUnlockTime
 	}
 	
-	if (updateMask & UpdateMask_Stars) == UpdateMask_Stars {
-		(*dataMap)["rankPoints"] = player.RankPoints
-		(*dataMap)["rating"] = player.Rating
-		(*dataMap)["winCount"] = player.WinCount
-		(*dataMap)["lossCount"] = player.LossCount
-		(*dataMap)["matchCount"] = player.MatchCount
+	if util.CheckMask(dirtyMask, PlayerDataMask_Stars) {
+		dataMap["rankPoints"] = player.RankPoints
+		dataMap["rating"] = player.Rating
+		dataMap["winCount"] = player.WinCount
+		dataMap["lossCount"] = player.LossCount
+		dataMap["matchCount"] = player.MatchCount
 	}
 	
-    if (updateMask & UpdateMask_Quests) == UpdateMask_Quests {
-    	(*dataMap)["quests"] = player.Quests
+	if util.CheckMask(dirtyMask, PlayerDataMask_Quests) {
+		dataMap["quests"] = player.Quests
 	}
+	
+	if util.CheckMask(dirtyMask, PlayerDataMask_Friends) {
+		var friends []PlayerClient
+		dataMap["friends"] = friends
+	}
+	
+	if util.CheckMask(dirtyMask, PlayerDataMask_Guild) {
+		if player.GuildID.Valid() {
+			guild, err := GetGuildById(context.DB, player.GuildID)
+			if err != nil {
+				log.Error(err)
+			} else {
+				dataMap["guild"], err = guild.CreateGuildClient(context.DB)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+		}
+	}
+
+	return &dataMap
 }

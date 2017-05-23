@@ -12,6 +12,7 @@ func HandleCard() {
 }
 
 func UpgradeCard(context *util.Context) {
+	// parse parameters
 	id := context.Params.GetRequiredString("cardId")
 
 	player := GetPlayer(context)
@@ -40,10 +41,8 @@ func UpgradeCard(context *util.Context) {
 	card.CardCount -= levelData.CardsNeeded
 	card.Level += 1
 
-	context.SetDirty([]int64{models.UpdateMask_XP, 
-										 models.UpdateMask_Currency,
-										 models.UpdateMask_Cards})
-	context.Data = card
-
+	player.SetDirty(models.PlayerDataMask_XP, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 	player.Save(context.DB)
+
+	context.SetData("card", card)
 }

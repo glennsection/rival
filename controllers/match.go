@@ -31,7 +31,7 @@ func MatchFind(context *util.Context) {
 	util.Must(err)
 
 	// respond
-	context.Data = match
+	context.SetData("match", match)
 }
 
 func MatchFail(context *util.Context) {
@@ -63,9 +63,7 @@ func MatchResult(context *util.Context) {
 	// updatePlayerPlace(context, opponent)
 
 	if reward != nil {
-		context.SetDirty([]int64 { models.UpdateMask_Tomes, models.UpdateMask_Stars })
-		context.Data = reward
+		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars)
+		context.SetData("reward", reward)
 	}
-
-	context.Message("Thanks for playing!")
 }

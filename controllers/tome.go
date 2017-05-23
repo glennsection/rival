@@ -36,7 +36,7 @@ func UnlockTome(context *util.Context) {
 
 		util.Must(player.Save(context.DB))
 
-		context.SetDirty([]int64{models.UpdateMask_Tomes})
+		player.SetDirty(models.PlayerDataMask_Tomes)
 	} else {
 		context.Fail("Already unlocking a tome.")
 	}
@@ -59,10 +59,8 @@ func OpenTome(context *util.Context) {
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
 	util.Must(err)
 
-	context.SetDirty([]int64{models.UpdateMask_Currency,
-							 models.UpdateMask_Cards, 
-							 models.UpdateMask_Tomes})
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
 func RushTome(context *util.Context) {
@@ -85,10 +83,8 @@ func RushTome(context *util.Context) {
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
 	util.Must(err)
 
-	context.SetDirty([]int64{models.UpdateMask_Currency,
-							 models.UpdateMask_Cards, 
-							 models.UpdateMask_Tomes})
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
 func ClaimFreeTome(context *util.Context) {
@@ -101,10 +97,8 @@ func ClaimFreeTome(context *util.Context) {
 		return
 	}
 
-	context.SetDirty([]int64{models.UpdateMask_Currency,
-							 models.UpdateMask_Cards, 
-							 models.UpdateMask_Tomes})
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
 func ClaimArenaTome(context *util.Context) {
@@ -117,10 +111,8 @@ func ClaimArenaTome(context *util.Context) {
 		return
 	}
 
-	context.SetDirty([]int64{models.UpdateMask_Currency,
-							 models.UpdateMask_Cards, 
-							 models.UpdateMask_Tomes})
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
 func ValidateTomeRequest(context *util.Context) (index int, player *models.Player, success bool) {

@@ -35,7 +35,7 @@
 										<th>Rating (ELO)</th>
 									</thead>
 									<tbody>
-										{{ range $index, $element := .Data }}
+										{{ range $index, $element := .Params.Get "players" }}
 										<tr>
 											<td>{{ add $index 1 }}</td>
 											<td><a href="/admin/users/edit?userId={{ $element.UserID.Hex }}">{{ getUserName $ $element.UserID }}</a></td>

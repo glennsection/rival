@@ -37,7 +37,7 @@ func GetSpecialOffers(context *util.Context) {
 
 	offers["cards"] = cards
 
-	context.Data = offers
+	context.SetData("offers", offers)
 }
 
 func GetStoreCards() []data.StoreData {
