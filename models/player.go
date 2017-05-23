@@ -56,8 +56,8 @@ type Player struct {
 
 	GuildID             	bson.ObjectId `bson:"gd,omitempty" json:"-"`
 
-	cardsPurchased			[3]int 		  `bson:"pu" json:"-"`
-	purchaseResetTime 		int64 		  `bson:"pr" json:"-"`
+	CardsPurchased			[3]int 		  `bson:"pu" json:"-"`
+	PurchaseResetTime 		int64 		  `bson:"pr" json:"-"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {

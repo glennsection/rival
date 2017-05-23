@@ -154,6 +154,8 @@ func GetStoreItems() []StoreData {
 
 // get card cost by rarity and potential level
 func GetCardCost(rarity string, level int) int {
+	level -= 1
+
 	if level > len(cardPurchaseCosts[rarity]) {
 		return -1
 	}

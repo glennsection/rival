@@ -22,7 +22,7 @@ func Purchase(context *util.Context) {
 	storeItem := data.GetStoreItem(data.ToDataId(itemId))
 	if storeItem == nil {
 		// item is not a default store item so check to see if it is a card for sale
-		cards := player.GetStoreCards()
+		cards := player.GetStoreCards(context.DB)
 		for _, card := range cards {
 			if itemId == card.Name {
 				storeItem = &card

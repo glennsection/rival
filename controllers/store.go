@@ -19,7 +19,7 @@ func GetStoreOffers(context *util.Context) {
 	//offers["banner"] = banner
 
 	// Get Cards
-	cards := player.GetStoreCards()
+	cards := player.GetStoreCards(context.DB)
 	for _, card := range cards {
 		storeItems = append(storeItems, card);
 	}

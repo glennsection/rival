@@ -7,23 +7,25 @@ import (
 	"sort"
 	"fmt"
 
+	"gopkg.in/mgo.v2"
+
 	"bloodtales/data"
 )
 
 func (player *Player) GetNumCardsPurchased(rarity string) *int {
 	switch rarity {
 		case "COMMON":
-			return &player.cardsPurchased[0]
+			return &player.CardsPurchased[0]
 		case "RARE":
-			return &player.cardsPurchased[1]
+			return &player.CardsPurchased[1]
 		case "EPIC":
-			return &player.cardsPurchased[2]
+			return &player.CardsPurchased[2]
 	}
 
 	return nil
 }
 
-func (player *Player) GetStoreCards() []data.StoreData {
+func (player *Player) GetStoreCards(database *mgo.Database) []data.StoreData {
 	// seed random with current utc date + unique identifer
 	hexId := player.ID.Hex()
 	dst := make([]byte, hex.DecodedLen(len(hexId)))
@@ -33,14 +35,17 @@ func (player *Player) GetStoreCards() []data.StoreData {
 	rand.Seed(date)
 
 	// ensure our card purchase counts are up to date
-	if player.purchaseResetTime < date {
-		player.purchaseResetTime = data.TimeToTicks(time.Now())
+	if player.PurchaseResetTime < date {
+		player.PurchaseResetTime = data.TimeToTicks(time.Now())
 
-		for i, _ := range player.cardsPurchased {
-			player.cardsPurchased[i] = 0
+		for i, _ := range player.CardsPurchased {
+			player.CardsPurchased[i] = 0
 		}
+
+		player.Save(database)
 	}
 
+	// get individual card offers
 	cards := make([]data.StoreData, 0)
 	cards = append(cards, player.GetStoreCard("COMMON"))
 	cards = append(cards, player.GetStoreCard("RARE"))
@@ -110,7 +115,7 @@ func (player *Player) HandleCardPurchase(storeItem *data.StoreData) {
 			index = 2
 		}
 
-		player.cardsPurchased[index]++
+		player.CardsPurchased[index]++
 		storeItem.Cost = player.GetCardCost(id, rarity)
 
 		player.AddCards(id, storeItem.Quantity)
