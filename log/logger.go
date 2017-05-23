@@ -50,7 +50,7 @@ func Warningf(format string, v ...interface{}) {
 }
 
 func Error(value interface{}) {
-	Printf("[red!]ERROR:%v[-]", value)
+	Printf("[red!]ERROR: %v[-]", value)
 }
 
 func Errorf(format string, v ...interface{}) {

@@ -309,7 +309,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		if outcome == MatchSurrender {
 			// do nothing
 		} else {
-			log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", match.Outcome, outcome, match.HostScore, playerScore, match.OpponentScore, opponentScore)
+			log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", matchResult.Outcome, outcome, matchResult.HostScore, playerScore, matchResult.OpponentScore, opponentScore)
 			
 			if matchResult.Outcome == MatchSurrender || (matchResult.Outcome == outcome && matchResult.HostScore == playerScore && matchResult.OpponentScore == opponentScore) {
 				match.State = MatchComplete

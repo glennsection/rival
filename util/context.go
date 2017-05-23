@@ -90,6 +90,7 @@ func (context *Context) SetData(name string, value interface{}) {
 }
 
 func (context *Context) Redirect(path string, responseCode int) {
+	context.responseWritten = true
 	http.Redirect(context.ResponseWriter, context.Request, path, responseCode)
 }
 
@@ -124,18 +125,16 @@ func (context *Context) EndRequest(startTime time.Time) {
 	// cleanup connection
 	defer context.DB.Session.Close()
 
-	// handle any panics which occurred during request
-	redirected := false
+	// handle any panics or web errors, which occurred during request
 	var caughtErr interface{}
 	if caughtErr = recover(); caughtErr != nil {
 		// update context for failure
 		context.Fail(fmt.Sprintf("%v", caughtErr))
-
-		if context.Template != "" {
-			context.Redirect(fmt.Sprintf("/error?message=%v", caughtErr), 302) // TODO - can remove parameter once session flashes are working
-			redirected = true
-		}
 	}
+	if !context.Success && context.Template != "" {
+		context.Redirect(fmt.Sprintf("/error?message=%s", context.Messages[0]), 302) // TODO - can remove parameter once session flashes are working
+	}
+
 	// catch any panics occurring in this function
 	defer func() {
 		if templateErr := recover(); templateErr != nil {
@@ -147,49 +146,47 @@ func (context *Context) EndRequest(startTime time.Time) {
 		}
 	}()
 
-	if !redirected {
-		// check if any custom response was written by the handler
-		if context.responseWritten {
-			// nothing left to do...
-		} else if context.Template != "" {
-			// escape messages for HTML template
-			for i, message := range context.Messages {
-				context.Messages[i] = html.EscapeString(message)
-			}
-
-			// render template to buffer
-			var output bytes.Buffer
-			err := GetTemplates().ExecuteTemplate(&output, context.Template, context)
-
-			var responseString string
-			if err == nil {
-				// convert template output to string
-				responseString = output.String()
-
-				// write response to stream
-				fmt.Fprint(context.ResponseWriter, responseString)
-			} else {
-				// respond with error
-				responseString = fmt.Sprintf("Processing template (%v): %v", context.Template, err)
-
-				log.Error(responseString)
-				context.Redirect(fmt.Sprintf("/error?message=%s", responseString), 302) // TODO - can remove parameter once session flashes are working
-			}
-		} else {
-			// serialize API response to json
-			var responseString string
-			raw, err := json.Marshal(context)
-			if err == nil {
-				responseString = string(raw)
-			} else {
-				responseString = fmt.Sprintf("Marshalling response: %v", err)
-
-				log.Error(responseString)
-			}
-
-			// write API response to stream
-			fmt.Fprint(context.ResponseWriter, responseString)
+	// check if any custom response was written by the handler
+	if context.responseWritten {
+		// nothing left to do...
+	} else if context.Template != "" {
+		// escape messages for HTML template
+		for i, message := range context.Messages {
+			context.Messages[i] = html.EscapeString(message)
 		}
+
+		// render template to buffer
+		var output bytes.Buffer
+		err := GetTemplates().ExecuteTemplate(&output, context.Template, context)
+
+		var responseString string
+		if err == nil {
+			// convert template output to string
+			responseString = output.String()
+
+			// write response to stream
+			fmt.Fprint(context.ResponseWriter, responseString)
+		} else {
+			// respond with error
+			responseString = fmt.Sprintf("Processing template (%v): %v", context.Template, err)
+
+			log.Error(responseString)
+			context.Redirect(fmt.Sprintf("/error?message=%s", responseString), 302) // TODO - can remove parameter once session flashes are working
+		}
+	} else {
+		// serialize API response to json
+		var responseString string
+		raw, err := json.Marshal(context)
+		if err == nil {
+			responseString = string(raw)
+		} else {
+			responseString = fmt.Sprintf("Marshalling response: %v", err)
+
+			log.Error(responseString)
+		}
+
+		// write API response to stream
+		fmt.Fprint(context.ResponseWriter, responseString)
 	}
 
 	// show response profiling info

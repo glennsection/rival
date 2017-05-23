@@ -69,10 +69,7 @@ func (application *Application) handle(pattern string, authType AuthenticationTy
 		// authentication
 		err := authenticate(context, authType)
 		if err != nil {
-			log.Errorf("Failed to authenticate user: %v", err)
-			context.Fail("Failed to authenticate user")
-
-			context.Redirect("/admin", 302)
+			context.Fail(fmt.Sprintf("Failed to authenticate user: %v", err))
 		}
 
 		// handle request if authenticated
