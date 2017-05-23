@@ -22,7 +22,7 @@ func SetLeaderCard(context *util.Context) {
 	player := GetPlayer(context)
 
 	//validate params
-	if _, hasCard := player.HasCard(cardDataId); hasCard {
+	if _, hasCard := player.HasCard(cardDataId); !hasCard {
 		context.Fail("Invalid ID")
 		return
 	}
@@ -50,7 +50,7 @@ func SetDeckCard(context *util.Context) {
 		return
 	}
 
-	if _, hasCard := player.HasCard(cardDataId); hasCard {
+	if _, hasCard := player.HasCard(cardDataId); !hasCard {
 		context.Fail("Invalid ID")
 		return
 	}
