@@ -50,6 +50,14 @@ type CardPurchaseCost struct {
 	Cost 					string 		  `json:"cost"`
 }
 
+type SpecialOffer struct {
+	Name 					string 		  `json:"id"`
+	StandardCurrency 		int 		  `json:"standardCurrency"`
+	PremiumCurrency 		int 		  `json:"premiumCurrency"`
+	Tomes 					[]string 	  `json:"tome"`
+	Cards 					[]string 	  `json:"cards"`
+}
+
 // store item data map
 var storeItems map[DataId]*StoreData
 

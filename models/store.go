@@ -3,7 +3,6 @@ package models
 import ( 
 	"time"
 	"math/rand"
-	"encoding/hex"
 	"sort"
 	"fmt"
 
@@ -27,12 +26,8 @@ func (player *Player) GetNumCardsPurchased(rarity string) *int {
 
 func (player *Player) GetStoreCards(database *mgo.Database) []data.StoreData {
 	// seed random with current utc date + unique identifer
-	hexId := player.ID.Hex()
-	dst := make([]byte, hex.DecodedLen(len(hexId)))
-	uniqueId, _ := hex.Decode(dst, []byte(hexId))
 	year, month, day := time.Now().UTC().Date() 
-	date := data.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC)) + int64(uniqueId)
-	rand.Seed(date)
+	date := data.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
 
 	// ensure our card purchase counts are up to date
 	if player.PurchaseResetTime < date {
@@ -44,6 +39,8 @@ func (player *Player) GetStoreCards(database *mgo.Database) []data.StoreData {
 
 		player.Save(database)
 	}
+
+	rand.Seed(player.PurchaseResetTime)
 
 	// get individual card offers
 	cards := make([]data.StoreData, 0)
