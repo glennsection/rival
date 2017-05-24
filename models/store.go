@@ -93,7 +93,6 @@ func (player *Player) GetCardCost(id data.DataId, rarity string) float64 {
 func (player *Player) HandleCardPurchase(storeItem *data.StoreData) {
 		id := data.ToDataId(storeItem.Name)
 		var rarity string
-		var index int
 
 		fmt.Println(fmt.Sprintf("Name: %s", storeItem.Name))
 
@@ -101,18 +100,15 @@ func (player *Player) HandleCardPurchase(storeItem *data.StoreData) {
 
 		case "STORE_CARD_COMMON":
 			rarity = "COMMON"
-			index = 0
 
 		case "STORE_CARD_RARE":
 			rarity = "RARE"
-			index = 1
 
 		case "STORE_CARD_EPIC":
 			rarity = "EPIC"
-			index = 2
 		}
 
-		player.CardsPurchased[index]++
+		(*player.GetNumCardsPurchased(rarity))++
 		storeItem.Cost = player.GetCardCost(id, rarity)
 
 		player.AddCards(id, storeItem.Quantity)

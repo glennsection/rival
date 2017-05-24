@@ -15,8 +15,9 @@ func GetStoreOffers(context *util.Context) {
 	offers := map[string]interface{}{}
 	storeItems := data.GetStoreItems()
 
-	//TODO get banner data
-	//offers["banner"] = banner
+	// Get Banner
+
+	// Get Special Offers
 
 	// Get Cards
 	cards := player.GetStoreCards(context.DB)

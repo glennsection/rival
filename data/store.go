@@ -22,6 +22,7 @@ const (
 	StoreCategoryStandardCurrency
 	StoreCategoryTomes
 	StoreCategoryCards
+	StoreCategorySpecialOffers
 )
 
 // server data
@@ -39,10 +40,24 @@ type StoreData struct {
 // client data
 type StoreDataClientAlias StoreData
 type StoreDataClient struct {
+	Name                    string        `json:"id"`
 	Category                string        `json:"category"`
+	DisplayName 			string 		  `json:"displayName"`
+	Image                   string        `json:"spritePath"`
+	ItemID                  string        `json:"itemId"`
+	Quantity                int           `json:"quantity,string"`
 	Currency                string        `json:"currency"`
+	Cost                    float64       `json:"cost,string"`
 
 	*StoreDataClientAlias
+}
+
+type SpecialOffer struct {
+	ItemID 					string 		  `json:"itemId"`
+	StandardCurrency 		int 		  `json:"standardCurrency"`
+	PremiumCurrency 		int 		  `json:"premiumCurrency"`
+	Tomes 					[]string 	  `json:"tome"`
+	Cards 					[]string 	  `json:"cards"`
 }
 
 type CardPurchaseCost struct {
@@ -50,16 +65,9 @@ type CardPurchaseCost struct {
 	Cost 					string 		  `json:"cost"`
 }
 
-type SpecialOffer struct {
-	Name 					string 		  `json:"id"`
-	StandardCurrency 		int 		  `json:"standardCurrency"`
-	PremiumCurrency 		int 		  `json:"premiumCurrency"`
-	Tomes 					[]string 	  `json:"tome"`
-	Cards 					[]string 	  `json:"cards"`
-}
-
 // store item data map
 var storeItems map[DataId]*StoreData
+//var specialOffers map[DataId]*SpecialOffer
 
 // card purchasing data map
 var cardPurchaseCosts map[string][]int
@@ -90,6 +98,14 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
+	//alias doesn't work for some reason
+	storeItem.Name = client.Name
+	storeItem.DisplayName = client.DisplayName
+	storeItem.Image = client.Image
+	storeItem.ItemID = client.ItemID
+	storeItem.Quantity = client.Quantity
+	storeItem.Cost = client.Cost
+
 	// server category
 	switch client.Category {
 	case "PremiumCurrency":
@@ -98,8 +114,10 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 		storeItem.Category = StoreCategoryTomes
 	case "Cards":
 		storeItem.Category = StoreCategoryCards
-	default:
+	case "StandardCurrency":
 		storeItem.Category = StoreCategoryStandardCurrency
+	default:
+		storeItem.Category = StoreCategorySpecialOffers
 	}
 
 	// server currency
@@ -111,6 +129,42 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 	}
 
 	return nil
+}
+
+// custom marshalling
+func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
+	client := &StoreDataClient {
+		Name: storeItem.Name,
+		DisplayName: storeItem.DisplayName,
+		Image: storeItem.Image,
+		ItemID: storeItem.ItemID,
+		Quantity: storeItem.Quantity,
+		Cost: storeItem.Cost,
+	}
+
+	//client category
+	switch storeItem.Category {
+	case StoreCategoryPremiumCurrency:
+		client.Category = "PremiumCurrency"
+	case StoreCategoryTomes:
+		client.Category = "Tomes"
+	case StoreCategoryCards:
+		client.Category = "Cards"
+	case StoreCategoryStandardCurrency:
+		client.Category = "StandardCurrency"
+	default:
+		client.Category = "SpecialOffers"
+	}
+
+	// client currency
+	switch storeItem.Currency {
+	case CurrencyReal:
+		client.Currency = "Real"
+	default:
+		client.Currency = "Premium"
+	}
+
+	return json.Marshal(client)
 }
 
 // data processor
