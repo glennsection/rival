@@ -2,20 +2,14 @@ package util
 
 import (
 	"os"
-	"time"
 	"strings"
-	"fmt"
 	"path/filepath"
 	"html/template"
 )
 
 var (
 	// internal
-	templateFuncMap = template.FuncMap {
-		// defaults
-		"add": templateAdd,
-		"shortTime": templateShortTime,
-	}
+	templateFuncMap = template.FuncMap {}
 	templates *template.Template
 )
 
@@ -43,12 +37,4 @@ func LoadTemplates() {
 
 func GetTemplates() *template.Template {
 	return templates
-}
-
-func templateAdd(a, b int) template.HTML {
-	return template.HTML(fmt.Sprintf("%d", a + b))
-}
-
-func templateShortTime(t time.Time) template.HTML {
-	return template.HTML(t.Format("02/01/2006 03:04 PM"))
 }

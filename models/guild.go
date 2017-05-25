@@ -5,9 +5,18 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/util"
+	"bloodtales/data"
 )
 
 const GuildCollectionName = "guilds"
+
+type GuildRole int
+const (
+	GuildMember GuildRole = iota
+	GuildElder
+	GuildCaptain
+	GuildOwner
+)
 
 type Guild struct {
 	ID              	bson.ObjectId   `bson:"_id,omitempty" json:"-"`
@@ -15,6 +24,7 @@ type Guild struct {
 	Name                string          `bson:"nm" json:"name"`
 	XP                  int             `bson:"xp" json:"xp"`
 	Rating          	int             `bson:"rt" json:"rating"`
+	MemberCount         int             `bson:"ms" json"-"`
 
 	WinCount       		int             `bson:"wc" json:"winCount"`
 	LossCount       	int             `bson:"lc" json:"lossCount"`
@@ -24,7 +34,6 @@ type Guild struct {
 // client model
 type GuildClientAlias Guild
 type GuildClient struct {
-	OwnerIndex          int             `json:"ownerIndex"`
 	Members             []*PlayerClient `json:"members"`
 
 	*GuildClientAlias
@@ -39,13 +48,8 @@ func (guild *Guild) CreateGuildClient(database *mgo.Database) (client *GuildClie
 	}
 
 	// create client member players
-	var ownerIndex int = 0
 	var members []*PlayerClient
-	for i, memberPlayer := range memberPlayers {
-		if memberPlayer.ID == guild.OwnerID {
-			ownerIndex = i
-		}
-
+	for _, memberPlayer := range memberPlayers {
 		var member *PlayerClient
 		member, err = memberPlayer.CreatePlayerClient(database)
 		if err != nil {
@@ -57,7 +61,6 @@ func (guild *Guild) CreateGuildClient(database *mgo.Database) (client *GuildClie
 
 	// create client model
 	client = &GuildClient {
-		OwnerIndex: ownerIndex,
 		Members: members,
 
 		GuildClientAlias: (*GuildClientAlias)(guild),
@@ -98,12 +101,32 @@ func (guild *Guild) initialize() {
 	guild.MatchCount = 0
 }
 
-func CreateGuild(ownerID bson.ObjectId, name string) (guild *Guild) {
+func CreateGuild(database *mgo.Database, owner *Player, name string) (guild *Guild, err error) {
+	// init guild
 	guild = &Guild {}
 	guild.initialize()
 
-	guild.OwnerID = ownerID
+	// set owner and name
+	guild.OwnerID = owner.ID
 	guild.Name = name
+	guild.MemberCount = 1
+
+	// save guild
+	err = guild.Save(database)
+	if err != nil {
+		return
+	}
+
+	// set guild and role for player
+	owner.GuildID = guild.ID
+	owner.GuildRole = GuildOwner
+	err = owner.Save(database)
+	if err != nil {
+		return
+	}
+
+	// set dirty for return data
+	owner.SetDirty(PlayerDataMask_Guild)
 	return
 }
 
@@ -120,4 +143,9 @@ func (guild *Guild) Save(database *mgo.Database) (err error) {
 func (guild *Guild) Delete(database *mgo.Database) (err error) {
 	// delete guild from database
 	return database.C(GuildCollectionName).Remove(bson.M { "_id": guild.ID })
+}
+
+func (guild *Guild) GetLevel() int {
+	// TODO - different function for guilds?
+	return data.GetAccountLevel(guild.XP)
 }

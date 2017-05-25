@@ -1,5 +1,23 @@
 package util
 
+import (
+	"fmt"
+	"html/template"
+)
+
+func init() {
+	AddTemplateFunc("add", t_Add)
+	AddTemplateFunc("fmt", t_Fmt)
+}
+
+func t_Add(a, b int) template.HTML {
+	return template.HTML(fmt.Sprintf("%d", a + b))
+}
+
+func t_Fmt(format string, args ...interface{}) template.HTML {
+	return template.HTML(fmt.Sprintf(format, args...))
+}
+
 func Min(a, b int) int {
 	if a < b {
 		return a

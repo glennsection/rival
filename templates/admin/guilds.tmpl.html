@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+{{ template "header.tmpl.html" }}
+<body>
+
+<div class="wrapper">
+    {{ template "sidebar.tmpl.html" . }}
+ 
+	<div class="main-panel">
+		{{ template "nav.tmpl.html" . }}
+
+		<div class="content">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="card">
+							<div class="header">
+								<div class="pull-right">
+									{{ .RenderPagination }}
+								</div>
+								<h4 class="title">Guilds</h4>
+								<p class="category">All for one, and one for ALL!</p>
+							</div>
+							<div class="content table-responsive table-full-width">
+								<table class="table table-hover table-striped">
+									<thead>
+										<th>Name</th>
+										<th>Owner</th>
+										<th>Members</th>
+										<th>XP</th>
+										<th>Rating</th>
+										<th>Wins</th>
+										<th>Losses</th>
+										<th>Matches</th>
+										<th></th>
+									</thead>
+									<tbody>
+										{{ range $index, $guild := .Params.Get "guilds" }}
+										{{ $editURL := fmt "/admin/guilds/edit?guildId=%s" $guild.ID.Hex }}
+										<tr>
+											<td><a href="{{ $editURL }}">{{ $guild.Name }}</a></td>
+											<td>{{ getPlayerName $ $guild.OwnerID }}</td>
+											<td>{{ $guild.MemberCount }}</td>
+											<td>{{ $guild.XP }}</td>
+											<td>{{ $guild.Rating }}</td>
+											<td>{{ $guild.WinCount }}</td>
+											<td>{{ $guild.LossCount }}</td>
+											<td>{{ $guild.MatchCount }}</td>
+											<td>
+												<a href="{{ $editURL }}">Edit</a> |
+												<a href="#"
+													data-href="/admin/guilds/delete?guildId={{ $guild.ID.Hex }}&page={{ $.GetPagination.GetPage }}"
+													data-toggle="modal"
+													data-body="Do you want to permanently delete the guild: {{ $guild.Name }}?"
+													data-confirm="Delete"
+													data-deny="Cancel"
+													data-target="#confirm-dialog">Delete</a>
+											</td>
+										</tr>
+										{{ end }}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+        {{ template "footer.tmpl.html" . }}
+    </div>
+</div>
+
+{{ template "scripts.tmpl.html" . }}
+</body>
+
+</html>

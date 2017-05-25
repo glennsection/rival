@@ -38,7 +38,7 @@
 										<th>Device</th>
 										<th>{{ sortHeader $ "Name" "nm" }}</th>
 										<th>Player Tag</th>
-										<th>Last Login</th>
+										<th>Joined</th>
 										<th></th>
 									</thead>
 									<tbody>
@@ -47,16 +47,16 @@
 											<td>{{ $user.Username }}</td>
 											<td>{{ getUserName $ $user.ID }}</td>
 											<td>{{ $user.Tag }}</td>
-											<td>{{ shortTime $user.LoginTime }}</td>
+											<td>{{ shortTime $user.CreatedTime }}</td>
 											<td>
 												<a href="/admin/users/edit?userId={{ $user.ID.Hex }}">Edit</a> |
 												<a href="#"
-												data-href="/admin/users/delete?userId={{ $user.ID.Hex }}&page={{ $.GetPagination.GetPage }}"
-												data-toggle="modal"
-												data-body="Do you want to permanently delete the user: {{ $user.Username }}?"
-												data-confirm="Delete"
-												data-deny="Cancel"
-												data-target="#confirm-dialog">Delete</a>
+													data-href="/admin/users/delete?userId={{ $user.ID.Hex }}&page={{ $.GetPagination.GetPage }}"
+													data-toggle="modal"
+													data-body="Do you want to permanently delete the user: {{ $user.Username }}?"
+													data-confirm="Delete"
+													data-deny="Cancel"
+													data-target="#confirm-dialog">Delete</a>
 											</td>
 										</tr>
 										{{ end }}

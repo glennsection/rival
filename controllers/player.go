@@ -102,20 +102,7 @@ func GetPlayerName(context *util.Context, playerID bson.ObjectId) string {
 }
 
 func GetPlayerPlace(context *util.Context, player *models.Player) int {
-	return 0; // TODO - cache this
-	// key := fmt.Sprintf("UserName:%s", userID.Hex())
-
-	// name := context.Cache.GetString(key, "")
-
-	// // immediately cache latest name
-	// if name == "" {
-	// 	user, err := models.GetUserById(context.DB, userID)
-	// 	if err == nil && user != nil {
-	// 		context.Cache.Set(key, user.Name)
-	// 		name = user.Name
-	// 	}
-	// }
-	// return name
+	return context.Cache.GetScore("Leaderboard", player.ID.Hex())
 }
 
 func updateAllPlayersPlace(context *util.Context) {

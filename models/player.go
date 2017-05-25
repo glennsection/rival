@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"bloodtales/config"
 	"bloodtales/data"
 	"bloodtales/util"
 	"bloodtales/log"
@@ -37,6 +38,7 @@ const (
 type Player struct {
 	ID                  bson.ObjectId   `bson:"_id,omitempty" json:"-"`
 	UserID              bson.ObjectId   `bson:"us" json:"-"`
+	LastTime            time.Time       `bson:"tz" json:"-"`
 	Name                string          `bson:"-" json:"name"`
 	XP                  int             `bson:"xp" json:"xp"`
 	RankPoints          int             `bson:"rk" json:"rankPoints"`
@@ -60,6 +62,7 @@ type Player struct {
 
 	FriendIDs           []bson.ObjectId `bson:"fd,omitempty" json:"-"`
 	GuildID             bson.ObjectId   `bson:"gd,omitempty" json:"-"`
+	GuildRole           GuildRole       `bson:"gr,omitempty" json:"-"`
 
 	DirtyMask           util.Bits       `bson:"-" json:"-"`
 
@@ -69,11 +72,20 @@ type Player struct {
 
 // client model
 type PlayerClient struct {
-	Name                string   `json:"name"`
-	Tag                 string   `json:"tag"`
-	XP                  int      `json:"xp"`
-	RankPoints          int      `json:"rankPoints"`
-	Rating              int      `json:"rating"`
+	Name                string          `json:"name"`
+	Tag                 string          `json:"tag"`
+	XP                  int             `json:"xp"`
+	RankPoints          int             `json:"rankPoints"`
+	Rating              int             `json:"rating"`
+
+	WinCount            int             `json:"winCount"`
+	LossCount           int             `json:"lossCount"`
+	MatchCount          int             `json:"matchCount"`
+
+	GuildRole           GuildRole       `json:"guildRole"`
+
+	Online              bool            `json:"online"`
+	LastOnline          int64           `json:"lastOnline"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -101,7 +113,7 @@ func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Play
 	return
 }
 
-func (player *Player) initialize() {
+func (player *Player) loadDefaults() {
 	// template for initial player
 	path := "./resources/models/player.json"
 
@@ -115,7 +127,7 @@ func (player *Player) initialize() {
 
 func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	player = &Player {}
-	player.initialize()
+	player.loadDefaults()
 	
 	player.UserID = userID
 	return
@@ -127,20 +139,67 @@ func (player *Player) CreatePlayerClient(database *mgo.Database) (client *Player
 		return
 	}
 
+	// check if online (TODO - better validation?)
+	lastOnline := time.Now().Sub(player.LastTime)
+	online := (lastOnline < time.Second * config.Config.Sessions.OfflineTimeout)
+
+	// create player client
 	client = &PlayerClient {
 		Name: playerUser.Name,
 		Tag: playerUser.Tag,
 		XP: player.XP,
 		RankPoints: player.RankPoints,
 		Rating: player.Rating,
+
+		WinCount: player.WinCount,
+		LossCount: player.LossCount,
+		MatchCount: player.MatchCount,
+
+		//GuildName: ... // TODO
+		GuildRole: player.GuildRole,
+
+		Online: online,
+		LastOnline: util.DurationToTicks(lastOnline),
 	}
 	return
 }
 
 func (player *Player) Reset(database *mgo.Database) (err error) {
 	// reset player and update in database
-	player.initialize()
+	player.loadDefaults()
+
 	return player.Save(database)
+}
+
+func ResetPlayers(database *mgo.Database) error {
+	// TODO - this is an example of a bulk aggregate operation, but isn't fully tested...
+	var result bson.D
+	return database.Run(bson.D {
+		bson.DocElem { "update",  PlayerCollectionName },
+		bson.DocElem { "updates",  []bson.M {
+			bson.M {
+				"q": bson.M {},
+				"u": bson.M {
+					"xp": 0,
+					"rk": 0,
+					"rt": 1200,
+					"wc": 0,
+					"lc": 0,
+					"mc": 0,
+					"ap": 0,
+				},
+				"multi": false,
+				"upsert": false,
+				"limit": 0,
+			},
+		} },
+		bson.DocElem { "writeConcern", bson.M {
+			"w": 1,
+			"j": true,
+			"wtimeout": 1000,
+		} },
+		bson.DocElem { "ordered", false },
+	}, &result)
 }
 
 func UpdatePlayer(database *mgo.Database, user *User, data string) (player *Player, err error) {
@@ -165,6 +224,9 @@ func (player *Player) Save(database *mgo.Database) (err error) {
 	if !player.ID.Valid() {
 		player.ID = bson.NewObjectId()
 	}
+
+	// last active time
+	player.LastTime = time.Now()
 
 	// update entire player to database
 	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
@@ -205,7 +267,7 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome, err er
 		if roll <= accum {
 			(*tome).DataID = id
 			(*tome).State = TomeLocked
-			(*tome).UnlockTime = data.TicksToTime(0)
+			(*tome).UnlockTime = util.TicksToTime(0)
 			break
 		}
 	}
@@ -228,14 +290,14 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 }
 
 func (player *Player) UpdateRewards(database *mgo.Database) error {
-	unlockTime := data.TicksToTime(player.FreeTomeUnlockTime)
+	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
 
 	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
 		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
 		player.FreeTomes++
 	}
 
-	player.FreeTomeUnlockTime = data.TimeToTicks(unlockTime)
+	player.FreeTomeUnlockTime = util.TimeToTicks(unlockTime)
 
 	for i,_ := range player.Tomes {
 		(&player.Tomes[i]).UpdateTome()
@@ -263,7 +325,7 @@ func (player *Player) ClaimFreeTome(database *mgo.Database) (tomeReward *TomeRew
 	}
 
 	if player.FreeTomes == 3 {
-		player.FreeTomeUnlockTime = data.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
+		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
 	}
 
 	player.FreeTomes--
@@ -452,6 +514,8 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 					log.Error(err)
 				}
 			}
+
+			dataMap["guildRole"] = player.GuildRole
 		}
 	}
 
