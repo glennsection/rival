@@ -7,6 +7,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
+	"bloodtales/config"
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
@@ -14,12 +16,12 @@ var (
 	authenticationSecret []byte
 )
 
-func (application *Application) initializeToken() {
+func init() {
 	// get secret from config
-	authenticationSecret = []byte(application.Config.Authentication.TokenSecret)
+	authenticationSecret = []byte(config.Config.Authentication.TokenSecret)
 }
 
-func (context *Context) authenticateToken(required bool) (err error) {
+func authenticateToken(context *util.Context, required bool) (err error) {
 	// check for token first in URL parameters
 	unparsedToken := context.Params.GetString("token", "")
 	if unparsedToken == "" {
@@ -46,10 +48,14 @@ func (context *Context) authenticateToken(required bool) (err error) {
 		if err == nil && token.Valid {
 			if claims, ok := token.Claims.(jwt.MapClaims); ok {
 				if username, ok := claims["username"].(string); ok {
-					context.User, err = models.GetUserByUsername(context.DB, username)
-					if context.User == nil {
+					var user *models.User
+					user, err = models.GetUserByUsername(context.DB, username)
+
+					if user == nil {
 						err = errors.New(fmt.Sprintf("Failed to find user indicated by authentication token: %v (%v)", username, err))
 					}
+
+					SetUser(context, user)
 				}
 			}
 		}
@@ -61,11 +67,17 @@ func (context *Context) authenticateToken(required bool) (err error) {
 	return
 }
 
-func (context *Context) AppendAuthToken() (err error) {
+func AppendAuthToken(context *util.Context) (err error) {
+	user := GetUser(context)
+	if user == nil {
+		err = errors.New("No User set for context to apply auth token")
+		return
+	}
+
 	// create auth token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
-		"username": context.User.Username,
-		"exp": time.Now().Add(time.Hour * context.Config.Authentication.TokenExpiration).Unix(),
+		"username": user.Username,
+		"exp": time.Now().Add(time.Second * config.Config.Authentication.TokenExpiration).Unix(),
 	})
 
 	// sign and get the complete encoded token as string
@@ -79,7 +91,7 @@ func (context *Context) AppendAuthToken() (err error) {
 	return
 }
 
-func (context *Context) ClearAuthToken() {
+func ClearAuthToken(context *util.Context) {
 	// clear auth token from session
 	context.Session.Set("token", "")
 	context.Session.Save()

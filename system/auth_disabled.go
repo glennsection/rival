@@ -3,6 +3,7 @@
 package system
 
 import (
+	"bloodtales/util"
 	"bloodtales/models"
 	"bloodtales/log"
 )
@@ -11,16 +12,18 @@ var (
 	debugUser *models.User = nil
 )
 
-func (application *Application) initializeAuthentication() {
-	application.initializeToken()
+func init() {
+	// get database connection
+	db := util.GetDatabaseConnection()
+	defer db.Session.Close()
 
 	// find debug user instead of authenticating
-	debugUsername := application.Env.GetString("DEBUG_USER", "")
-	if debugUsername != "" {
-		debugUser, _ = models.GetUserByUsername(application.db, debugUsername)
+	debugUUID := util.Env.GetString("DEBUG_USER", "")
+	if debugUUID != "" {
+		debugUser, _ = models.GetUserByUUID(db, debugUUID)
 		
 		if debugUser != nil {
-			log.Warningf("DEBUG - Build has disabled authentication, using debug user: %v", debugUsername)
+			log.Warningf("DEBUG - Build has disabled authentication, using debug user: %v", debugUUID)
 			return
 		}
 	}
@@ -28,7 +31,7 @@ func (application *Application) initializeAuthentication() {
 	log.Warning("DEBUG - Build has disabled authentication, no debug user found")
 }
 
-func (context *Context) authenticate(authType AuthenticationType) error {
-	context.User = debugUser
+func authenticate(context *util.Context, authType AuthenticationType) error {
+	SetUser(context, debugUser)
 	return nil
 }

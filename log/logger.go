@@ -22,32 +22,39 @@ const (
 //const escape = "\x1b"
 const escape = "\033"
 
-func Print(line string) {
-	golog.Print(Sprintf(line))
+func RawPrint(value string) {
+	prefix := golog.Prefix()
+	golog.SetPrefix("")
+	Print(value)
+	golog.SetPrefix(prefix)
 }
 
-func Println(line string) {
-	golog.Println(Sprintf(line))
+func Print(value string) {
+	golog.Print(Sprintf(value))
+}
+
+func Println(value string) {
+	golog.Println(Sprintf(value))
 }
 
 func Printf(format string, v ...interface{}) {
-	golog.Printf(Sprintf(format, v...))
+	golog.Println(Sprintf(format, v...))
 }
 
-func Warning(line string) {
-	golog.Println(Sprintf("[yellow]WARNING: " + line + "[-]"))
+func Warning(value interface{}) {
+	Printf("[yellow]WARNING: %v[-]", value)
 }
 
 func Warningf(format string, v ...interface{}) {
-	golog.Printf(Sprintf("[yellow]WARNING: " + format + "[-]", v...))
+	Printf(fmt.Sprintf("[yellow]WARNING: %s[-]", format), v...)
 }
 
-func Error(line string) {
-	golog.Println(Sprintf("[red!]ERROR: " + line + "[-]"))
+func Error(value interface{}) {
+	Printf("[red!]ERROR: %v[-]", value)
 }
 
 func Errorf(format string, v ...interface{}) {
-	golog.Printf(Sprintf("[red!]ERROR: " + format + "[-]", v...))
+	Printf(fmt.Sprintf("[red!]ERROR: %s[-]", format), v...)
 }
 
 func Sprintf(format string, v ...interface{}) string {

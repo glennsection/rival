@@ -1,54 +1,70 @@
-{ "CardLeveling":
+{ "EpicCardLeveling":
 [
   {
     "level": "1",
     "cardsNeeded": "1",
-	"cost": "0",
+    "cost": "0",
+    "xp": "0"
   },
   {
     "level": "2",
-    "cardsNeeded": "2",
-	"cost": "20",
+    "cardsNeeded": "5",
+    "cost": "20",
+    "xp": "300"
   },
   {
     "level": "3",
-    "cardsNeeded": "4",
-	"cost": "60",
+    "cardsNeeded": "10",
+    "cost": "60",
+    "xp": "330"
   },
   {
     "level": "4",
-    "cardsNeeded": "6",
-	"cost": "200",
+    "cardsNeeded": "15",
+    "cost": "200",
+    "xp": "360"
   },
   {
     "level": "5",
-    "cardsNeeded": "10",
-	"cost": "425",
+    "cardsNeeded": "22",
+    "cost": "425",
+    "xp": "390"
   },
   {
     "level": "6",
-    "cardsNeeded": "15",
-	"cost": "1000",
+    "cardsNeeded": "32",
+    "cost": "1000",
+    "xp": "420"
   },
   {
     "level": "7",
-    "cardsNeeded": "25",
-	"cost": "2200",
+    "cardsNeeded": "48",
+    "cost": "2200",
+    "xp": "450"
   },
   {
     "level": "8",
-    "cardsNeeded": "40",
-	"cost": "3800",
+    "cardsNeeded": "56",
+    "cost": "3800",
+    "xp": "480"
   },
   {
     "level": "9",
-    "cardsNeeded": "60",
-	"cost": "5250",
+    "cardsNeeded": "75",
+    "cost": "5250",
+    "xp": "510"
   },
   {
     "level": "10",
-    "cardsNeeded": "75",
-	"cost": "8000",
+    "cardsNeeded": "90",
+    "cost": "8000",
+    "xp": "540"
   },
+  {
+    "level": "11",
+    "cardsNeeded": "0",
+    "cost": "0",
+    "xp": "570"
+  }
 ]
 }

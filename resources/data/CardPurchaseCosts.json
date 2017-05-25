@@ -1,0 +1,20 @@
+{ "CardPurchaseCosts":
+[
+  {
+    "rarity": "COMMON",
+    "cost": "[1,2,3,4,5,6,7,8,9]"
+  },
+  {
+    "rarity": "RARE",
+    "cost": "[2,3,4,5,6,7,8,9,10]"
+  },
+  {
+    "rarity": "EPIC",
+    "cost": "[4,5,6,7,8,9,10,11,12]"
+  },
+  {
+    "rarity": "LEGENDARY",
+    "cost": "[7,8,9,10,11,12,13,14,15]"
+  }
+]
+}

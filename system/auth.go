@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"errors"
 
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
@@ -17,25 +18,44 @@ const (
 	TokenAuthentication
 )
 
+func init() {
+	util.AddTemplateFunc("authenticated", Authenticated)
+}
+
+func SetUser(context *util.Context, user *models.User) {
+	context.Params.Set("_user", user)
+}
+
+func GetUser(context *util.Context) *models.User {
+	if user, ok := context.Params.Get("_user").(*models.User); ok {
+		return user
+	}
+	return nil
+}
+
 // check if context is authenticated
-func (context *Context) Authenticated() bool {
-	return context.User != nil
+func Authenticated(context *util.Context) bool {
+	return GetUser(context) != nil
 }
 
 // basic username/password auth
-func (context *Context) authenticatePassword(required bool) (err error) {
+func authenticatePassword(context *util.Context, required bool) (err error) {
 	// parse login parameters
 	username, password := context.Params.GetString("username", ""), context.Params.GetString("password", "")
 
 	// authenticate user
 	if username != "" && password != "" {
-		context.User, err = models.LoginUser(context.DB, username, password)
-		if context.User == nil {
+		var user *models.User
+		user, err = models.LoginUser(context.DB, username, password)
+		if user == nil {
 			err = errors.New(fmt.Sprintf("Invalid authentication information for username: %v (%v)", username, err))
 			return
 		}
 
-		err = context.AppendAuthToken()
+		// set user in context
+		SetUser(context, user)
+
+		err = AppendAuthToken(context)
 	} else {
 		if required {
 			err = errors.New("Invalid Username/Password submitted")

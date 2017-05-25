@@ -7,65 +7,54 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"golang.org/x/crypto/bcrypt"
+
+	"bloodtales/util"
 )
 
 const UserCollectionName = "users"
 
 type User struct {
-	ID       bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	Admin    bool          `bson:"ad" json:"admin"`
-	Username string        `bson:"un" json:"username"`
-	Password []byte        `bson:"ps" json:"-"`
-	Email    string        `bson:"em,omitempty" json:"email,omitempty"`
-	Inserted time.Time     `bson:"ti" json:"inserted"`
-	Login    time.Time     `bson:"tl" json:"login"`
+	ID           bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	Admin        bool          `bson:"ad" json:"admin"`
+	Username     string        `bson:"un" json:"username"`
+	Password     []byte        `bson:"ps" json:"-"`
+	Email        string        `bson:"em,omitempty" json:"email,omitempty"`
+	CreatedTime  time.Time     `bson:"t0" json:"created"`
 
-	UUID     string        `bson:"uuid" json:"uuid,omitempty"`
-	Tag      string        `bson:"tag" json:"tag,omitempty"`
-	// TODO - Facebook, Game Center, Google Play IDs
+	UUID         string        `bson:"uuid" json:"uuid,omitempty"`
+	Name         string        `bson:"nm" json"name"`
+	Tag          string        `bson:"tag" json:"tag,omitempty"`
 }
 
 func ensureIndexUser(database *mgo.Database) {
 	c := database.C(UserCollectionName)
 
-	// Username
-	index := mgo.Index {
+	// Username index
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "un" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	}
-	err := c.EnsureIndex(index)
-	if err != nil {
-		panic(err)
-	}
+	}))
 
-	// UUID
-	index = mgo.Index {
+	// UUID index
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "uuid" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	}
-	err = c.EnsureIndex(index)
-	if err != nil {
-		panic(err)
-	}
+	}))
 
-	// Tag
-	index = mgo.Index {
+	// Tag index
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "tag" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
-	}
-	err = c.EnsureIndex(index)
-	if err != nil {
-		panic(err)
-	}
+	}))
 }
 
 func (user *User) HashPassword(password string) {
@@ -91,8 +80,7 @@ func InsertUserWithUUID(database *mgo.Database, uuid string, tag string) (user *
 		UUID: uuid,
 		Tag: tag,
 		Username: uuid,
-		Inserted: time.Now(),
-		Login: time.Now(),
+		CreatedTime: time.Now(),
 	}
 
 	err = database.C(UserCollectionName).Insert(user)
@@ -111,8 +99,7 @@ func InsertUserWithUsername(database *mgo.Database, username string, password st
 		ID: bson.NewObjectId(),
 		Username: username,
 		Admin: admin,
-		Inserted: time.Now(),
-		Login: time.Now(),
+		CreatedTime: time.Now(),
 	}
 	user.HashPassword(password)
 
@@ -140,7 +127,7 @@ func GetUserByUsername(database *mgo.Database, username string) (user *User, err
 	return
 }
 
-func (user *User) Update(database *mgo.Database) (err error) {
+func (user *User) Save(database *mgo.Database) (err error) {
 	// update user in database
 	_, err = database.C(UserCollectionName).Upsert(bson.M { "_id": user.ID }, user)
 	return

@@ -1,29 +1,23 @@
 package models
 
 import (
-	"io/ioutil"
-	"encoding/json"
-
-	"gopkg.in/mgo.v2"
+	"bloodtales/util"
 )
 
 // initialize models and collections
-func Initialize(database *mgo.Database) {
-	ensureIndexUser(database)
-	ensureIndexPlayer(database)
-	ensureIndexTracking(database)
-	ensureIndexMatch(database)
-}
+func init() {
+	db := util.GetDatabaseConnection()
+	defer db.Session.Close()
+	defer func() {
+		// handle any panic errors
+		if err := recover(); err != nil {
+			util.PrintError("Occurred during database initialization", err)
+		}
+	}()
 
-// create new player data
-func (player *Player) Initialize() {
-	// template for initial player
-	path := "./resources/models/player.json"
-
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(file, player)
+	ensureIndexUser(db)
+	ensureIndexPlayer(db)
+	ensureIndexTracking(db)
+	ensureIndexMatch(db)
+	ensureIndexNotification(db);
 }

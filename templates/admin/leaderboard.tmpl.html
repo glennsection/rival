@@ -24,21 +24,27 @@
 							<div class="content table-responsive table-full-width">
 								<table class="table table-hover table-striped">
 									<thead>
-										<th>Rank</th>
+										<th>Place</th>
 										<th>Name</th>
 										<th>Wins</th>
 										<th>Losses</th>
+										<th>Draws</th>
+										<th>Ratio</th>
+										<th>Arena Points</th>
 										<th>Rank (Stars)</th>
 										<th>Rating (ELO)</th>
 									</thead>
 									<tbody>
-										{{ range $index, $element := .Data }}
+										{{ range $index, $element := .Params.Get "players" }}
 										<tr>
 											<td>{{ add $index 1 }}</td>
-											<td><a href="/admin/users/edit?userId={{ $element.UserID.Hex }}">{{ $element.Name }}</a></td>
+											<td><a href="/admin/users/edit?userId={{ $element.UserID.Hex }}">{{ getUserName $ $element.UserID }}</a></td>
 											<td>{{ $element.WinCount }}</td>
 											<td>{{ $element.LossCount }}</td>
-											<td>{{ $element.GetRankName }} ({{ $element.RankStars }} Stars)</td>
+											<td>{{ $element.GetDrawCount }}</td>
+											<td>{{ $element.GetWinRatio }}</td>
+											<td>{{ $element.ArenaPoints }}</td>
+											<td>{{ $element.GetRankName }} ({{ $element.RankPoints }} Stars)</td>
 											<td>{{ $element.Rating }}</td>
 										</tr>
 										{{ end }}

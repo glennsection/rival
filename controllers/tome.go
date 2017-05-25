@@ -4,17 +4,18 @@ import (
 	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/system"
+	"bloodtales/util"
 )
 
-func HandleTome(application *system.Application) {
-	application.HandleAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
-	application.HandleAPI("/tome/open", system.TokenAuthentication, OpenTome)
-	application.HandleAPI("/tome/rush", system.TokenAuthentication, RushTome)
-	application.HandleAPI("/tome/free", system.TokenAuthentication, ClaimFreeTome)
-	application.HandleAPI("/tome/arena", system.TokenAuthentication, ClaimArenaTome)
+func HandleTome() {
+	HandleGameAPI("/tome/unlock", system.TokenAuthentication, UnlockTome)
+	HandleGameAPI("/tome/open", system.TokenAuthentication, OpenTome)
+	HandleGameAPI("/tome/rush", system.TokenAuthentication, RushTome)
+	HandleGameAPI("/tome/free", system.TokenAuthentication, ClaimFreeTome)
+	HandleGameAPI("/tome/arena", system.TokenAuthentication, ClaimArenaTome)
 }
 
-func UnlockTome(context *system.Context) {
+func UnlockTome(context *util.Context) {
 	//Validate the request
 	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
@@ -33,21 +34,15 @@ func UnlockTome(context *system.Context) {
 	if !busy {
 		(&player.Tomes[index]).StartUnlocking()
 
-		err := player.Update(context.DB)
-		if err != nil {
-			panic(err)
-			return
-		}
+		util.Must(player.Save(context.DB))
 
-		var data *models.Tome 
-		data = &player.Tomes[index]
-		context.Data = data
+		player.SetDirty(models.PlayerDataMask_Tomes)
 	} else {
 		context.Fail("Already unlocking a tome.")
 	}
 }
 
-func OpenTome(context *system.Context) {
+func OpenTome(context *util.Context) {
 	//Validate the request
 	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
@@ -62,14 +57,13 @@ func OpenTome(context *system.Context) {
 	}
 
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
-func RushTome(context *system.Context) {
+func RushTome(context *util.Context) {
 	//Validate the request
 	index, player, valid := ValidateTomeRequest(context)
 	if !valid {
@@ -87,48 +81,43 @@ func RushTome(context *system.Context) {
 	player.PremiumCurrency -= cost
 
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
-func ClaimFreeTome(context *system.Context) {
-	player := context.GetPlayer()
+func ClaimFreeTome(context *util.Context) {
+	player := GetPlayer(context)
 	reward, err := player.ClaimFreeTome(context.DB)
-
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	if reward == nil {
 		context.Fail("No free tomes available")
 		return
 	}
 
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
-func ClaimArenaTome(context *system.Context) {
-	player := context.GetPlayer()
+func ClaimArenaTome(context *util.Context) {
+	player := GetPlayer(context)
 	reward, err := player.ClaimArenaTome(context.DB)
-
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	if reward == nil {
 		context.Fail("Not enough arena points")
 		return
 	}
 
-	context.Data = reward
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	context.SetData("reward", reward)
 }
 
-func ValidateTomeRequest(context *system.Context) (index int, player *models.Player, success bool) {
+func ValidateTomeRequest(context *util.Context) (index int, player *models.Player, success bool) {
 	// initialize values
-	player = context.GetPlayer()
+	player = GetPlayer(context)
 	success = false
 
 	// parse parameters

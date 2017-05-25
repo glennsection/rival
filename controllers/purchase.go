@@ -2,26 +2,39 @@ package controllers
 
 import (
 	"bloodtales/system"
+	"bloodtales/models"
 	"bloodtales/data"
+	"bloodtales/util"
 )
 
-func HandlePurchase(application *system.Application) {
-	application.HandleAPI("/purchase", system.TokenAuthentication, Purchase)
+func HandlePurchase() {
+	HandleGameAPI("/purchase", system.TokenAuthentication, Purchase)
 }
 
-func Purchase(context *system.Context) {
+func Purchase(context *util.Context) {
 	// parse parameters
 	itemId := context.Params.GetRequiredString("itemId")
+
+	// get player
+	player := GetPlayer(context)
 
 	// get store item
 	storeItem := data.GetStoreItem(data.ToDataId(itemId))
 	if storeItem == nil {
-		context.Fail("Invalid store purchase")
-		return
-	}
+		// item is not a default store item so check to see if it is a card for sale
+		cards := player.GetStoreCards(context.DB)
+		for _, card := range cards {
+			if itemId == card.Name {
+				storeItem = &card
+				break
+			}
+		}
 
-	// get player
-	player := context.GetPlayer()
+		if storeItem == nil {
+			context.Fail("Invalid store purchase")
+			return
+		}
+	}
 
 	// check store item currency cost
 	switch storeItem.Currency {
@@ -44,25 +57,31 @@ func Purchase(context *system.Context) {
 
 	case data.StoreCategoryPremiumCurrency:
 		player.PremiumCurrency += storeItem.Quantity
+		player.SetDirty(models.PlayerDataMask_Currency)
 
 	case data.StoreCategoryStandardCurrency:
 		player.StandardCurrency += storeItem.Quantity
+		player.SetDirty(models.PlayerDataMask_Currency)
 
 	case data.StoreCategoryTomes:
 		// claim tome
 		tomeId := storeItem.ItemID
 		reward, err := player.ClaimTome(context.DB, tomeId)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
+		
 		if reward == nil {
 			context.Fail("Invalid store tome purchase: " + tomeId)
 			return
 		}
 
-		context.Data = reward
+		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+		context.SetData("reward", reward)
 
 	case data.StoreCategoryCards:
-
+		player.HandleCardPurchase(storeItem)
+		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
+		context.SetData("storeItem", storeItem)
 	}
+
+	player.Save(context.DB)
 }

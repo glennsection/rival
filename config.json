@@ -1,7 +1,10 @@
 {
+	"Platform": {
+		"Version": "0.5"
+	},
 	"Authentication": {
 		"TokenSecret": "5UP3R-53CR3T-T0K3N",
-		"TokenExpiration": 2,
+		"TokenExpiration": 7200,
 		
 		"DebugToken": "4eb8f22e019761b8c69846bf013aef52",
 
@@ -13,9 +16,13 @@
 		"OAuthStateToken": "evening-hamlet-43104"
 	},
 	"Sessions": {
-		"Secret": "gfd87sdfg-mj098gr-m0-ewrw0m89rfga"
+		"Secret": "gfd87sdfg-mj098gr-m0-ewrw0m89rfga",
+		"OfflineTimeout": 600
 	},
 	"Logging": {
 		"Requests": "BriefLogging"
+	},
+	"Resources": {
+		"DataPath": "https://s3-us-west-1.amazonaws.com/bloodtalesdev/btMain/server/GameData/ExcelConverted"
 	}
 }

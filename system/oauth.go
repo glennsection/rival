@@ -9,6 +9,9 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/heroku"
 	gocontext "golang.org/x/net/context"
+
+	"bloodtales/config"
+	"bloodtales/util"
 )
 
 var (
@@ -16,10 +19,10 @@ var (
 	oauthStateToken  string
 )
 
-func (application *Application) initializeOAuth() {
+func init() {
 	oauthConfig = &oauth2.Config {
-		ClientID: application.Config.Authentication.OAuthID,
-		ClientSecret: application.Config.Authentication.OAuthSecret,
+		ClientID: config.Config.Authentication.OAuthID,
+		ClientSecret: config.Config.Authentication.OAuthSecret,
 		RedirectURL: fmt.Sprintf("%s/auth/callback", os.Getenv("APP_URL")),
 		Scopes: []string {
 			"identity",
@@ -31,17 +34,17 @@ func (application *Application) initializeOAuth() {
 		Endpoint: heroku.Endpoint,
 	}
 
-	oauthStateToken = application.Config.Authentication.OAuthStateToken
+	oauthStateToken = config.Config.Authentication.OAuthStateToken
 
 	gob.Register(&oauth2.Token{})
 
 	// init URL handlers
 	url := oauthConfig.AuthCodeURL(oauthStateToken)
-	application.Redirect("/auth", url, http.StatusFound)
-	application.HandleAPI("/auth/callback", NoAuthentication, handleAuthCallback)
+	App.Redirect("/auth", url, http.StatusFound)
+	App.HandleAPI("/auth/callback", NoAuthentication, handleAuthCallback)
 }
 
-func handleAuthCallback(context *Context) {
+func handleAuthCallback(context *util.Context) {
 	// parse parameters
 	state := context.Params.GetRequiredString("state")
 	code := context.Params.GetRequiredString("code")
@@ -54,17 +57,15 @@ func handleAuthCallback(context *Context) {
 	// exchange with default context
 	ctx := gocontext.Background()
 	token, err := oauthConfig.Exchange(ctx, code)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
+
 	// session, err := context.application.cookies.Get(r, "heroku-oauth-example-go")
 	// if err != nil {
 	// 	panic(err)
 	// }
 	// session.Values["heroku-oauth-token"] = token
 	context.Session.Set("oauth-token", token)
-	if err := context.Session.Save(); err != nil {
-		panic(err)
-	}
+	util.Must(context.Session.Save())
+
 	context.Redirect("/user", http.StatusFound) // TODO - where should it redirect for mobile?
 }

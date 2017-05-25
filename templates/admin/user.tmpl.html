@@ -33,20 +33,20 @@
 										<div class="row">
 											<div class="col-md-4">
 												<div class="form-group">
-													<label>Username</label>
+													<label>Device</label>
 													<input type="text" class="form-control" disabled value="{{ $user.Username }}">
 												</div>
 											</div>
 											<div class="col-md-4">
 												<div class="form-group">
 													<label>Display Name</label>
-													<input type="text" class="form-control" name="name" value="{{ $player.Name }}">
+													<input type="text" class="form-control" name="name" value="{{ getUserName $ $user.ID }}">
 												</div>
 											</div>
 											<div class="col-md-4">
 												<div class="form-group">
-													<label>Email Address</label>
-													<input type="email" class="form-control" name="email" value="{{ $user.Email }}">
+													<label>Player Tag</label>
+													<input type="text" class="form-control" name="tag" value="{{ $user.Tag }}">
 												</div>
 											</div>
 										</div>
@@ -67,77 +67,91 @@
 											<div class="col-md-3">
 												<div class="form-group">
 													<label>Joined</label>
-													<input type="text" class="form-control" disabled value="{{ $user.Inserted }}">
+													<input type="text" class="form-control" disabled value="{{ shortTime $user.CreatedTime }}">
 												</div>
 											</div>
 											<div class="col-md-3">
 												<div class="form-group">
-													<label>Last Login</label>
-													<input type="text" class="form-control" disabled value="{{ $user.Login }}">
+													<label>Last Online</label>
+													<input type="text" class="form-control" disabled value="{{ shortTime $player.LastTime }}">
 												</div>
 											</div>
 										</div>
 
-										<div class="row">
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Player Level</label>
-													<input type="text" class="form-control" placeholder="0" name="level" value="{{ $player.Level }}">
+										{{ if $player }}
+											<div class="row">
+												<div class="col-md-3">
+													<div class="form-group">
+														<label>Player XP (Level)</label>
+															<div class="row">
+																<div class="col-md-6" style="padding-top: 0px">
+																	<input type="text" class="form-control" placeholder="0" name="xp" value="{{ $player.XP }}">
+																</div>
+																<div class="col-md-6" style="padding-top: 0px">
+																	<p style="padding-top: 8px">(Level {{ $player.GetLevel }})</p>
+																</div>
+															</div>
+													</div>
+												</div>
+												<div class="col-md-3">
+													<div class="form-group">
+														<label>Player Rating (Elo)</label>
+														<input type="text" class="form-control" placeholder="0" name="rating" value="{{ $player.Rating }}">
+													</div>
+												</div>
+												<div class="col-md-3">
+													<div class="form-group">
+														<label>Player Rank (Stars)</label>
+														<input type="text" class="form-control" placeholder="0" name="rankPoints" value="{{ $player.RankPoints }}">
+													</div>
+												</div>
+												<div class="col-md-3">
+													<div class="form-group">
+														<label>Arena Points</label>
+														<input type="text" class="form-control" placeholder="0" name="arenaPoints" value="{{ $player.ArenaPoints }}">
+													</div>
 												</div>
 											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Player Rating (Elo)</label>
-													<input type="text" class="form-control" placeholder="0" name="rating" value="{{ $player.Rating }}">
-												</div>
-											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Player Rank (Stars)</label>
-													<input type="text" class="form-control" placeholder="0" name="rankPoints" value="{{ $player.RankPoints }}">
-												</div>
-											</div>
-										</div>
 
-										<div class="row">
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Wins</label>
-													<input type="text" class="form-control" placeholder="0" name="winCount" value="{{ $player.WinCount }}">
+											<div class="row">
+												<div class="col-md-4">
+													<div class="form-group">
+														<label>Wins</label>
+														<input type="text" class="form-control" placeholder="0" name="winCount" value="{{ $player.WinCount }}">
+													</div>
+												</div>
+												<div class="col-md-4">
+													<div class="form-group">
+														<label>Losses</label>
+														<input type="text" class="form-control" placeholder="0" name="lossCount" value="{{ $player.LossCount }}">
+													</div>
+												</div>
+												<div class="col-md-4">
+													<div class="form-group">
+														<label>Total Matches</label>
+														<input type="text" class="form-control" placeholder="0" name="matchCount" value="{{ $player.MatchCount }}">
+													</div>
 												</div>
 											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Losses</label>
-													<input type="text" class="form-control" placeholder="0" name="lossCount" value="{{ $player.LossCount }}">
-												</div>
-											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Total Matches</label>
-													<input type="text" class="form-control" placeholder="0" name="matchCount" value="{{ $player.MatchCount }}">
-												</div>
-											</div>
-										</div>
 
-										<div class="row">
-											<div class="col-md-6">
-												<div class="form-group">
-													<label>Standard Currency</label>
-													<input type="text" class="form-control" placeholder="0" name="standardCurrency" value="{{ $player.StandardCurrency }}">
+											<div class="row">
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>Standard Currency</label>
+														<input type="text" class="form-control" placeholder="0" name="standardCurrency" value="{{ $player.StandardCurrency }}">
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>Premium Currency</label>
+														<input type="text" class="form-control" placeholder="0" name="premiumCurrency" value="{{ $player.PremiumCurrency }}">
+													</div>
 												</div>
 											</div>
-											<div class="col-md-6">
-												<div class="form-group">
-													<label>Premium Currency</label>
-													<input type="text" class="form-control" placeholder="0" name="premiumCurrency" value="{{ $player.PremiumCurrency }}">
-												</div>
-											</div>
-										</div>
+										{{ end }}
 
 										<div class="pull-right">
 											<button type="submit" class="btn btn-info btn-fill">Update Player</button>
-<!--											<button type="button" class="btn btn-danger btn-fill">Reset Player</button>-->
 											<a href="#" class="btn btn-danger"
 												data-href="/admin/users/reset?userId={{ $user.ID.Hex }}"
 												data-toggle="modal"
@@ -150,31 +164,33 @@
 									</form>
 								</div>
 
-								<hr/>
+								{{ if $player }}
+									<hr/>
 
-								<div class="header">
-									<h4 class="title">Card Collection</h4>
-									<p class="category">All cards in a player's collection</p>
-								</div>
-								<div class="content">
-									{{ range $index, $card := $player.Cards }}
-										{{ $.Params.Set "index" $index }}
-										{{ template "card.tmpl.html" $ }}
-									{{ end }}
-								</div>
+									<div class="header">
+										<h4 class="title">Card Collection</h4>
+										<p class="category">All cards in a player's collection</p>
+									</div>
+									<div class="content">
+										{{ range $index, $card := $player.Cards }}
+											{{ $.Params.Set "index" $index }}
+											{{ template "card.tmpl.html" $ }}
+										{{ end }}
+									</div>
 
-								<hr/>
+									<hr/>
 
-								<div class="header">
-									<h4 class="title">Tomes</h4>
-									<p class="category">All cards in a player's inventory</p>
-								</div>
-								<div class="content">
-									{{ range $index, $tome := $player.Tomes }}
-										{{ $.Params.Set "index" $index }}
-										{{ template "tome.tmpl.html" $ }}
-									{{ end }}
-								</div>
+									<div class="header">
+										<h4 class="title">Tomes</h4>
+										<p class="category">All cards in a player's inventory</p>
+									</div>
+									<div class="content">
+										{{ range $index, $tome := $player.Tomes }}
+											{{ $.Params.Set "index" $index }}
+											{{ template "tome.tmpl.html" $ }}
+										{{ end }}
+									</div>
+								{{ end }}
 							{{ end }}
 						</div>
 					</div>

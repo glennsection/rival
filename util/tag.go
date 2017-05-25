@@ -1,4 +1,4 @@
-package system
+package util
 
 import (
 	"strings"
@@ -10,7 +10,7 @@ var (
 	tagGenerator  *shortid.Shortid
 )
 
-func (application *Application) initializeTags() {
+func init() {
 	tagGenerator = shortid.MustNew(1, shortid.DefaultABC, 2342)
 }
 

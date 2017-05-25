@@ -3,41 +3,44 @@
 package system
 
 import (
+	"bloodtales/config"
+	"bloodtales/util"
 	"bloodtales/models"
 )
 
-func (application *Application) initializeAuthentication() {
-	// init admin user
-	admin, _ := models.GetUserByUsername(application.db, application.Config.Authentication.AdminUsername)
-	if admin == nil {
-		models.InsertUserWithUsername(application.db, application.Config.Authentication.AdminUsername, application.Config.Authentication.AdminPassword, true)
-	}
+func init() {
+	// get database connection
+	db := util.GetDatabaseConnection()
+	defer db.Session.Close()
 
-	application.initializeToken()
-	application.initializeOAuth()
+	// init admin user
+	admin, _ := models.GetUserByUsername(db, config.Config.Authentication.AdminUsername)
+	if admin == nil {
+		models.InsertUserWithUsername(db, config.Config.Authentication.AdminUsername, config.Config.Authentication.AdminPassword, true)
+	}
 }
 
-func (context *Context) authenticate(authType AuthenticationType) (err error) {
+func authenticate(context *util.Context, authType AuthenticationType) (err error) {
 	switch authType {
 
 	case NoAuthentication:
 		return
 
 	case DeviceAuthentication:
-		err = context.authenticateDevice(true)
+		err = authenticateDevice(context, true)
 
 	case PasswordAuthentication:
-		err = context.authenticatePassword(true)
+		err = authenticatePassword(context, true)
 
 	case TokenAuthentication:
-		err = context.authenticateToken(true)
+		err = authenticateToken(context, true)
 
 	case AnyAuthentication:
-		err = context.authenticatePassword(false)
+		err = authenticatePassword(context, false)
 		if err == nil {
-			err = context.authenticateToken(false)
+			err = authenticateToken(context, false)
 			if err == nil {
-				err = context.authenticateDevice(true)
+				err = authenticateDevice(context, true)
 			}
 		}
 	}

@@ -30,7 +30,7 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_ARMY_CAPTAIN",
+            "cardId": "CARD_MARKSMAN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -74,42 +74,42 @@
     ],
     "decks": [
         {
-            "leaderCardId": 0,
+            "leaderCardId": "CARD_VAMPIRE",
             "cardIds": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8
+                "CARD_ARMORED_SKELETON",
+                "CARD_MERC_CAPTAIN",
+                "CARD_MARKSMAN",
+                "CARD_MERC_SOLDIERS",
+                "CARD_GARGOYLE",
+                "CARD_GOLEM",
+                "CARD_SPELL_HARPY",
+                "CARD_SKULL_SWARM"
             ]
         },
         {
-            "leaderCardId": 0,
+            "leaderCardId": "CARD_VAMPIRE",
             "cardIds": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8
+                "CARD_ARMORED_SKELETON",
+                "CARD_MERC_CAPTAIN",
+                "CARD_MARKSMAN",
+                "CARD_MERC_SOLDIERS",
+                "CARD_GARGOYLE",
+                "CARD_GOLEM",
+                "CARD_SPELL_HARPY",
+                "CARD_SKULL_SWARM"
             ]
         },
         {
-            "leaderCardId": 0,
+            "leaderCardId": "CARD_VAMPIRE",
             "cardIds": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8
+                "CARD_ARMORED_SKELETON",
+                "CARD_MERC_CAPTAIN",
+                "CARD_MARKSMAN",
+                "CARD_MERC_SOLDIERS",
+                "CARD_GARGOYLE",
+                "CARD_GOLEM",
+                "CARD_SPELL_HARPY",
+                "CARD_SKULL_SWARM"
             ]
         }
     ],

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"encoding/json"
+
+	"bloodtales/util"
 )
 
 // currency type
@@ -20,13 +22,15 @@ const (
 	StoreCategoryStandardCurrency
 	StoreCategoryTomes
 	StoreCategoryCards
+	StoreCategorySpecialOffers
 )
 
 // server data
 type StoreData struct {
 	Name                    string        `json:"id"`
-	Image                   string        `json:"spritePath"`
 	Category                StoreCategory `json:"category"`
+	DisplayName 			string 		  `json:"displayName"`
+	Image                   string        `json:"spritePath"`
 	ItemID                  string        `json:"itemId"`
 	Quantity                int           `json:"quantity,string"`
 	Currency                CurrencyType  `json:"currency"`
@@ -36,14 +40,37 @@ type StoreData struct {
 // client data
 type StoreDataClientAlias StoreData
 type StoreDataClient struct {
+	Name                    string        `json:"id"`
 	Category                string        `json:"category"`
+	DisplayName 			string 		  `json:"displayName"`
+	Image                   string        `json:"spritePath"`
+	ItemID                  string        `json:"itemId"`
+	Quantity                int           `json:"quantity,string"`
 	Currency                string        `json:"currency"`
+	Cost                    float64       `json:"cost,string"`
 
 	*StoreDataClientAlias
 }
 
-// data map
+type SpecialOffer struct {
+	ItemID 					string 		  `json:"itemId"`
+	StandardCurrency 		int 		  `json:"standardCurrency"`
+	PremiumCurrency 		int 		  `json:"premiumCurrency"`
+	Tomes 					[]string 	  `json:"tome"`
+	Cards 					[]string 	  `json:"cards"`
+}
+
+type CardPurchaseCost struct {
+	Rarity 					string 		  `json:"rarity"`
+	Cost 					string 		  `json:"cost"`
+}
+
+// store item data map
 var storeItems map[DataId]*StoreData
+//var specialOffers map[DataId]*SpecialOffer
+
+// card purchasing data map
+var cardPurchaseCosts map[string][]int
 
 // implement Data interface
 func (data *StoreData) GetDataName() string {
@@ -53,6 +80,10 @@ func (data *StoreData) GetDataName() string {
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type StoreParsed struct {
 	Store []StoreData
+}
+
+type CardPurchaseCostsParsed struct {
+	CardPurchaseCosts []CardPurchaseCost
 }
 
 // custom unmarshalling
@@ -67,16 +98,26 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
+	//alias doesn't work for some reason
+	storeItem.Name = client.Name
+	storeItem.DisplayName = client.DisplayName
+	storeItem.Image = client.Image
+	storeItem.ItemID = client.ItemID
+	storeItem.Quantity = client.Quantity
+	storeItem.Cost = client.Cost
+
 	// server category
 	switch client.Category {
 	case "PremiumCurrency":
 		storeItem.Category = StoreCategoryPremiumCurrency
-	default:
-		storeItem.Category = StoreCategoryStandardCurrency
 	case "Tomes":
 		storeItem.Category = StoreCategoryTomes
 	case "Cards":
 		storeItem.Category = StoreCategoryCards
+	case "StandardCurrency":
+		storeItem.Category = StoreCategoryStandardCurrency
+	default:
+		storeItem.Category = StoreCategorySpecialOffers
 	}
 
 	// server currency
@@ -88,6 +129,42 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 	}
 
 	return nil
+}
+
+// custom marshalling
+func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
+	client := &StoreDataClient {
+		Name: storeItem.Name,
+		DisplayName: storeItem.DisplayName,
+		Image: storeItem.Image,
+		ItemID: storeItem.ItemID,
+		Quantity: storeItem.Quantity,
+		Cost: storeItem.Cost,
+	}
+
+	//client category
+	switch storeItem.Category {
+	case StoreCategoryPremiumCurrency:
+		client.Category = "PremiumCurrency"
+	case StoreCategoryTomes:
+		client.Category = "Tomes"
+	case StoreCategoryCards:
+		client.Category = "Cards"
+	case StoreCategoryStandardCurrency:
+		client.Category = "StandardCurrency"
+	default:
+		client.Category = "SpecialOffers"
+	}
+
+	// client currency
+	switch storeItem.Currency {
+	case CurrencyReal:
+		client.Currency = "Real"
+	default:
+		client.Currency = "Premium"
+	}
+
+	return json.Marshal(client)
 }
 
 // data processor
@@ -103,18 +180,49 @@ func LoadStore(raw []byte) {
 
 		// map name to ID
 		id, err := mapDataName(name)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
 
 		// insert into table
 		storeItems[id] = &container.Store[i]
 	}
 }
 
+func LoadCardPurchaseCosts(raw []byte) {
+	//parse
+	container := &CardPurchaseCostsParsed {}
+	json.Unmarshal(raw, container)
+
+	//enter into system data
+	cardPurchaseCosts = map[string][]int{}
+	for _, data := range container.CardPurchaseCosts {
+		cardPurchaseCosts[data.Rarity] = util.StringToIntArray(data.Cost)
+	}
+}
+
 // get store item by server ID
 func GetStoreItem(id DataId) (store *StoreData) {
 	return storeItems[id]
+}
+
+func GetStoreItems() []StoreData {
+	items := make([]StoreData, 0)
+
+	for _, value := range storeItems {
+		items = append(items, *value) 
+	}
+
+	return items
+}
+
+// get card cost by rarity and potential level
+func GetCardCost(rarity string, level int) int {
+	level -= 1
+
+	if level > len(cardPurchaseCosts[rarity]) {
+		return -1
+	}
+
+	return cardPurchaseCosts[rarity][level]
 }
 
 func (store *StoreData) GetImageSrc() string {

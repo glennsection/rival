@@ -5,6 +5,8 @@ import (
 	
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
+	"bloodtales/util"
 )
 
 const TrackingCollectionName = "trackings"
@@ -12,8 +14,8 @@ const TrackingCollectionName = "trackings"
 type Tracking struct {
 	ID             bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	UserID         bson.ObjectId `bson:"us" json:"-"`
-	Time           time.Time     `bson:"ti" json:"time"`
-	Lifetime       time.Duration `bson:"ex" json:"expires"`
+	CreatedAt      time.Time     `bson:"t0" json:"created"`
+	ExpiresAt      time.Time     `bson:"exp" json:"expires"`
 	Message        string        `bson:"ms" json:"message"`
 	Data           bson.M        `bson:"dt,omitempty" json:"data"`
 }
@@ -21,24 +23,31 @@ type Tracking struct {
 func ensureIndexTracking(database *mgo.Database) {
 	c := database.C(TrackingCollectionName)
 
-	index := mgo.Index {
+	// user index
+	util.Must(c.EnsureIndex(mgo.Index {
 		Key:          []string { "us" },
 		Unique:       false,
 		DropDups:     false,
 		Background:   true,
 		Sparse:       true,
-		//ExpiresAfter: time.Duration { ... },
-	}
+	}))
 
-	err := c.EnsureIndex(index)
-	if err != nil {
-		panic(err)
-	}
+	// expiration
+	util.Must(c.EnsureIndex(mgo.Index {
+		Key:          []string { "exp" },
+		Unique:       false,
+		DropDups:     false,
+		Background:   true,
+		Sparse:       true,
+		ExpireAfter:  1,
+	}))
 }
 
-func InsertTracking(database *mgo.Database, tracking *Tracking) error {
-	tracking.Time = time.Now()
-	return database.C(TrackingCollectionName).Insert(tracking)
+func (tracking *Tracking) Insert(database *mgo.Database) (err error) {
+	tracking.ID = bson.NewObjectId()
+	tracking.CreatedAt = time.Now()
+	err = database.C(TrackingCollectionName).Insert(tracking)
+	return
 }
 
 func GetTrackings(database *mgo.Database, userId bson.ObjectId) (trackings *[]Tracking, err error) {

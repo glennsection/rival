@@ -4,6 +4,8 @@ import (
 	"strings"
 	"fmt"
 	"encoding/json"
+
+	"bloodtales/util"
 )
 
 type CardData struct {
@@ -21,8 +23,18 @@ type CardData struct {
 	AwakenLeaderGamesNeeded int           `json:"awakenLeaderGamesNeeded,string"`
 }
 
+type CardProgressionData struct {
+	Level 					int 		  `json:"level,string"`
+	CardsNeeded 			int 		  `json:"cardsNeeded,string"`
+	Cost 					int 		  `json:"cost,string"`
+	XP 						int 		  `json:"xp,string"`
+}
+
 // data map
 var cards map[DataId]*CardData
+
+// card progression
+var cardLeveling map[string][]CardProgressionData
 
 // implement Data interface
 func (data *CardData) GetDataName() string {
@@ -47,12 +59,41 @@ func LoadCards(raw []byte) {
 
 		// map name to ID
 		id, err := mapDataName(name)
-		if err != nil {
-			panic(err)
-		}
+		util.Must(err)
 
 		// insert into table
 		cards[id] = &container.Cards[i]
+	}
+}
+
+func LoadCommonCardProgression(raw []byte) {
+	LoadCardProgression("COMMON", raw)
+}
+
+func LoadRareCardProgression(raw []byte) {
+	LoadCardProgression("RARE", raw)
+}
+
+func LoadEpicCardProgression(raw []byte) {
+	LoadCardProgression("EPIC", raw)
+}
+
+func LoadLegendaryCardProgression(raw []byte) {
+	LoadCardProgression("LEGENDARY", raw)
+}
+
+func LoadCardProgression(rarity string, raw []byte) { 
+	if cardLeveling == nil {
+		cardLeveling = map[string][]CardProgressionData {}
+	}
+	
+	// parse, NOTE: because our key names are differ between files, we can't use a structure like CardsParsed. instead, this map works just as well
+	var container map[string][]CardProgressionData
+	json.Unmarshal(raw, &container)
+
+	// insert into table
+	for _, dataArray := range container {
+		cardLeveling[rarity] = dataArray 
 	}
 }
 
@@ -61,11 +102,11 @@ func GetCard(id DataId) (card *CardData) {
 	return cards[id]
 }
 
-func GetCardsByTieredRarity(tier int, rarity string) []DataId {
+func GetCards(condition func(*CardData) bool) []DataId {
 	cardSlice := make([]DataId, 0)
 
 	for id, cardData := range cards {
-		if cardData.Tier <= tier && cardData.Rarity == rarity {
+		if condition(cardData) {
 			cardSlice = append(cardSlice, id)
 		}
 	}
@@ -80,4 +121,8 @@ func (data *CardData) GetPortraitSrc() string {
 		src = src[idx + 1:]
 	}
 	return fmt.Sprintf("/static/img/portraits/%v.png", src)
+}
+
+func GetCardProgressionData(rarity string, level int) CardProgressionData {
+	return cardLeveling[rarity][level]
 }

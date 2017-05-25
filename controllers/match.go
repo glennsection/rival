@@ -3,68 +3,67 @@ package controllers
 import (
 	"bloodtales/system"
 	"bloodtales/models"
+	"bloodtales/util"
 )
 
-func HandleMatch(application *system.Application) {
-	application.HandleAPI("/match/clear", system.TokenAuthentication, MatchClear)
-	application.HandleAPI("/match/find", system.TokenAuthentication, MatchFind)
-	application.HandleAPI("/match/fail", system.TokenAuthentication, MatchFail)
-	application.HandleAPI("/match/result", system.TokenAuthentication, MatchResult)
+func HandleMatch() {
+	HandleGameAPI("/match/clear", system.TokenAuthentication, MatchClear)
+	HandleGameAPI("/match/find", system.TokenAuthentication, MatchFind)
+	HandleGameAPI("/match/fail", system.TokenAuthentication, MatchFail)
+	HandleGameAPI("/match/result", system.TokenAuthentication, MatchResult)
 }
 
-func MatchClear(context *system.Context) {
-	player := context.GetPlayer()
+func MatchClear(context *util.Context) {
+	player := GetPlayer(context)
 
 	// clear invalid matches
-	err := models.ClearMatches(context.DB, player)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(models.ClearMatches(context.DB, player))
 }
 
-func MatchFind(context *system.Context) {
+func MatchFind(context *util.Context) {
 	// parse parameters
 	matchType := models.MatchType(context.Params.GetInt("type", int(models.MatchRanked)))
 
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 
 	// find or queue match
 	match, err := models.FindMatch(context.DB, player, matchType)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(err)
 
 	// respond
-	context.Data = match
+	context.SetData("match", match)
 }
 
-func MatchFail(context *system.Context) {
-	player := context.GetPlayer()
+func MatchFail(context *util.Context) {
+	player := GetPlayer(context)
 
 	// fail any current match
-	err := models.FailMatch(context.DB, player)
-	if err != nil {
-		panic(err)
-	}
+	util.Must(models.FailMatch(context.DB, player))
 }
 
-func MatchResult(context *system.Context) {
+func MatchResult(context *util.Context) {
 	// parse parameters
 	outcome := models.MatchOutcome(context.Params.GetRequiredInt("outcome"))
 	playerScore := context.Params.GetRequiredInt("playerScore")
 	opponentScore := context.Params.GetRequiredInt("opponentScore")
+	roomID := context.Params.GetRequiredString("roomId")
 
-	player := context.GetPlayer()
+	player := GetPlayer(context)
 	
 	// update match as complete
-	reward, err := models.CompleteMatch(context.DB, player, outcome, playerScore, opponentScore)
-	if err != nil {
-		panic(err)
-	}
+	_, reward, err := models.CompleteMatch(context, player, roomID, outcome, playerScore, opponentScore)
+	util.Must(err)
+
+	// get opponent
+	// opponent, err := match.GetOpponent(context.DB)
+	// util.Must(err)
+
+	// update leaderboards
+	updatePlayerPlace(context, player)
+	// updatePlayerPlace(context, opponent)
 
 	if reward != nil {
-		context.Data = reward
+		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars)
+		context.SetData("reward", reward)
 	}
-
-	context.Message("Thanks for playing!")
 }
