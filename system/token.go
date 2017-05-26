@@ -77,7 +77,7 @@ func AppendAuthToken(context *util.Context) (err error) {
 	// create auth token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
 		"username": user.Username,
-		"exp": time.Now().Add(time.Hour * config.Config.Authentication.TokenExpiration).Unix(),
+		"exp": time.Now().Add(time.Second * config.Config.Authentication.TokenExpiration).Unix(),
 	})
 
 	// sign and get the complete encoded token as string

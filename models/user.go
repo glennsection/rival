@@ -19,8 +19,7 @@ type User struct {
 	Username     string        `bson:"un" json:"username"`
 	Password     []byte        `bson:"ps" json:"-"`
 	Email        string        `bson:"em,omitempty" json:"email,omitempty"`
-	InsertedTime time.Time     `bson:"ti" json:"inserted"`
-	LoginTime    time.Time     `bson:"tl" json:"login"`
+	CreatedTime  time.Time     `bson:"t0" json:"created"`
 
 	UUID         string        `bson:"uuid" json:"uuid,omitempty"`
 	Name         string        `bson:"nm" json"name"`
@@ -81,8 +80,7 @@ func InsertUserWithUUID(database *mgo.Database, uuid string, tag string) (user *
 		UUID: uuid,
 		Tag: tag,
 		Username: uuid,
-		InsertedTime: time.Now(),
-		LoginTime: time.Now(),
+		CreatedTime: time.Now(),
 	}
 
 	err = database.C(UserCollectionName).Insert(user)
@@ -101,8 +99,7 @@ func InsertUserWithUsername(database *mgo.Database, username string, password st
 		ID: bson.NewObjectId(),
 		Username: username,
 		Admin: admin,
-		InsertedTime: time.Now(),
-		LoginTime: time.Now(),
+		CreatedTime: time.Now(),
 	}
 	user.HashPassword(password)
 

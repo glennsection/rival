@@ -5,7 +5,9 @@ import (
 	"math"
 	"encoding/json"
 	"math/rand"
+
 	"bloodtales/data"
+	"bloodtales/util"
 )
 
 // tome state
@@ -56,7 +58,7 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 	client := &TomeClient {
 		DataID: data.ToDataName(tome.DataID),
 		State: "Locked",
-		UnlockTime: data.TimeToTicks(tome.UnlockTime),
+		UnlockTime: util.TimeToTicks(tome.UnlockTime),
 		TomeClientAlias: (*TomeClientAlias)(tome),
 	}
 
@@ -117,7 +119,7 @@ func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	}
 
 	// server unlock time
-	tome.UnlockTime = data.TicksToTime(client.UnlockTime)
+	tome.UnlockTime = util.TicksToTime(client.UnlockTime)
 
 	return nil
 }
@@ -154,8 +156,7 @@ func (tome *Tome) GetStateName() string {
 func (tome *Tome) GetUnlockRemaining() string {
 	switch tome.State {
 	case TomeLocked:
-		data := tome.GetData()
-		return (time.Second * time.Duration(data.TimeToUnlock)).String()
+		return (time.Second * time.Duration(tome.GetData().TimeToUnlock)).String()
 	case TomeUnlocking:
 		return time.Until(tome.UnlockTime).String()
 	}
@@ -169,9 +170,9 @@ func (tome *Tome) GetUnlockCost() int {
 		return tomeData.GemsToUnlock
 	}
 
-	timeNow := data.TimeToTicks(time.Now())
-	unlockTime := data.TimeToTicks(tome.UnlockTime) - timeNow
-	totalUnlockTime := data.TimeToTicks(time.Now().Add(time.Second * time.Duration(tomeData.TimeToUnlock))) - timeNow
+	timeNow := util.TimeToTicks(time.Now())
+	unlockTime := util.TimeToTicks(tome.UnlockTime) - timeNow
+	totalUnlockTime := util.TimeToTicks(time.Now().Add(time.Second * time.Duration(tomeData.TimeToUnlock))) - timeNow
 
 	return int(math.Ceil(float64(tomeData.GemsToUnlock) * float64(unlockTime / totalUnlockTime)))
 }
@@ -180,7 +181,7 @@ func GetEmptyTome() (tome Tome) {
 	tome = Tome{
 		DataID: data.ToDataId(""),
 		State: TomeEmpty,
-		UnlockTime: data.TicksToTime(0),
+		UnlockTime: util.TicksToTime(0),
 	}
 	return
 }

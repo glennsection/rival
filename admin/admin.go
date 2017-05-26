@@ -20,6 +20,7 @@ func HandleAdmin() {
 
 	handleAdminUsers()
 	handleAdminCards()
+	handleAdminGuilds()
 	handleAdminMatches()
 	handleAdminAnalytics()
 }
@@ -48,6 +49,11 @@ func initializeAdmin(context *util.Context) {
 			Name: "Players",
 			URL: "/admin/users",
 			Icon: "pe-7s-users",
+		},
+		{
+			Name: "Guilds",
+			URL: "/admin/guilds",
+			Icon: "pe-7s-ribbon",
 		},
 		{
 			Name: "Leaderboard",

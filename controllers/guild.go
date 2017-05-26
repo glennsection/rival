@@ -17,14 +17,10 @@ func CreateGuild(context *util.Context) {
 	// get player
 	player := GetPlayer(context)
 
+	// TODO - make sure player doesn't already own a guild...
+
 	// create guild
-	guild := models.CreateGuild(player.ID, name)
-	util.Must(guild.Save(context.DB))
-
-	// set guild for player
-	player.GuildID = guild.ID
-	util.Must(player.Save(context.DB))
-
-	// set dirty for return data
-	player.SetDirty(models.PlayerDataMask_Guild)
+	_, err := models.CreateGuild(context.DB, player, name)
+	util.Must(err)
 }
+

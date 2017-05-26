@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"bloodtales/data"
+	"bloodtales/util"
 )
 
 func (player *Player) GetNumCardsPurchased(rarity string) *int {
@@ -27,11 +28,11 @@ func (player *Player) GetNumCardsPurchased(rarity string) *int {
 func (player *Player) GetStoreCards(database *mgo.Database) []data.StoreData {
 	// seed random with current utc date + unique identifer
 	year, month, day := time.Now().UTC().Date() 
-	date := data.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
+	date := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
 
 	// ensure our card purchase counts are up to date
 	if player.PurchaseResetTime < date {
-		player.PurchaseResetTime = data.TimeToTicks(time.Now())
+		player.PurchaseResetTime = util.TimeToTicks(time.Now())
 
 		for i, _ := range player.CardsPurchased {
 			player.CardsPurchased[i] = 0

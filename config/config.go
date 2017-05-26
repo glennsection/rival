@@ -33,6 +33,7 @@ type Configuration struct {
 	}                                      `json:"Authentication"`
 	Sessions struct {
 		CookieSecret      string           `json:"CookieSecret"`
+		OfflineTimeout    time.Duration    `json:"OfflineTimeout,int"`
 	}                                      `json:"Sessions"`
 	Logging struct {
 		Requests          LogLevel         `json:"Requests"`
