@@ -76,6 +76,8 @@ func (player *Player) GetStoreCard(rarity string) data.StoreData {
 		Cost: player.GetCardCost(id, rarity),
 	}
 
+	fmt.Println(fmt.Sprintf("Name: %s, Rarity: %s", card.Name, rarity))
+
 	return storeCard
 }
 

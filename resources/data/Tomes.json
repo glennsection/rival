@@ -10,10 +10,10 @@
     "cardsRewarded": "[5,2,1,1]",
     "timeToUnlock": "1800",
     "gemsToUnlock": "18",
-    "minGemReward": "2",
-    "maxGemReward": "3",
-    "minGoldReward": "35",
-    "maxGoldReward": "70"
+    "minGemReward": "10",
+    "maxGemReward": "15",
+    "minGoldReward": "175",
+    "maxGoldReward": "350"
   },
   {
     "id": "TOME_RARE",
