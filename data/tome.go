@@ -71,7 +71,7 @@ func (tome *TomeData) UnmarshalJSON(raw []byte) error {
 func LoadTomes(raw []byte) {
 	// parse
 	container := &TomesParsed {}
-	json.Unmarshal(raw, container)
+	util.Must(json.Unmarshal(raw, container))
 
 	// enter into system data
 	tomes = map[DataId]*TomeData {}

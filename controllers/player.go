@@ -10,11 +10,11 @@ import (
 	"bloodtales/models"
 )
 
-func HandlePlayer() {
-	HandleGameAPI("/player/set", system.TokenAuthentication, SetPlayer)
-	HandleGameAPI("/player/name", system.TokenAuthentication, SetPlayerName)
-	//HandleGameAPI("/player/get", system.TokenAuthentication, GetPlayer)
-	HandleGameAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
+func handlePlayer() {
+	handleGameAPI("/player/set", system.TokenAuthentication, SetPlayer)
+	handleGameAPI("/player/name", system.TokenAuthentication, SetPlayerName)
+	//handleGameAPI("/player/get", system.TokenAuthentication, GetPlayer)
+	handleGameAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
 
 	// template functions
 	util.AddTemplateFunc("getUserName", GetUserName)

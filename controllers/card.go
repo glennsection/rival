@@ -1,14 +1,16 @@
 package controllers
 
 import (
+	"gopkg.in/mgo.v2/bson"
+
 	"bloodtales/system"
 	"bloodtales/util"
 	"bloodtales/models"
 	"bloodtales/data"
 )
 
-func HandleCard() {
-	HandleGameAPI("/card/upgrade", system.TokenAuthentication, UpgradeCard)
+func handleCard() {
+	handleGameAPI("/card/upgrade", system.TokenAuthentication, UpgradeCard)
 }
 
 func UpgradeCard(context *util.Context) {
@@ -36,8 +38,18 @@ func UpgradeCard(context *util.Context) {
 		}
 	}
 
+	// get previous player level
+	previousLevel := data.GetAccountLevel(player.XP)
+
 	player.StandardCurrency -= levelData.Cost
 	player.XP += levelData.XP
+
+	// check level-up
+	currentLevel := data.GetAccountLevel(player.XP)
+	if previousLevel != currentLevel {
+		InsertTracking(context, "levelUp", bson.M { "level": currentLevel }, 0)
+	}
+
 	card.CardCount -= levelData.CardsNeeded
 	card.Level += 1
 
