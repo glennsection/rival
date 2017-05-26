@@ -17,7 +17,7 @@ import (
 )
 
 const PlayerCollectionName = "players"
-const MinutesToUnlockFreeTome = 240
+const MinutesToUnlockFreeTome = 5
 
 const (
 	PlayerDataMask_None util.Bits = 0x0

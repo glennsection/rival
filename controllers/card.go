@@ -53,7 +53,7 @@ func UpgradeCard(context *util.Context) {
 	card.CardCount -= levelData.CardsNeeded
 	card.Level += 1
 
-	player.SetDirty(models.PlayerDataMask_XP, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
+	player.SetDirty(models.PlayerDataMask_All)
 	player.Save(context.DB)
 
 	context.SetData("card", card)
