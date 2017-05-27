@@ -27,16 +27,16 @@
 										<div class="col-md-4">
 											<div class="form-group">
 												<label>Event</label>
-												<input type="text" class="form-control" name="event" value="{{ $tracking.Event }}">
+												<input type="text" class="form-control" disabled value="{{ $tracking.Event }}">
 											</div>
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
 												<label>User</label>
 												{{ if $tracking.UserID.Valid }}
-													<input type="text" class="form-control" disabled value="{{ getUserName $ $tracking.UserID }}">
+													<a href="/admin/users?userId={{ $tracking.UserID.Hex }}" class="form-control">{{ getUserName $ $tracking.UserID }}</a>
 												{{ else }}
-													<input type="text" class="form-control" disabled value="-">
+													<p class="form-control">System</p>
 												{{ end }}
 											</div>
 										</div>
@@ -52,13 +52,17 @@
 										<div class="col-md-8">
 											<div class="form-group">
 												<label>Data</label>
-												<textarea class="form-control" name="data">{{ jsonEncode $tracking.Data }}</textarea>
+												<textarea class="form-control" name="data" disabled rows="20">{{ jsonEncodeIndent $tracking.Data }}</textarea>
 											</div>
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
 												<label>Expires</label>
-												<input type="text" class="form-control" disabled value="{{ shortTime $tracking.ExpireTime }}">
+												{{ if $tracking.ExpireTime.IsZero }}
+													<input type="text" class="form-control" disabled value="Never">
+												{{ else }}
+													<input type="text" class="form-control" disabled value="{{ shortTime $tracking.ExpireTime }}">
+												{{ end }}
 											</div>
 										</div>
 									</div>

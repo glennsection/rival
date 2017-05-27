@@ -76,6 +76,10 @@ func (pagination *Pagination) All(result interface{}) error {
 func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HTML {
 	var pages []*Page
 
+	// start/end page links
+	startLink := ""
+	endLink := ""
+
 	// get first/last visible page links
 	if pagination.pageTotal > 1 {
 		pageStart := 1
@@ -85,8 +89,9 @@ func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HT
 			pageStart = 1
 			pageEnd = pagination.pageTotal
 		} else {
-			pageStart = pagination.page - int(math.Floor(float64(numLinks)/float64(2)))
-			pageEnd = pagination.page + int(math.Floor(float64(numLinks)/float64(2)))
+			halfLinks := int(math.Floor(float64(numLinks) / float64(2)))
+			pageStart = pagination.page - halfLinks
+			pageEnd = pagination.page + halfLinks
 
 			if pageStart < 1 {
 				pageEnd += int(math.Abs(float64(pageStart))) + 1
@@ -96,6 +101,13 @@ func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HT
 			if pageEnd > pagination.pageTotal {
 				pageStart -= (pageEnd - pagination.pageTotal) - 1
 				pageEnd = pagination.pageTotal
+			}
+
+			if pageStart > 1 {
+				startLink = fmt.Sprintf(urlPattern, 1)
+			}
+			if pageEnd < pagination.pageTotal {
+				endLink = fmt.Sprintf(urlPattern, pagination.pageTotal)
 			}
 		}
 
@@ -110,26 +122,28 @@ func (pagination *Pagination) Links(numLinks int, urlPattern string) template.HT
 		}
 	}
 
-	// first visible element on page
-	first := 0
+	// first visible number on page
+	startNumber := 0
 	if pagination.total > 0 {
-		first = ((pagination.page - 1) * pagination.limit) + 1
+		startNumber = ((pagination.page - 1) * pagination.limit) + 1
 	}
 
-	// last visible element on page
-	last := first - 1 + pagination.limit
-	if last > pagination.total {
-		last = pagination.total
+	// last visible number on page
+	endNumber := startNumber - 1 + pagination.limit
+	if endNumber > pagination.total {
+		endNumber = pagination.total
 	}
 
 	// render template
 	var out bytes.Buffer
 	tmpl := template.Must(template.New("pagination").Parse(paginationTemplate))
 	ctx := map[string]interface{}{
-		"first": first,
-		"last": last,
-		"total": pagination.total,
-		"links": pages,
+		"startLink": startLink,
+		"endLink": endLink,
+		"startNumber": startNumber,
+		"endNumber": endNumber,
+		"totalNumbers": pagination.total,
+		"pages": pages,
 	}
 	tmpl.Execute(&out, ctx)
 	return template.HTML(out.String())
@@ -155,23 +169,29 @@ func (context *Context) RenderPagination() template.HTML {
 		pagination := context.Params.Get("pagination").(*Pagination)
 		url := context.Request.URL
 		urlPattern := fmt.Sprintf("%s?page=%%d", url.Path)
-		return pagination.Links(20, urlPattern)
+		return pagination.Links(10, urlPattern)
 	}
 	return template.HTML("")
 }
 
 const (
 	paginationTemplate string = `
-{{ if .links }}
-	<span class="pagination-summary">{{ .first }} to {{ .last }} of {{ .total }}</span>
+{{ if .pages }}
+	<span class="pagination-summary">{{ .startNumber }} to {{ .endNumber }} of {{ .totalNumbers }}</span>
 	<ul class="pagination">
-    {{ range .links }}
+	{{ if not (eq .startLink "") }}
+		<li><a href="{{ .startLink }}">&laquo;</a></li>
+	{{ end }}
+    {{ range .pages }}
       	{{ if .Active }}
         	<li class="active"><a href="#">{{ .Number }}</a></li>
       	{{ else }}
         	<li><a href="{{ .Link }}">{{ .Number }}</a></li>
       	{{ end }}
     {{ end }}
+	{{ if not (eq .endLink "") }}
+		<li><a href="{{ .endLink }}">&raquo;</a></li>
+	{{ end }}
   	</ul>
 {{ end }}
 `

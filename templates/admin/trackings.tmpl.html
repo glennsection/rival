@@ -38,8 +38,12 @@
 											<td>{{ shortTime $tracking.CreatedTime }}</td>
 											<td><a href="{{ $viewURL }}">{{ $tracking.Event }}</a></td>
 											<td>{{ getUserName $ $tracking.UserID }}</td>
-											<td>{{ jsonEncode $tracking.Data }}</td>
-											<td>{{ shortTime $tracking.ExpireTime }}</td>
+											<td>{{ truncate (jsonEncode $tracking.Data) 30 }}</td>
+											{{ if $tracking.ExpireTime.IsZero }}
+												<td>Never</td>
+											{{ else }}
+												<td>{{ shortTime $tracking.ExpireTime }}</td>
+											{{ end }}
 											<td>
 												<a href="{{ $viewURL }}">View</a> |
 												<a href="#"
