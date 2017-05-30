@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+{{ template "header.tmpl.html" . }}
+<body>
+
+<div class="wrapper">
+	{{ template "sidebar.tmpl.html" . }}
+ 
+	<div class="main-panel">
+		{{ template "nav.tmpl.html" . }}
+
+		<div class="content">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="card">
+							{{ $tracking := .Params.Get "tracking" }}
+
+							<div class="header">
+								<h4 class="title">Analytics Tracking</h4>
+								<p class="category">Big Brother is Watching!</p>
+							</div>
+							<div class="content">
+								<form method="post">
+									<input type="hidden" name="trackingId" value="{{ $tracking.ID.Hex }}">
+									<div class="row">
+										<div class="col-md-4">
+											<div class="form-group">
+												<label>Event</label>
+												<input type="text" class="form-control" disabled value="{{ $tracking.Event }}">
+											</div>
+										</div>
+										<div class="col-md-4">
+											<div class="form-group">
+												<label>User</label>
+												{{ if $tracking.UserID.Valid }}
+													<a href="/admin/users?userId={{ $tracking.UserID.Hex }}" class="form-control">{{ getUserName $ $tracking.UserID }}</a>
+												{{ else }}
+													<p class="form-control">System</p>
+												{{ end }}
+											</div>
+										</div>
+										<div class="col-md-4">
+											<div class="form-group">
+												<label>Created</label>
+												<input type="text" class="form-control" disabled value="{{ shortTime $tracking.CreatedTime }}">
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-md-8">
+											<div class="form-group">
+												<label>Data</label>
+												<textarea class="form-control" name="data" disabled rows="20">{{ jsonEncodeIndent $tracking.Data }}</textarea>
+											</div>
+										</div>
+										<div class="col-md-4">
+											<div class="form-group">
+												<label>Expires</label>
+												{{ if $tracking.ExpireTime.IsZero }}
+													<input type="text" class="form-control" disabled value="Never">
+												{{ else }}
+													<input type="text" class="form-control" disabled value="{{ shortTime $tracking.ExpireTime }}">
+												{{ end }}
+											</div>
+										</div>
+									</div>
+
+									<!--
+									<div class="pull-right">
+										<button type="submit" class="btn btn-info btn-fill">Update Tracking</button>
+									</div>
+									<div class="clearfix"></div>
+									-->
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{{ template "footer.tmpl.html" . }}
+	</div>
+</div>
+
+{{ template "scripts.tmpl.html" . }}
+</body>
+
+</html>

@@ -12,12 +12,12 @@ import (
 )
 
 func handleAdminGuilds() {
-	handleAdminTemplate("/admin/guilds", system.TokenAuthentication, ShowGuilds, "guilds.tmpl.html")
+	handleAdminTemplate("/admin/guilds", system.TokenAuthentication, ViewGuilds, "guilds.tmpl.html")
 	handleAdminTemplate("/admin/guilds/edit", system.TokenAuthentication, EditGuild, "guild.tmpl.html")
 	handleAdminTemplate("/admin/guilds/delete", system.TokenAuthentication, DeleteGuild, "")
 }
 
-func ShowGuilds(context *util.Context) {
+func ViewGuilds(context *util.Context) {
 	// parse parameters
 	search := context.Params.GetString("search", "")
 

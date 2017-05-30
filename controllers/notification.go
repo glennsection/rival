@@ -9,12 +9,12 @@ import (
 	"bloodtales/models"
 )
 
-func HandleNotification() {
-	HandleGameAPI("/notification/get", system.TokenAuthentication, GetNotifications)
-	HandleGameAPI("/notification/respond", system.TokenAuthentication, RespondNotification)
-	HandleGameAPI("/notification/view", system.TokenAuthentication, ViewNotifications)
+func handleNotification() {
+	handleGameAPI("/notification/get", system.TokenAuthentication, GetNotifications)
+	handleGameAPI("/notification/respond", system.TokenAuthentication, RespondNotification)
+	handleGameAPI("/notification/view", system.TokenAuthentication, ViewNotifications)
 
-	HandleGameAPI("/notification/test", system.TokenAuthentication, TestNotifications)
+	handleGameAPI("/notification/test", system.TokenAuthentication, TestNotifications)
 }
 
 func GetNotifications(context *util.Context) {

@@ -2,6 +2,8 @@ package data
 
 import (
 	"encoding/json"
+
+	"bloodtales/util"
 )
 
 type LevelProgression struct {
@@ -20,7 +22,7 @@ type LevelRequirementsParsed struct {
 func LoadPlayerLevelProgression(raw []byte) {
 	// parse
 	container := &LevelRequirementsParsed {}
-	json.Unmarshal(raw, container)
+	util.Must(json.Unmarshal(raw, container))
 
 	// enter into system data
 	playerLevelProgression = container.PlayerLevelProgression

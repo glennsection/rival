@@ -15,7 +15,7 @@ type CardData struct {
 	Rarity                  string        `json:"rarity"`
 	Tier                    int           `json:"tier,string"`
 	Type                    string        `json:"type"`
-	Units                   []string      `json:"units"`
+	//Units                   []string      `json:"units"`
 	UnitCount               int           `json:"numUnits,string"`
 	ManaCost                int           `json:"manaCost,string"`
 	Cooldown                int           `json:"cooldown,string"`
@@ -50,7 +50,7 @@ type CardsParsed struct {
 func LoadCards(raw []byte) {
 	// parse
 	container := &CardsParsed {}
-	json.Unmarshal(raw, container)
+	util.Must(json.Unmarshal(raw, container))
 
 	// enter into system data
 	cards = map[DataId]*CardData {}
@@ -89,7 +89,7 @@ func LoadCardProgression(rarity string, raw []byte) {
 	
 	// parse, NOTE: because our key names are differ between files, we can't use a structure like CardsParsed. instead, this map works just as well
 	var container map[string][]CardProgressionData
-	json.Unmarshal(raw, &container)
+	util.Must(json.Unmarshal(raw, &container))
 
 	// insert into table
 	for _, dataArray := range container {

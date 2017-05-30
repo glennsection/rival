@@ -8,11 +8,11 @@ import (
 	"bloodtales/util"
 )
 
-func handleAdminAnalytics() {
-	handleAdminTemplate("/admin/leaderboard", system.NoAuthentication, ShowLeaderboard, "leaderboard.tmpl.html")
+func handleAdminLeaderboards() {
+	handleAdminTemplate("/admin/leaderboard", system.NoAuthentication, ViewLeaderboard, "leaderboard.tmpl.html")
 }
 
-func ShowLeaderboard(context *util.Context) {
+func ViewLeaderboard(context *util.Context) {
 	// parse parameters
 	page := context.Params.GetInt("page", 1)
 

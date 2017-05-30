@@ -9,13 +9,13 @@ import (
 )
 
 func handleAdminMatches() {
-	handleAdminTemplate("/admin/matches", system.TokenAuthentication, ShowMatches, "matches.tmpl.html")
+	handleAdminTemplate("/admin/matches", system.TokenAuthentication, ViewMatches, "matches.tmpl.html")
 	handleAdminTemplate("/admin/matches/edit", system.TokenAuthentication, EditMatch, "match.tmpl.html")
 	handleAdminTemplate("/admin/matches/delete", system.TokenAuthentication, DeleteMatch, "")
 }
 
-func ShowMatches(context *util.Context) {
-	// paginate players query (TODO - use redis!)
+func ViewMatches(context *util.Context) {
+	// paginate players query
 	pagination, err := context.Paginate(context.DB.C(models.MatchCollectionName).Find(nil).Sort("-t0"), DefaultPageSize)
 	util.Must(err)
 

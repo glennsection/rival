@@ -12,13 +12,13 @@ import (
 )
 
 func handleAdminUsers() {
-	handleAdminTemplate("/admin/users", system.TokenAuthentication, ShowUsers, "users.tmpl.html")
+	handleAdminTemplate("/admin/users", system.TokenAuthentication, ViewUsers, "users.tmpl.html")
 	handleAdminTemplate("/admin/users/edit", system.TokenAuthentication, EditUser, "user.tmpl.html")
 	handleAdminTemplate("/admin/users/reset", system.TokenAuthentication, ResetUser, "")
 	handleAdminTemplate("/admin/users/delete", system.TokenAuthentication, DeleteUser, "")
 }
 
-func ShowUsers(context *util.Context) {
+func ViewUsers(context *util.Context) {
 	// parse parameters
 	search := context.Params.GetString("search", "")
 
