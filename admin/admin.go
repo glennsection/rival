@@ -22,7 +22,8 @@ func HandleAdmin() {
 	handleAdminCards()
 	handleAdminGuilds()
 	handleAdminMatches()
-	handleAdminAnalytics()
+	handleAdminLeaderboards()
+	handleAdminTracking()
 }
 
 func handleAdminTemplate(pattern string, authType system.AuthenticationType, handler func(*util.Context), template string) {
@@ -43,7 +44,7 @@ func initializeAdmin(context *util.Context) {
 		{
 			Name: "Dashboard",
 			URL: "/admin/dashboard",
-			Icon: "pe-7s-graph2",
+			Icon: "pe-7s-display1",
 		},
 		{
 			Name: "Players",
@@ -74,6 +75,11 @@ func initializeAdmin(context *util.Context) {
 			Name: "Content",
 			URL: "/admin/content",
 			Icon: "pe-7s-gift",
+		},
+		{
+			Name: "Analytics",
+			URL: "/admin/trackings",
+			Icon: "pe-7s-graph2",
 		},
 	}
 

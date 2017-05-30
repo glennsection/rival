@@ -6,10 +6,10 @@ import (
 	"bloodtales/util"
 )
 
-func HandleUser() {
-	HandleGameAPI("/connect", system.NoAuthentication, UserConnect)
-	HandleGameAPI("/login", system.DeviceAuthentication, UserLogin)
-	HandleGameAPI("/logout", system.TokenAuthentication, UserLogout)
+func handleUser() {
+	handleGameAPI("/connect", system.NoAuthentication, UserConnect)
+	handleGameAPI("/login", system.DeviceAuthentication, UserLogin)
+	handleGameAPI("/logout", system.TokenAuthentication, UserLogout)
 }
 
 func UserConnect(context *util.Context) {
@@ -35,8 +35,8 @@ func UserConnect(context *util.Context) {
 
 func UserLogin(context *util.Context) {
 	if context.Success {
-		// analytics tracking (TODO - integrate with context)
-		//context.Track("Login", bson.M { "mood": "happy" })
+		// analytics tracking
+		InsertTracking(context, "login", nil, 0)
 
 		// respond with player data
 		FetchPlayer(context)

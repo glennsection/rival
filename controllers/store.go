@@ -6,8 +6,8 @@ import (
 	"bloodtales/util"
 )
 
-func HandleStore() {
-	HandleGameAPI("/store/offers", system.TokenAuthentication, GetStoreOffers)
+func handleStore() {
+	handleGameAPI("/store/offers", system.TokenAuthentication, GetStoreOffers)
 }
 
 func GetStoreOffers(context *util.Context) {

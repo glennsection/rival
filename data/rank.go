@@ -5,6 +5,8 @@ import (
 	"strings"
 	"math"
 	"encoding/json"
+
+	"bloodtales/util"
 )
 
 type RankData struct {
@@ -31,7 +33,7 @@ type RanksParsed struct {
 func LoadRanks(raw []byte) {
 	// parse
 	container := &RanksParsed {}
-	json.Unmarshal(raw, container)
+	util.Must(json.Unmarshal(raw, container))
 
 	// enter into system data
 	for i, _ := range container.PvPRanking {

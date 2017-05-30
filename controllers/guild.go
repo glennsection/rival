@@ -6,8 +6,8 @@ import (
 	"bloodtales/util"
 )
 
-func HandleGuild() {
-	HandleGameAPI("/guild/create", system.TokenAuthentication, CreateGuild)
+func handleGuild() {
+	handleGameAPI("/guild/create", system.TokenAuthentication, CreateGuild)
 }
 
 func CreateGuild(context *util.Context) {

@@ -6,19 +6,20 @@ import (
 )
 
 func HandleGame() {
-	HandleUser()
-	HandlePlayer()
-	HandleTome()
-	HandleCard()
-	HandleDeck()
-	HandleMatch()
-	HandlePurchase()
-	HandleNotification()
-	HandleStore()
-	HandleGuild()
+	handleUser()
+	handlePlayer()
+	handleTome()
+	handleCard()
+	handleDeck()
+	handleMatch()
+	handlePurchase()
+	handleNotification()
+	handleStore()
+	handleGuild()
+	handleTracking()
 }
 
-func HandleGameAPI(pattern string, authType system.AuthenticationType, handler func(*util.Context)) {
+func handleGameAPI(pattern string, authType system.AuthenticationType, handler func(*util.Context)) {
 	// all template requests start here
 	system.App.HandleAPI(pattern, authType, func(context *util.Context) {
 		handler(context)

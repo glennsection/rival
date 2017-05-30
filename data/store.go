@@ -171,7 +171,7 @@ func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
 func LoadStore(raw []byte) {
 	// parse
 	container := &StoreParsed {}
-	json.Unmarshal(raw, container)
+	util.Must(json.Unmarshal(raw, container))
 
 	// enter into system data
 	storeItems = map[DataId]*StoreData {}
@@ -190,7 +190,7 @@ func LoadStore(raw []byte) {
 func LoadCardPurchaseCosts(raw []byte) {
 	//parse
 	container := &CardPurchaseCostsParsed {}
-	json.Unmarshal(raw, container)
+	util.Must(json.Unmarshal(raw, container))
 
 	//enter into system data
 	cardPurchaseCosts = map[string][]int{}
