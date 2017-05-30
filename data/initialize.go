@@ -28,6 +28,7 @@ func init() {
 	loadDataFile("PvPRanking", LoadRanks)
 	loadDataFile("Store", LoadStore)
 	loadDataFile("CardPurchaseCosts", LoadCardPurchaseCosts)
+	loadDataFile("Rarity", LoadRarityData)
 	// ------------------------------------------
 
 	// template funcs
