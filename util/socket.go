@@ -1,16 +1,19 @@
-package system
+package util
 
 import (
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
 	"github.com/gorilla/websocket"
 
-	"bloodtales/util"
 	"bloodtales/log"
 )
 
 // internal constants
 const (
+	// debug sockets
+	debugSockets = true
+
 	// time allowed to write a message to the peer
 	writeWait = 10 * time.Second
 
@@ -28,13 +31,16 @@ type SocketMessage struct {
 
 // socket client
 type SocketClient struct {
+	userID        bson.ObjectId
+	open          bool
+	registered    bool
 	connection    *websocket.Conn
 	send          chan SocketMessage
 }
 
 // internal globals
 var (
-	clients       map[*SocketClient]bool = make(map[*SocketClient]bool)
+	clients       map[bson.ObjectId]*SocketClient = make(map[bson.ObjectId]*SocketClient)
 	broadcast     chan SocketMessage = make(chan SocketMessage)
 	register      chan *SocketClient = make(chan *SocketClient)
 	unregister    chan *SocketClient = make(chan *SocketClient)
@@ -44,10 +50,17 @@ var (
 	}
 )
 
+// context socket send
+func (context *Context) SocketSend(message string) {
+	if client, ok := clients[context.UserID]; ok {
+		client.send <- SocketMessage { Content: []byte(message) }
+	}
+}
+
 // socket broadcast handler
 func init() {
 	// setup route
-	App.HandleAPI("/socket", NoAuthentication, socketHandler)
+	//App.HandleAPI("/socket", TokenAuthentication, socketHandler) // TODO
 
 	// start main listening routine
 	go func() {
@@ -57,26 +70,37 @@ func init() {
 
 			case client := <-register:
 				// add new client
-				clients[client] = true
+				clients[client.userID] = client
+
+				logSocket("Registered socket for User ID: %v (%v total connections)", client.userID.Hex(), len(clients))
 
 			case client := <-unregister:
-				// remove client
-				if _, ok := clients[client]; ok {
-					delete(clients, client)
-					close(client.send)
+				// unregister client
+				if _, ok := clients[client.userID]; ok {
+					client.unregisterClient()
+
+					logSocket("Unregistered socket for User ID: %v", client.userID.Hex())
 				}
 
 			case message := <-broadcast:
 				// broadcast message to all clients
-				for client := range clients {
+				for userID := range clients {
+					// get open client
+					client := clients[userID]
+					if !client.open {
+						continue
+					}
+
+					// attempt to send message to client
 					select {
 
 					case client.send <- message:
 
 					default:
-						// remote client
-						close(client.send)
-						delete(clients, client)
+						log.Errorf("Socket broadcast error for User ID: %v", client.userID)
+
+						// unregister client
+						client.unregisterClient()
 
 					}
 				}
@@ -87,7 +111,7 @@ func init() {
 }
 
 // socket route handler
-func socketHandler(context *util.Context) {
+func socketHandler(context *Context) {
 	// upgrade to web socket connection
 	connection, err := upgrader.Upgrade(context.ResponseWriter, context.Request, nil)
 	if err != nil {
@@ -97,9 +121,19 @@ func socketHandler(context *util.Context) {
 
 	// create new client
 	client := &SocketClient {
+		userID:     context.UserID,
+		open:       true,
+		registered: false,
 		connection: connection,
 		send:       make(chan SocketMessage),
 	}
+
+	// handle connection close
+	connection.SetCloseHandler(func(code int, text string) error {
+		client.open = false
+		unregister <- client
+		return nil
+	})
 
 	// register to add client
 	register <- client
@@ -126,10 +160,12 @@ func (client *SocketClient) write() {
 			client.connection.SetWriteDeadline(time.Now().Add(writeWait))
 
 			if !ok {
-				// client send channel has been closed
-				err := client.connection.WriteMessage(websocket.CloseMessage, []byte {})
-				if err != nil {
-					log.Errorf("Socket failed to write: %v", err)
+				if client.open {
+					// client send channel has been closed
+					err := client.connection.WriteMessage(websocket.CloseMessage, []byte {})
+					if err != nil {
+						log.Errorf("Socket failed to write close message: %v", err)
+					}
 				}
 				return
 			}
@@ -139,8 +175,6 @@ func (client *SocketClient) write() {
 			if err != nil {
 				log.Errorf("Socket failed to write: %v", err)
 			}
-
-			// TODO - could immediately send any other queued messages in "<-client.send"
 		}
 	}
 }
@@ -159,23 +193,36 @@ func (client *SocketClient) read() {
 		// err := client.connection.ReadJSON(&message)
 		_, message, err := client.connection.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) { // TODO? CloseNoStatusReceived, CloseAbnormalClosure
 				log.Errorf("Socket failed to read: %v", err)
 			}
 			break
 		}
 
-		// broadcast message (TODO - we don't need to broadcast all messages; only chat, etc.)
-		broadcast <- SocketMessage { Content: message }
+		// TODO - set up a listener system to catch messages and send them along appropriately (chat, etc.)
+		logSocket("Socket received message from User ID: %v (%v)", client.userID, message)
 
-		// HACK
-		// client.send <- SocketMessage { Content: []byte("HELLO WORLD") }
+		// HACK - broadcast example
+		//broadcast <- SocketMessage { Content: message }
 	}
 }
 
-// socket client remove
+// close socket client
 func (client *SocketClient) close() {
-	unregister <- client
 	client.connection.Close()
 }
 
+// unregister socket client
+func (client *SocketClient) unregisterClient() {
+	client.registered = false
+
+	delete(clients, client.userID)
+	close(client.send)
+}
+
+// socket logging
+func logSocket(message string, args ...interface{}) {
+	if debugSockets {
+		log.Printf("[magenta!]" + message + "[-]", args...)
+	}
+}

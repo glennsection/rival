@@ -14,7 +14,7 @@ const NotificationCollectionName = "notifications"
 // an action associated with notification
 type NotificationAction struct {
 	Name           string               `bson:"nm" json:"name"`
-	URL            string               `bson:"url" json:"url"`
+	Value          string               `bson:"val" json:"value"`
 }
 
 // notification database structure
@@ -69,21 +69,25 @@ func (notification* Notification) Save(database *mgo.Database) (err error) {
 	return
 }
 
+func (notification *Notification) Delete(database *mgo.Database) (err error) {
+	return database.C(NotificationCollectionName).Remove(bson.M { "_id": notification.ID })
+}
+
 func GetNotificationById(database *mgo.Database, id bson.ObjectId) (notification *Notification, err error) {
 	// find notification by ID
 	err = database.C(NotificationCollectionName).Find(bson.M { "_id": id } ).One(&notification)
 	return
 }
 
-func GetSentNotifications(database *mgo.Database, user *User) (notifications []*Notification, err error) {
-	// get all notifications sent from user
-	err = database.C(NotificationCollectionName).Find(bson.M { "sid": user.ID } ).Sort("t0").All(&notifications)
+func GetSentNotifications(database *mgo.Database, player *Player) (notifications []*Notification, err error) {
+	// get all notifications sent from player
+	err = database.C(NotificationCollectionName).Find(bson.M { "sid": player.ID } ).Sort("t0").All(&notifications)
 	return
 }
 
-func GetReceivedNotifications(database *mgo.Database, user *User, player *Player) (notifications []*Notification, err error) {
+func GetReceivedNotifications(database *mgo.Database, player *Player, types []string) (notifications []*Notification, err error) {
 	conditions := []bson.M {
-		bson.M { "gd": false, "rid": user.ID, },
+		bson.M { "gd": false, "rid": player.ID, },
 		bson.M { "gd": false, "rid": bson.M { "$exists": false }, },
 	}
 
@@ -92,7 +96,12 @@ func GetReceivedNotifications(database *mgo.Database, user *User, player *Player
 		conditions = append(conditions, bson.M { "gd": true, "rid": player.GuildID })
 	}
 
-	// get all pending notifications sent to user
+	// type filters
+	if len(types) > 0 {
+		conditions = append(conditions, bson.M { "tp": bson.M { "$in": types } })
+	}
+
+	// get all pending notifications sent to player
 	err = database.C(NotificationCollectionName).Find(bson.M { "$or": conditions }).Sort("t0").All(&notifications)
 	if err != nil {
 		return

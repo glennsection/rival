@@ -12,12 +12,14 @@ import (
 	"encoding/json"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/config"
 	"bloodtales/log"
 )
 
 type Context struct {
+	UserID          bson.ObjectId          `json:"-"`
 	DB              *mgo.Database          `json:"-"`
 	Session         *Session               `json:"-"`
 	Cache           *Cache                 `json:"-"`

@@ -60,7 +60,6 @@ type Player struct {
 
 	Quests              string          `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
 
-	FriendIDs           []bson.ObjectId `bson:"fd,omitempty" json:"-"`
 	GuildID             bson.ObjectId   `bson:"gd,omitempty" json:"-"`
 	GuildRole           GuildRole       `bson:"gr,omitempty" json:"-"`
 
@@ -97,7 +96,6 @@ func ensureIndexPlayer(database *mgo.Database) {
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
-		Sparse:     true,
 	}))
 }
 

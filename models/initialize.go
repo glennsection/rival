@@ -20,4 +20,5 @@ func init() {
 	ensureIndexTracking(db)
 	ensureIndexMatch(db)
 	ensureIndexNotification(db);
+	ensureIndexFriends(db);
 }
