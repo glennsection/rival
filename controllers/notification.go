@@ -72,7 +72,7 @@ func prepareNotification(context *util.Context, notification *models.Notificatio
 	switch notification.Type {
 
 	case "FriendRequest":
-		// TODO - add PlayerClient into data
+		// TODO - add PlayerClient into data here...
 
 	}
 
@@ -85,38 +85,12 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 	case "FriendRequest":
 		// handle friend request
 		if action == "accept" {
-			// get sender friends
-			var senderFriends *models.Friends
-			senderFriends, err = models.GetFriendsByPlayerId(context.DB, notification.SenderID, true)
-			if err != nil {
-				return
-			}
-			// append sender friends
-			senderFriends.FriendIDs = append(senderFriends.FriendIDs, notification.ReceiverID)
-			err = senderFriends.Save(context.DB)
-			if err != nil {
-				return
-			}
-
-			// get receiver friends
-			var receiverFriends *models.Friends
-			receiverFriends, err = models.GetFriendsByPlayerId(context.DB, notification.ReceiverID, true)
-			if err != nil {
-				return
-			}
-			// append receiver friends
-			receiverFriends.FriendIDs = append(receiverFriends.FriendIDs, notification.SenderID)
-			err = receiverFriends.Save(context.DB)
-			if err != nil {
-				return
-			}
-
-			// notify sender
-			context.SocketSend("FriendAccepted")
+			AcceptFriend(context, notification.SenderID, notification.ReceiverID)
 		}
 
 	}
 
+	// delete notification
 	err = notification.Delete(context.DB)
 
 	return

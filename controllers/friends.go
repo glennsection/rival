@@ -59,7 +59,8 @@ func AddFriend(context *util.Context) {
 	friendPlayer, err := models.GetPlayerByUser(context.DB, friendUser.ID)
 	util.Must(err)
 
-	util.Must((&models.Notification {
+	// create notification
+	notification := &models.Notification {
 		SenderID: player.ID,
 		ReceiverID: friendPlayer.ID,
 		Guild: false,
@@ -78,5 +79,35 @@ func AddFriend(context *util.Context) {
 			},
 		},
 		//Data: bson.M {},
-	}).Save(context.DB))
+	}
+	util.Must(notification.Save(context.DB))
+
+	// notify receiver
+	system.SocketSend(friendUser.ID, "FriendRequested", map[string]interface{} { "notification": notification })
+}
+
+func AcceptFriend(context *util.Context, senderID bson.ObjectId, receiverID bson.ObjectId) {
+	// get sender friends
+	var senderFriends *models.Friends
+	senderFriends, err := models.GetFriendsByPlayerId(context.DB, senderID, true)
+	util.Must(err)
+
+	// append sender friends
+	senderFriends.FriendIDs = append(senderFriends.FriendIDs, receiverID)
+	err = senderFriends.Save(context.DB)
+	util.Must(err)
+
+	// get receiver friends
+	var receiverFriends *models.Friends
+	receiverFriends, err = models.GetFriendsByPlayerId(context.DB, receiverID, true)
+	util.Must(err)
+
+	// append receiver friends
+	receiverFriends.FriendIDs = append(receiverFriends.FriendIDs, senderID)
+	err = receiverFriends.Save(context.DB)
+	util.Must(err)
+
+	// notify sender
+	senderUserID := GetUserIdByPlayerId(context, senderID)
+	system.SocketSend(senderUserID, "FriendAccepted", nil)
 }

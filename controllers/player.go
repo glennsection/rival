@@ -127,6 +127,28 @@ func updatePlayerPlace(context *util.Context, player *models.Player) {
 	}
 }
 
+func GetUserIdByPlayerId(context *util.Context, playerID bson.ObjectId) bson.ObjectId {
+	// get cache key
+	key := fmt.Sprintf("PlayerUserId:%s", playerID.Hex())
+
+	// get cached ID
+	userIDHex := context.Cache.GetString(key, "")
+	var userID bson.ObjectId
+
+	if bson.IsObjectIdHex(userIDHex) {
+		// user cached ID
+		userID = bson.ObjectIdHex(userIDHex)
+	} else {
+		// get and cache ID
+		player, _ := models.GetPlayerById(context.DB, playerID)
+		if player != nil {
+			userID = player.UserID
+			context.Cache.Set(key, userID.Hex())
+		}
+	}
+	return userID
+}
+
 func SetPlayer(context *util.Context) {
 	// parse parameters
 	data := context.Params.GetRequiredString("data")

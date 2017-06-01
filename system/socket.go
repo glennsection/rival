@@ -1,4 +1,4 @@
-package util
+package system
 
 import (
 	"time"
@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/gorilla/websocket"
 
+	"bloodtales/util"
 	"bloodtales/log"
 )
 
@@ -26,41 +27,47 @@ const (
 
 // socket message
 type SocketMessage struct {
-	Content       []byte
+	Message         string                  `json:"m"`
+	Data            map[string]interface{}  `json:"d"`
 }
 
 // socket client
 type SocketClient struct {
-	userID        bson.ObjectId
-	open          bool
-	registered    bool
-	connection    *websocket.Conn
-	send          chan SocketMessage
+	userID          bson.ObjectId
+	open            bool
+	registered      bool
+	connection      *websocket.Conn
+	send            chan SocketMessage
 }
 
 // internal globals
 var (
-	clients       map[bson.ObjectId]*SocketClient = make(map[bson.ObjectId]*SocketClient)
-	broadcast     chan SocketMessage = make(chan SocketMessage)
-	register      chan *SocketClient = make(chan *SocketClient)
-	unregister    chan *SocketClient = make(chan *SocketClient)
-	upgrader      websocket.Upgrader = websocket.Upgrader {
+	clients         map[bson.ObjectId]*SocketClient = make(map[bson.ObjectId]*SocketClient)
+	broadcast       chan SocketMessage = make(chan SocketMessage)
+	register        chan *SocketClient = make(chan *SocketClient)
+	unregister      chan *SocketClient = make(chan *SocketClient)
+	upgrader        websocket.Upgrader = websocket.Upgrader {
 		ReadBufferSize:  bufferSize,
 		WriteBufferSize: bufferSize,
 	}
 )
 
 // context socket send
-func (context *Context) SocketSend(message string) {
-	if client, ok := clients[context.UserID]; ok {
-		client.send <- SocketMessage { Content: []byte(message) }
+func SocketSend(userID bson.ObjectId, message string, data map[string]interface{}) {
+	if client, ok := clients[userID]; ok {
+		client.send <- SocketMessage {
+			Message: message,
+			Data: data,
+		}
+	} else {
+		log.Errorf("Failed to find socket connection for User ID: %v", userID)
 	}
 }
 
 // socket broadcast handler
 func init() {
-	// setup route
-	//App.HandleAPI("/socket", TokenAuthentication, socketHandler) // TODO
+	// handle route
+	App.HandleAPI("/socket", TokenAuthentication, socketHandler)
 
 	// start main listening routine
 	go func() {
@@ -111,7 +118,7 @@ func init() {
 }
 
 // socket route handler
-func socketHandler(context *Context) {
+func socketHandler(context *util.Context) {
 	// upgrade to web socket connection
 	connection, err := upgrader.Upgrade(context.ResponseWriter, context.Request, nil)
 	if err != nil {
@@ -156,7 +163,7 @@ func (client *SocketClient) write() {
 		select {
 
 		case message, ok := <-client.send:
-			// settings
+			// write timeout
 			client.connection.SetWriteDeadline(time.Now().Add(writeWait))
 
 			if !ok {
@@ -171,10 +178,12 @@ func (client *SocketClient) write() {
 			}
 
 			// write message to client connection
-			err := client.connection.WriteMessage(websocket.TextMessage, message.Content)
+			err := client.connection.WriteJSON(message)
 			if err != nil {
-				log.Errorf("Socket failed to write: %v", err)
+				log.Errorf("Socket failed to write (%v): %v", message.Message, err)
 			}
+
+			logSocket("Socket sent message to User ID: %v (%v)", client.userID, message.Message)
 		}
 	}
 }
@@ -189,9 +198,9 @@ func (client *SocketClient) read() {
 
 	for {
 		// check for message to read
-		// var message SocketMessage // TODO - could use JSON here...
-		// err := client.connection.ReadJSON(&message)
-		_, message, err := client.connection.ReadMessage()
+		var message SocketMessage // use JSON here
+		err := client.connection.ReadJSON(&message)
+		// _, message, err := client.connection.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) { // TODO? CloseNoStatusReceived, CloseAbnormalClosure
 				log.Errorf("Socket failed to read: %v", err)
@@ -200,7 +209,7 @@ func (client *SocketClient) read() {
 		}
 
 		// TODO - set up a listener system to catch messages and send them along appropriately (chat, etc.)
-		logSocket("Socket received message from User ID: %v (%v)", client.userID, message)
+		logSocket("Socket received message from User ID: %v (%v)", client.userID, message.Message)
 
 		// HACK - broadcast example
 		//broadcast <- SocketMessage { Content: message }
