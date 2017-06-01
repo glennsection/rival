@@ -341,6 +341,25 @@
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
     "awakenLeaderGamesNeeded": "2"
+  },
+  {
+    "databaseId": "20",
+    "id": "CARD_MANA_GENERATOR",
+    "portrait": "UI/Cards/Card_Art/Harpy",
+    "rarity": "EPIC",
+    "tier": "5",
+    "type": "TROOP",
+    "spawnLogicType": "DEFAULT",
+    "units": "[MANA_GENERATOR]",
+    "numUnits": "1",
+    "manaCost": "5",
+    "leaderAbilityType": "SCRIPT",
+    "dataFile": "GameData/Cards/ManaGeneratorCard",
+    "cooldown": "30",
+    "abilityStartPercent": "100",
+    "abilityCooldown": "0",
+    "awakenGamesNeeded": "10",
+    "awakenLeaderGamesNeeded": "2"
   }
 ]
 }
