@@ -402,6 +402,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 func (match *Match) ProcessMatchResults(outcome MatchOutcome, host *Player, guest *Player, hostScore int, guestScore int) (matchResult *MatchResult) {
 	matchResult = &MatchResult {
 		MatchID: match.ID,
+		Outcome: outcome,
 	}
 	matchResult.Host.Score = hostScore
 	matchResult.Guest.Score = guestScore
