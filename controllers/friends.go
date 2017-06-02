@@ -14,6 +14,7 @@ import (
 func handleFriends() {
 	handleGameAPI("/friends/get", system.TokenAuthentication, GetFriends)
 	handleGameAPI("/friends/add", system.TokenAuthentication, AddFriend)
+	handleGameAPI("/friends/battle", system.TokenAuthentication, BattleFriend)
 }
 
 func GetFriends(context *util.Context) {
@@ -110,4 +111,44 @@ func AcceptFriend(context *util.Context, senderID bson.ObjectId, receiverID bson
 	// notify sender
 	senderUserID := GetUserIdByPlayerId(context, senderID)
 	system.SocketSend(senderUserID, "FriendAccepted", nil)
+}
+
+func BattleFriend(context *util.Context) {
+	// parse parameters
+	tag := context.Params.GetRequiredString("tag")
+
+	// current player
+	player := GetPlayer(context)
+
+	// friend player
+	friendUser, err := models.GetUserByTag(context.DB, tag)
+	util.Must(err)
+	friendPlayer, err := models.GetPlayerByUser(context.DB, friendUser.ID)
+	util.Must(err)
+
+	// create notification
+	notification := &models.Notification {
+		SenderID: player.ID,
+		ReceiverID: friendPlayer.ID,
+		Guild: false,
+		ExpiresAt: time.Now().Add(time.Hour),
+		Type: "FriendBattle",
+		//Image: "",
+		Message: fmt.Sprintf("Battle Request from: %s", GetPlayerName(context, player.ID)),
+		Actions: []models.NotificationAction {
+			models.NotificationAction {
+				Name: "Battle",
+				Value: "accept",
+			},
+			models.NotificationAction {
+				Name: "Decline",
+				Value: "decline",
+			},
+		},
+		//Data: bson.M {},
+	}
+	util.Must(notification.Save(context.DB))
+
+	// notify receiver
+	system.SocketSend(friendUser.ID, "FriendBattleRequested", map[string]interface{} { "notification": notification })
 }
