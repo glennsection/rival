@@ -12,8 +12,8 @@
     "gemsToUnlock": "18",
     "minGemReward": "2",
     "maxGemReward": "3",
-    "minGoldReward": "175",
-    "maxGoldReward": "350"
+    "minGoldReward": "35",
+    "maxGoldReward": "70"
   },
   {
     "id": "TOME_RARE",
