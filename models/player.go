@@ -242,11 +242,13 @@ func (player *Player) GetLevel() int {
 	return data.GetAccountLevel(player.XP)
 }
 
-func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
+func (player *Player) AddVictoryTome(database *mgo.Database) (index int, tome *Tome) {
 	//first check to see if the player has an available tome slot, else return
 	tome = nil
+	index = -1
 	for i, tomeSlot := range player.Tomes {
 		if tomeSlot.State == TomeEmpty {
+			index = i
 			tome = &player.Tomes[i]
 			break
 		}

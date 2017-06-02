@@ -91,6 +91,7 @@ type MatchResult struct {
 // client rewards
 type MatchReward struct {
 	Tome            *Tome         `json:"tome"`
+	TomeIndex       int           `json:"tomeIndex"`
 	ArenaPoints     int           `json:"arenaPoints"`
 }
 
@@ -382,7 +383,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		matchReward.ArenaPoints = playerResults.Score
 		player.ModifyArenaPoints(matchReward.ArenaPoints)
 		if isWinner {
-			matchReward.Tome = player.AddVictoryTome(database)
+			matchReward.TomeIndex, matchReward.Tome = player.AddVictoryTome(database)
 			player.WinCount += 1
 		} else {
 			player.LossCount += 1
