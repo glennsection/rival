@@ -40,11 +40,11 @@
 											<td>{{ $match.GetTypeName }}</td>
 											<td>{{ $match.GetStateName }}</td>
 											<td>{{ getPlayerName $ $match.HostID }}</td>
-											<td>{{ getPlayerName $ $match.OpponentID }}</td>
+											<td>{{ getPlayerName $ $match.GuestID }}</td>
 											<td>{{ $match.RoomID }}</td>
 											<td>{{ shortTime $match.StartTime }}</td>
 											<td>{{ shortTime $match.EndTime }}</td>
-											<td>{{ $match.GetOutcomeName }} ({{ $match.HostScore }} : {{ $match.OpponentScore }})</td>
+											<td>{{ $match.GetOutcomeName }} ({{ $match.HostScore }} : {{ $match.GuestScore }})</td>
 											<td>
 												<a href="/admin/matches/edit?matchId={{ $match.ID.Hex }}">Edit</a> |
 												<a href="/admin/matches/delete?matchId={{ $match.ID.Hex }}&page={{ $.GetPagination.GetPage }}">Delete</a>

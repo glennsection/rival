@@ -200,15 +200,29 @@ func ResetPlayers(database *mgo.Database) error {
 	}, &result)
 }
 
-func UpdatePlayer(database *mgo.Database, user *User, data string) (player *Player, err error) {
-	// find existing player data
-	player, _ = GetPlayerByUser(database, user.ID)
-	
-	// initialize new player if none exists
-	if player == nil {
-		player = CreatePlayer(user.ID)
+func (player *Player) Save(database *mgo.Database) (err error) {
+	if !player.ID.Valid() {
+		player.ID = bson.NewObjectId()
 	}
-	
+
+	// last active time
+	player.LastTime = time.Now()
+
+	// HACK !!!!!!!
+	raw, _ := json.Marshal(player.Tomes)
+	log.Printf("Saving player %s: %d/%d/%d %s", player.ID.Hex(), player.WinCount, player.LossCount, player.MatchCount, string(raw))
+
+	// update entire player to database
+	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "_id": player.ID }, player)
+
+	// HACK !!!!!
+	if err != nil {
+		log.Errorf("Saving player: %v", err);
+	}
+	return
+}
+
+func (player *Player) UpdateFromJson(database *mgo.Database, data string) (err error) {
 	// parse updated data
 	err = json.Unmarshal([]byte(data), &player)
 	if err == nil {
@@ -218,16 +232,9 @@ func UpdatePlayer(database *mgo.Database, user *User, data string) (player *Play
 	return
 }
 
-func (player *Player) Save(database *mgo.Database) (err error) {
-	if !player.ID.Valid() {
-		player.ID = bson.NewObjectId()
-	}
-
-	// last active time
-	player.LastTime = time.Now()
-
-	// update entire player to database
-	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "us": player.UserID }, player)
+func (player *Player) Update(database *mgo.Database, updates bson.M) (err error) {
+	// update given values
+	err = database.C(PlayerCollectionName).Update(bson.M { "_id": player.ID }, bson.M { "$set": updates })
 	return
 }
 
@@ -235,12 +242,12 @@ func (player *Player) GetLevel() int {
 	return data.GetAccountLevel(player.XP)
 }
 
-func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome, err error) {
+func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome) {
 	//first check to see if the player has an available tome slot, else return
 	tome = nil
-	for _, tomeSlot := range player.Tomes {
+	for i, tomeSlot := range player.Tomes {
 		if tomeSlot.State == TomeEmpty {
-			tome = &tomeSlot
+			tome = &player.Tomes[i]
 			break
 		}
 	}
@@ -269,8 +276,6 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome, err er
 			break
 		}
 	}
-
-	err = player.Save(database)
 	return
 }
 
@@ -390,6 +395,32 @@ func (player *Player) GetRankName() string {
 		return fmt.Sprintf("%d-%d", tier, rankInTier)
 	}
 	return "Unranked"
+}
+
+func (player *Player) GetPlace(context *util.Context) int {
+	return context.Cache.GetScore("Leaderboard", player.ID.Hex())
+}
+
+func (player *Player) UpdatePlace(context *util.Context) {
+	matches := player.MatchCount
+	if matches > 0 {
+		// calculate placement score
+		winsFactor := player.WinCount * 1000000 / matches
+		matchesFactor := matches * 1000
+		pointsFactor := player.ArenaPoints
+
+		score := winsFactor + matchesFactor + pointsFactor
+		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
+	}
+}
+
+func UpdateAllPlayersPlace(context *util.Context) {
+	var players []*Player
+	context.DB.C(PlayerCollectionName).Find(nil).All(&players)
+
+	for _, player := range players {
+		player.UpdatePlace(context)
+	}
 }
 
 func (player *Player) HasCard(id data.DataId) (*Card, bool) {

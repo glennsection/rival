@@ -87,7 +87,7 @@ span.pagination-summary {
 
 .game-tome-image {
     width: 100%;
-    max-width: 100px;
+	height: 140px;
 }
 
 .game-tome p {
