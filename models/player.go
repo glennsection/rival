@@ -238,6 +238,11 @@ func (player *Player) Update(database *mgo.Database, updates bson.M) (err error)
 	return
 }
 
+func (player *Player) Delete(database *mgo.Database) (err error) {
+	// delete player from database
+	return database.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
+}
+
 func (player *Player) GetLevel() int {
 	return data.GetAccountLevel(player.XP)
 }
@@ -304,7 +309,7 @@ func (player *Player) UpdateRewards(database *mgo.Database) error {
 
 	player.FreeTomeUnlockTime = util.TimeToTicks(unlockTime)
 
-	for i,_ := range player.Tomes {
+	for i, _ := range player.Tomes {
 		(&player.Tomes[i]).UpdateTome()
 	}
 
@@ -358,11 +363,6 @@ func (player *Player) ModifyArenaPoints(val int) {
 	if player.ArenaPoints > 10 {
 		player.ArenaPoints = 10
 	}
-}
-
-func (player *Player) Delete(database *mgo.Database) (err error) {
-	// delete player from database
-	return database.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
 }
 
 func (player *Player) GetDrawCount() int {
@@ -426,9 +426,9 @@ func UpdateAllPlayersPlace(context *util.Context) {
 }
 
 func (player *Player) HasCard(id data.DataId) (*Card, bool) {
-	for _, card := range player.Cards {
+	for i, card := range player.Cards {
 		if card.DataID == id {
-			return &card, true
+			return &player.Cards[i], true
 		}
 	}
 
