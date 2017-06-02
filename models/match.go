@@ -380,8 +380,9 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		} else {
 			playerResults = &matchResult.Guest
 		}
-		matchReward.ArenaPoints = playerResults.Score
-		player.ModifyArenaPoints(matchReward.ArenaPoints)
+		previousArenaPoints := player.ArenaPoints
+		player.ModifyArenaPoints(playerResults.Score)
+		matchReward.ArenaPoints = player.ArenaPoints - previousArenaPoints
 		if isWinner {
 			matchReward.TomeIndex, matchReward.Tome = player.AddVictoryTome(database)
 			player.WinCount += 1
