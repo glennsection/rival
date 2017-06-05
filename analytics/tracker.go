@@ -21,5 +21,5 @@ func (context *Context) Track(message string, data bson.M, expires time.Time) {
 	}
 
 	// insert tracking
-	util.Must(tracking.Insert(context.DB))
+	util.Must(tracking.Insert(context))
 }

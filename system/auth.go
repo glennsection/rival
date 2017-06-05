@@ -47,7 +47,7 @@ func authenticatePassword(context *util.Context, required bool) (err error) {
 	// authenticate user
 	if username != "" && password != "" {
 		var user *models.User
-		user, err = models.LoginUser(context.DB, username, password)
+		user, err = models.LoginUser(context, username, password)
 		if user == nil {
 			err = errors.New(fmt.Sprintf("Invalid authentication information for username: %v (%v)", username, err))
 			return

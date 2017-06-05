@@ -14,9 +14,9 @@ func init() {
 	defer db.Session.Close()
 
 	// init admin user
-	admin, _ := models.GetUserByUsername(db, config.Config.Authentication.AdminUsername)
+	admin, _ := models.GetUserByUsernameAndDatabase(db, config.Config.Authentication.AdminUsername)
 	if admin == nil {
-		models.InsertUserWithUsername(db, config.Config.Authentication.AdminUsername, config.Config.Authentication.AdminPassword, true)
+		models.InsertUserWithUsernameAndDatabase(db, config.Config.Authentication.AdminUsername, config.Config.Authentication.AdminPassword, true)
 	}
 }
 

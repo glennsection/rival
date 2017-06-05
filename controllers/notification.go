@@ -28,7 +28,7 @@ func GetNotifications(context *util.Context) {
 	}
 
 	// get all notifications for player
-	notifications, err := models.GetReceivedNotifications(context.DB, player, types)
+	notifications, err := models.GetReceivedNotifications(context, player, types)
 	util.Must(err)
 
 	// insert all sender names
@@ -46,7 +46,7 @@ func RespondNotification(context *util.Context) {
 	action := context.Params.GetRequiredString("action")
 
 	// get notification
-	notification, err := models.GetNotificationById(context.DB, notificationID)
+	notification, err := models.GetNotificationById(context, notificationID)
 	util.Must(err)
 
 	util.Must(respondNotification(context, notification, action))
@@ -57,7 +57,7 @@ func ViewNotifications(context *util.Context) {
 	notificationIDs := context.Params.GetRequiredIds("ids")
 
 	// handle notifications as viewed
-	models.ViewNotificationsByIds(context.DB, notificationIDs)
+	models.ViewNotificationsByIds(context, notificationIDs)
 }
 
 // TODO - migrate these into a more generic/universal system...
@@ -73,6 +73,8 @@ func prepareNotification(context *util.Context, notification *models.Notificatio
 
 	case "FriendRequest":
 		// TODO - add PlayerClient into data here...
+		//playerClient, err := player.GetPlayerClient(context) // TODO
+		//util.Must(err)
 
 	}
 
@@ -85,13 +87,13 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 	case "FriendRequest":
 		// handle friend request
 		if action == "accept" {
-			AcceptFriend(context, notification.SenderID, notification.ReceiverID)
+			AcceptFriendRequest(context, notification.SenderID, notification.ReceiverID)
 		}
 
 	}
 
 	// delete notification
-	err = notification.Delete(context.DB)
+	err = notification.Delete(context)
 
 	return
 }

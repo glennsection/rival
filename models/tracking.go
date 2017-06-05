@@ -39,23 +39,23 @@ func ensureIndexTracking(database *mgo.Database) {
 	}))
 }
 
-func GetTrackingById(database *mgo.Database, id bson.ObjectId) (tracking *Tracking, err error) {
-	err = database.C(TrackingCollectionName).Find(bson.M { "_id": id } ).One(&tracking)
+func GetTrackingById(context *util.Context, id bson.ObjectId) (tracking *Tracking, err error) {
+	err = context.DB.C(TrackingCollectionName).Find(bson.M { "_id": id } ).One(&tracking)
 	return
 }
 
-func (tracking *Tracking) Insert(database *mgo.Database) (err error) {
+func (tracking *Tracking) Insert(context *util.Context) (err error) {
 	tracking.ID = bson.NewObjectId()
 	tracking.CreatedTime = time.Now()
-	err = database.C(TrackingCollectionName).Insert(tracking)
+	err = context.DB.C(TrackingCollectionName).Insert(tracking)
 	return
 }
 
-func (tracking *Tracking) Delete(database *mgo.Database) (err error) {
-	return database.C(TrackingCollectionName).Remove(bson.M { "_id": tracking.ID })
+func (tracking *Tracking) Delete(context *util.Context) (err error) {
+	return context.DB.C(TrackingCollectionName).Remove(bson.M { "_id": tracking.ID })
 }
 
-func GetTrackings(database *mgo.Database, userId bson.ObjectId) (trackings *[]Tracking, err error) {
-	err = database.C(TrackingCollectionName).Find(bson.M { "us": userId } ).Sort("t0").All(&trackings)
+func GetTrackings(context *util.Context, userId bson.ObjectId) (trackings *[]Tracking, err error) {
+	err = context.DB.C(TrackingCollectionName).Find(bson.M { "us": userId } ).Sort("t0").All(&trackings)
 	return
 }

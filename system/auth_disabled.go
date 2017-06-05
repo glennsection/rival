@@ -20,7 +20,7 @@ func init() {
 	// find debug user instead of authenticating
 	debugUUID := util.Env.GetString("DEBUG_USER", "")
 	if debugUUID != "" {
-		debugUser, _ = models.GetUserByUUID(db, debugUUID)
+		debugUser, _ = models.GetUserByUsernameAndDatabase(db, debugUUID)
 		
 		if debugUser != nil {
 			log.Warningf("DEBUG - Build has disabled authentication, using debug user: %v", debugUUID)

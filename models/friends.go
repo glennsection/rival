@@ -27,20 +27,20 @@ func ensureIndexFriends(database *mgo.Database) {
 	}))
 }
 
-func (friends* Friends) Save(database *mgo.Database) (err error) {
+func (friends* Friends) Save(context *util.Context) (err error) {
 	// check if friends is new
 	if !friends.ID.Valid() {
 		friends.ID = bson.NewObjectId()
 	}
 
 	// update in DB
-	_, err = database.C(FriendsCollectionName).Upsert(bson.M { "_id": friends.ID }, friends)
+	_, err = context.DB.C(FriendsCollectionName).Upsert(bson.M { "_id": friends.ID }, friends)
 	return
 }
 
-func GetFriendsByPlayerId(database *mgo.Database, playerID bson.ObjectId, allowCreate bool) (friends *Friends, err error) {
+func GetFriendsByPlayerId(context *util.Context, playerID bson.ObjectId, allowCreate bool) (friends *Friends, err error) {
 	// find friends by player ID
-	err = database.C(FriendsCollectionName).Find(bson.M { "pid": playerID } ).One(&friends)
+	err = context.DB.C(FriendsCollectionName).Find(bson.M { "pid": playerID } ).One(&friends)
 
 	if err != nil && err.Error() == "not found" {
 		err = nil
@@ -50,7 +50,7 @@ func GetFriendsByPlayerId(database *mgo.Database, playerID bson.ObjectId, allowC
 				PlayerID: playerID,
 			}
 
-			err = friends.Save(database)
+			err = friends.Save(context)
 		}
 	}
 

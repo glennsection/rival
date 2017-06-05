@@ -20,7 +20,7 @@ func GetStoreOffers(context *util.Context) {
 	// Get Special Offers
 
 	// Get Cards
-	cards := player.GetStoreCards(context.DB)
+	cards := player.GetStoreCards(context)
 	for _, card := range cards {
 		storeItems = append(storeItems, card);
 	}

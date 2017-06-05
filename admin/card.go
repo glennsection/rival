@@ -22,7 +22,7 @@ func EditCard(context *util.Context) {
 	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
-	player, err := models.GetPlayerById(context.DB, playerId)
+	player, err := models.GetPlayerById(context, playerId)
 	util.Must(err)
 
 	for i, card := range player.Cards {
@@ -32,7 +32,7 @@ func EditCard(context *util.Context) {
 			player.Cards[i].WinCount = context.Params.GetRequiredInt("winCount")
 			player.Cards[i].LeaderWinCount = context.Params.GetRequiredInt("leaderWinCount")
 
-			player.Save(context.DB)
+			player.Save(context)
 		}
 	}
 	
@@ -44,7 +44,7 @@ func DeleteCard(context *util.Context) {
 	playerId := context.Params.GetRequiredId("playerId")
 	cardId := data.DataId(context.Params.GetRequiredInt("card"))
 
-	player, err := models.GetPlayerById(context.DB, playerId)
+	player, err := models.GetPlayerById(context, playerId)
 	util.Must(err)
 
 	// make sure player will maintain min cards
@@ -75,7 +75,7 @@ func DeleteCard(context *util.Context) {
 			}
 
 			// update DB
-			player.Save(context.DB)
+			player.Save(context)
 		}
 	} else {
 		context.Fail("Must maintain minimum of 9 cards for each player")

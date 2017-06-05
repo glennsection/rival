@@ -31,7 +31,7 @@ func EditMatch(context *util.Context) {
 	// parse parameters
 	matchId := context.Params.GetRequiredId("matchId")
 
-	match, err := models.GetMatchById(context.DB, matchId)
+	match, err := models.GetMatchById(context, matchId)
 	util.Must(err)
 
 	// handle request method
@@ -49,10 +49,10 @@ func DeleteMatch(context *util.Context) {
 	matchId := context.Params.GetRequiredId("matchId")
 	page := context.Params.GetInt("page", 1)
 
-	match, err := models.GetMatchById(context.DB, matchId)
+	match, err := models.GetMatchById(context, matchId)
 	util.Must(err)
 
-	match.Delete(context.DB)
+	match.Delete(context)
 
 	context.Redirect(fmt.Sprintf("/admin/matches?page=%d", page), 302)
 }

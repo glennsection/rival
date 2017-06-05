@@ -67,9 +67,9 @@ func (user *User) HashPassword(password string) {
 	user.Password = hash
 }
 
-func InsertUserWithUUID(database *mgo.Database, uuid string, tag string) (user *User, err error) {
+func InsertUserWithUUID(context *util.Context, uuid string, tag string) (user *User, err error) {
 	// // check existing user
-	// user, _ = GetUserByUUID(database, uuid)
+	// user, _ = GetUserByUUID(context, uuid)
 	// if user != nil {
 	// 	panic(fmt.Sprintf("User already exists with UUID: %s", uuid))
 	// }
@@ -83,17 +83,21 @@ func InsertUserWithUUID(database *mgo.Database, uuid string, tag string) (user *
 		CreatedTime: time.Now(),
 	}
 
-	err = database.C(UserCollectionName).Insert(user)
+	err = context.DB.C(UserCollectionName).Insert(user)
 	return
 }
 
-func InsertUserWithUsername(database *mgo.Database, username string, password string, admin bool) (user *User, err error) {
+func InsertUserWithUsername(context *util.Context, username string, password string) (user *User, err error) {
 	// // check existing user
-	// user, _ = GetUserByUsername(database, username)
+	// user, _ = GetUserByUsername(context, username)
 	// if user != nil {
 	// 	panic(fmt.Sprintf("User already exists with username: %s", username))
 	// }
 
+	return InsertUserWithUsernameAndDatabase(context.DB, username, password, false)
+}
+
+func InsertUserWithUsernameAndDatabase(database *mgo.Database, username string, password string, admin bool) (user *User, err error) {
 	// create user
 	user = &User {
 		ID: bson.NewObjectId(),
@@ -107,40 +111,44 @@ func InsertUserWithUsername(database *mgo.Database, username string, password st
 	return
 }
 
-func GetUserById(database *mgo.Database, id bson.ObjectId) (user *User, err error) {
-	err = database.C(UserCollectionName).Find(bson.M { "_id": id } ).One(&user)
+func GetUserById(context *util.Context, id bson.ObjectId) (user *User, err error) {
+	err = context.DB.C(UserCollectionName).Find(bson.M { "_id": id } ).One(&user)
 	return
 }
 
-func GetUserByUUID(database *mgo.Database, uuid string) (user *User, err error) {
-	err = database.C(UserCollectionName).Find(bson.M { "uuid": uuid } ).One(&user)
+func GetUserByUUID(context *util.Context, uuid string) (user *User, err error) {
+	err = context.DB.C(UserCollectionName).Find(bson.M { "uuid": uuid } ).One(&user)
 	return
 }
 
-func GetUserByTag(database *mgo.Database, tag string) (user *User, err error) {
-	err = database.C(UserCollectionName).Find(bson.M { "tag": tag } ).One(&user)
+func GetUserByTag(context *util.Context, tag string) (user *User, err error) {
+	err = context.DB.C(UserCollectionName).Find(bson.M { "tag": tag } ).One(&user)
 	return
 }
 
-func GetUserByUsername(database *mgo.Database, username string) (user *User, err error) {
+func GetUserByUsername(context *util.Context, username string) (user *User, err error) {
+	return GetUserByUsernameAndDatabase(context.DB, username)
+}
+
+func GetUserByUsernameAndDatabase(database *mgo.Database, username string) (user *User, err error) {
 	err = database.C(UserCollectionName).Find(bson.M { "un": username } ).One(&user)
 	return
 }
 
-func (user *User) Save(database *mgo.Database) (err error) {
+func (user *User) Save(context *util.Context) (err error) {
 	// update user in database
-	_, err = database.C(UserCollectionName).Upsert(bson.M { "_id": user.ID }, user)
+	_, err = context.DB.C(UserCollectionName).Upsert(bson.M { "_id": user.ID }, user)
 	return
 }
 
-func (user *User) Delete(database *mgo.Database) (err error) {
+func (user *User) Delete(context *util.Context) (err error) {
 	// delete user from database
-	return database.C(UserCollectionName).Remove(bson.M { "_id": user.ID })
+	return context.DB.C(UserCollectionName).Remove(bson.M { "_id": user.ID })
 }
 
-func LoginUser(database *mgo.Database, username string, password string) (user *User, err error) {
+func LoginUser(context *util.Context, username string, password string) (user *User, err error) {
 	// get user
-	user, err = GetUserByUsername(database, username)
+	user, err = GetUserByUsername(context, username)
 	if user == nil || err != nil {
 		return
 	}

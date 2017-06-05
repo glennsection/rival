@@ -43,7 +43,7 @@ func ViewTracking(context *util.Context) {
 	// parse parameters
 	trackingId := context.Params.GetRequiredId("trackingId")
 
-	tracking, err := models.GetTrackingById(context.DB, trackingId)
+	tracking, err := models.GetTrackingById(context, trackingId)
 	util.Must(err)
 	
 	// set template bindings
@@ -55,10 +55,10 @@ func DeleteTracking(context *util.Context) {
 	trackingId := context.Params.GetRequiredId("trackingId")
 	page := context.Params.GetInt("page", 1)
 
-	tracking, err := models.GetTrackingById(context.DB, trackingId)
+	tracking, err := models.GetTrackingById(context, trackingId)
 	util.Must(err)
 
-	tracking.Delete(context.DB)
+	tracking.Delete(context)
 
 	context.Redirect(fmt.Sprintf("/admin/trackings?page=%d", page), 302)
 }

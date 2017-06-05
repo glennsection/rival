@@ -19,7 +19,7 @@ func authenticateDevice(context *util.Context, required bool) (err error) {
 	if tag != "" {
 		// login using player tag
 		if token == config.Config.Authentication.DebugToken {
-			user, err = models.GetUserByTag(context.DB, tag)
+			user, err = models.GetUserByTag(context, tag)
 
 			if user != nil {
 				SetUser(context, user)
@@ -29,19 +29,19 @@ func authenticateDevice(context *util.Context, required bool) (err error) {
 		// handle identifier as UUID
 		if uuid != "" {
 			// find user with UUID
-			user, err = models.GetUserByUUID(context.DB, uuid)
+			user, err = models.GetUserByUUID(context, uuid)
 
 			if required && user == nil {
 				// generate unique player tag
 				tag := util.GenerateTag()
 
 				// insert new user
-				user, err = models.InsertUserWithUUID(context.DB, uuid, tag)
+				user, err = models.InsertUserWithUUID(context, uuid, tag)
 				util.Must(err)
 
 				// insert new player
 				player := models.CreatePlayer(user.ID)
-				util.Must(player.Save(context.DB))
+				util.Must(player.Save(context))
 			}
 		}
 	}

@@ -36,7 +36,7 @@ func UnlockTome(context *util.Context) {
 	if !busy {
 		(&player.Tomes[index]).StartUnlocking()
 
-		util.Must(player.Save(context.DB))
+		util.Must(player.Save(context))
 
 		player.SetDirty(models.PlayerDataMask_Tomes)
 	} else {
@@ -61,7 +61,7 @@ func OpenTome(context *util.Context) {
 	// analytics
 	InsertTracking(context, "tomeOpened", bson.M { "rarity": player.Tomes[index].GetData().Rarity }, 0)
 
-	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
+	reward, err := player.AddRewards(context, &player.Tomes[index]) 
 	util.Must(err)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
@@ -88,7 +88,7 @@ func RushTome(context *util.Context) {
 
 	player.PremiumCurrency -= cost
 
-	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
+	reward, err := player.AddRewards(context, &player.Tomes[index]) 
 	util.Must(err)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
@@ -97,7 +97,7 @@ func RushTome(context *util.Context) {
 
 func ClaimFreeTome(context *util.Context) {
 	player := GetPlayer(context)
-	reward, err := player.ClaimFreeTome(context.DB)
+	reward, err := player.ClaimFreeTome(context)
 	util.Must(err)
 
 	if reward == nil {
@@ -114,7 +114,7 @@ func ClaimFreeTome(context *util.Context) {
 
 func ClaimArenaTome(context *util.Context) {
 	player := GetPlayer(context)
-	reward, err := player.ClaimArenaTome(context.DB)
+	reward, err := player.ClaimArenaTome(context)
 	util.Must(err)
 
 	if reward == nil {
