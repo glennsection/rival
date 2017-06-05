@@ -26,7 +26,7 @@ func CompleteQuest(context *util.Context) {
 
 	player.UpdateQuests()
 
-	reward, success := player.CollectQuest(index, context.DB)
+	reward, success := player.CollectQuest(index, context)
 	if !success {
 		context.Fail("Invalid Request")
 	}

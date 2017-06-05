@@ -55,7 +55,7 @@ func MatchResult(context *util.Context) {
 	util.Must(err)
 
 	if reward != nil {
-		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars)
+		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars, models.PlayerDataMask_Quests)
 		context.SetData("reward", reward)
 	}
 }

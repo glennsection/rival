@@ -4,8 +4,6 @@ import (
 	"time"
 	"encoding/json"
 	
-	"gopkg.in/mgo.v2"
-
 	"bloodtales/data"
 	"bloodtales/util"
 )
@@ -150,7 +148,7 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 
 // player specific quest functions below
 
-func (player *Player) CollectQuest(index int, database *mgo.Database) (*Reward, bool) {
+func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, bool) {
 	if player.Quests[index].State != QuestState_Collect {
 		return nil, false
 	}
@@ -161,7 +159,7 @@ func (player *Player) CollectQuest(index int, database *mgo.Database) (*Reward, 
 	}
 
 	player.Quests[index].StartCooldown()
-	player.Save(database)
+	player.Save(context)
 	return reward, true
 }
 
