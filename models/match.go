@@ -143,23 +143,23 @@ func (match *Match) UnmarshalJSON(raw []byte) error {
 	return nil
 }
 
-func GetMatchById(database *mgo.Database, id bson.ObjectId) (match *Match, err error) {
-	err = database.C(MatchCollectionName).Find(bson.M { "_id": id } ).One(&match)
+func GetMatchById(context *util.Context, id bson.ObjectId) (match *Match, err error) {
+	err = context.DB.C(MatchCollectionName).Find(bson.M { "_id": id } ).One(&match)
 	return
 }
 
-func (match *Match) Save(database *mgo.Database) (err error) {
+func (match *Match) Save(context *util.Context) (err error) {
 	if !match.ID.Valid() {
 		match.ID = bson.NewObjectId()
 	}
 
 	// update match in database
-	_, err = database.C(MatchCollectionName).Upsert(bson.M { "_id": match.ID }, match)
+	_, err = context.DB.C(MatchCollectionName).Upsert(bson.M { "_id": match.ID }, match)
 	return
 }
 
-func (match *Match) Delete(database *mgo.Database) (err error) {
-	return database.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
+func (match *Match) Delete(context *util.Context) (err error) {
+	return context.DB.C(MatchCollectionName).Remove(bson.M { "_id": match.ID })
 }
 
 func (matchResult *MatchResult) String() string {
@@ -192,9 +192,9 @@ func ClearMatchResult(context *util.Context, roomID string) {
 	SetMatchResult(context, roomID, nil)
 }
 
-func ClearMatches(database *mgo.Database, player *Player) (err error) {
+func ClearMatches(context *util.Context, player *Player) (err error) {
 	// find and remove all invalid matches with player
-	_, err = database.C(MatchCollectionName).RemoveAll(bson.M {
+	_, err = context.DB.C(MatchCollectionName).RemoveAll(bson.M {
 		"$or": []bson.M {
 			bson.M { "id1": player.ID, },
 			bson.M { "id2": player.ID, },
@@ -210,9 +210,9 @@ func ClearMatches(database *mgo.Database, player *Player) (err error) {
  	return
 }
 
-func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (match *Match, err error) {
+func FindMatch(context *util.Context, player *Player, matchType MatchType) (match *Match, err error) {
 	// find existing match (TODO - verify that no other pending matches exist for player)
-	err = database.C(MatchCollectionName).Find(bson.M {
+	err = context.DB.C(MatchCollectionName).Find(bson.M {
 		"id1": bson.M {
 			"$ne": player.ID,
 		},
@@ -241,14 +241,14 @@ func FindMatch(database *mgo.Database, player *Player, matchType MatchType) (mat
 	}
 
 	// update database
-	err = match.Save(database)
+	err = match.Save(context)
 	return
 }
 
-func FailMatch(database *mgo.Database, player *Player) (err error) {
+func FailMatch(context *util.Context, player *Player) (err error) {
 	// find and remove all invalid matches with player
 	var matches []*Match
-	err = database.C(MatchCollectionName).Find(bson.M {
+	err = context.DB.C(MatchCollectionName).Find(bson.M {
 		"$or": []bson.M {
 			bson.M { "id1": player.ID, },
 			bson.M { "id2": player.ID, },
@@ -270,11 +270,11 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 				}
 				match.GuestID = bson.ObjectId("")
 				match.State = MatchOpen
-				match.Save(database)
+				match.Save(context)
 
 				// TODO FIXME - need to send (via websocket), to new host, the fact that they are now the host
 			} else {
-				match.Delete(database)
+				match.Delete(context)
 			}
 		}
 	}
@@ -282,10 +282,8 @@ func FailMatch(database *mgo.Database, player *Player) (err error) {
 }
 
 func CompleteMatch(context *util.Context, player *Player, roomID string, outcome MatchOutcome, playerScore int, opponentScore int) (match *Match, matchReward *MatchReward, err error) {
-	database := context.DB
-
 	// get match from database
-	err = database.C(MatchCollectionName).Find(bson.M {
+	err = context.DB.C(MatchCollectionName).Find(bson.M {
 		"rm": roomID,
 	}).One(&match)
 	if err != nil {
@@ -339,7 +337,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 			}
 
 			// update match in database
-			saveErr := match.Save(database)
+			saveErr := match.Save(context)
 			log.Printf("SAVED MATCH: %v", match.RoomID)
 			if saveErr != nil {
 				log.Error(saveErr)
@@ -351,12 +349,12 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 	} else {
 		// get players
 		var host *Player
-		host, err = match.GetHost(database)
+		host, err = match.GetHost(context)
 		if err != nil {
 			return
 		}
 		var guest *Player
-		guest, err = match.GetGuest(database)
+		guest, err = match.GetGuest(context)
 		if err != nil {
 			return
 		}
@@ -384,7 +382,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		player.ModifyArenaPoints(playerResults.Score)
 		matchReward.ArenaPoints = player.ArenaPoints - previousArenaPoints
 		if isWinner {
-			matchReward.TomeIndex, matchReward.Tome = player.AddVictoryTome(database)
+			matchReward.TomeIndex, matchReward.Tome = player.AddVictoryTome(context)
 			player.WinCount += 1
 		} else {
 			player.LossCount += 1
@@ -393,7 +391,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		player.Rating += playerResults.Rating
 
 		// save player
-		err = player.Save(context.DB)
+		err = player.Save(context)
 
 		// update cached player leaderboard place
 		player.UpdatePlace(context)
@@ -461,19 +459,19 @@ func (match *Match) ProcessMatchResults(outcome MatchOutcome, host *Player, gues
 	return
 }
 
-func (match *Match) GetHost(database *mgo.Database) (player *Player, err error) {
+func (match *Match) GetHost(context *util.Context) (player *Player, err error) {
 	if match.host == nil {
 		if match.HostID.Valid() {
-			match.host, err = GetPlayerById(database, match.HostID)
+			match.host, err = GetPlayerById(context, match.HostID)
 		}
 	}
 	return match.host, err
 }
 
-func (match *Match) GetGuest(database *mgo.Database) (player *Player, err error) {
+func (match *Match) GetGuest(context *util.Context) (player *Player, err error) {
 	if match.guest == nil {
 		if match.GuestID.Valid() {
-			match.guest, err = GetPlayerById(database, match.GuestID)
+			match.guest, err = GetPlayerById(context, match.GuestID)
 		}
 	}
 	return match.guest, err

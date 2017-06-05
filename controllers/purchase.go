@@ -22,7 +22,7 @@ func Purchase(context *util.Context) {
 	storeItem := data.GetStoreItem(data.ToDataId(itemId))
 	if storeItem == nil {
 		// item is not a default store item so check to see if it is a card for sale
-		cards := player.GetStoreCards(context.DB)
+		cards := player.GetStoreCards(context)
 		for _, card := range cards {
 			if itemId == card.Name {
 				storeItem = &card
@@ -66,7 +66,7 @@ func Purchase(context *util.Context) {
 	case data.StoreCategoryTomes:
 		// claim tome
 		tomeId := storeItem.ItemID
-		reward, err := player.ClaimTome(context.DB, tomeId)
+		reward, err := player.ClaimTome(context, tomeId)
 		util.Must(err)
 		
 		if reward == nil {
@@ -83,5 +83,5 @@ func Purchase(context *util.Context) {
 		context.SetData("storeItem", storeItem)
 	}
 
-	player.Save(context.DB)
+	player.Save(context)
 }

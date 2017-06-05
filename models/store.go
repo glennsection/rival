@@ -6,8 +6,6 @@ import (
 	"sort"
 	"fmt"
 
-	"gopkg.in/mgo.v2"
-
 	"bloodtales/data"
 	"bloodtales/util"
 )
@@ -25,7 +23,7 @@ func (player *Player) GetNumCardsPurchased(rarity string) *int {
 	return nil
 }
 
-func (player *Player) GetStoreCards(database *mgo.Database) []data.StoreData {
+func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	// seed random with current utc date + unique identifer
 	year, month, day := time.Now().UTC().Date() 
 	date := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
@@ -38,7 +36,7 @@ func (player *Player) GetStoreCards(database *mgo.Database) []data.StoreData {
 			player.CardsPurchased[i] = 0
 		}
 
-		player.Save(database)
+		player.Save(context)
 	}
 
 	rand.Seed(player.PurchaseResetTime)
@@ -76,7 +74,7 @@ func (player *Player) GetStoreCard(rarity string) data.StoreData {
 		Cost: player.GetCardCost(id, rarity),
 	}
 
-	fmt.Println(fmt.Sprintf("Name: %s, Rarity: %s", card.Name, rarity))
+	//fmt.Println(fmt.Sprintf("Name: %s, Rarity: %s", card.Name, rarity))
 
 	return storeCard
 }

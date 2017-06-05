@@ -27,7 +27,7 @@ func GetPlayer(context *util.Context) (player *models.Player) {
 	if ok == false {
 		user := system.GetUser(context)
 		if user != nil {
-			player, _ = models.GetPlayerByUser(context.DB, user.ID)
+			player, _ = models.GetPlayerByUser(context, user.ID)
 
 			if player != nil {
 				context.Params.Set("_player", player)
@@ -46,11 +46,11 @@ func SetPlayerName(context *util.Context) {
 
 	// set name and update
 	user.Name = name
-	err := user.Save(context.DB)
+	err := user.Save(context)
 	util.Must(err)
 
 	// get player
-	player, err := models.GetPlayerByUser(context.DB, user.ID)
+	player, err := models.GetPlayerByUser(context, user.ID)
 	util.Must(err)
 
 	// get cache keys
@@ -71,7 +71,7 @@ func GetUserName(context *util.Context, userID bson.ObjectId) string {
 
 	// immediately cache latest name
 	if name == "" {
-		user, err := models.GetUserById(context.DB, userID)
+		user, err := models.GetUserById(context, userID)
 		if err == nil && user != nil {
 			context.Cache.Set(key, user.Name)
 			name = user.Name
@@ -89,9 +89,9 @@ func GetPlayerName(context *util.Context, playerID bson.ObjectId) string {
 
 	// immediately cache latest name
 	if name == "" {
-		player, _ := models.GetPlayerById(context.DB, playerID)
+		player, _ := models.GetPlayerById(context, playerID)
 		if player != nil {
-			user, _ := models.GetUserById(context.DB, player.UserID)
+			user, _ := models.GetUserById(context, player.UserID)
 			if user != nil {
 				context.Cache.Set(key, user.Name)
 				name = user.Name
@@ -114,7 +114,7 @@ func GetUserIdByPlayerId(context *util.Context, playerID bson.ObjectId) bson.Obj
 		userID = bson.ObjectIdHex(userIDHex)
 	} else {
 		// get and cache ID
-		player, _ := models.GetPlayerById(context.DB, playerID)
+		player, _ := models.GetPlayerById(context, playerID)
 		if player != nil {
 			userID = player.UserID
 			context.Cache.Set(key, userID.Hex())
@@ -129,7 +129,7 @@ func OverwritePlayer(context *util.Context) {
 
 	// update data
 	player := GetPlayer(context)
-	util.Must(player.UpdateFromJson(context.DB, data))
+	util.Must(player.UpdateFromJson(context, data))
 }
 
 func FetchPlayer(context *util.Context) {
@@ -139,7 +139,7 @@ func FetchPlayer(context *util.Context) {
 	
 	if player != nil {
 		// update rewards
-		util.Must(player.UpdateRewards(context.DB))
+		util.Must(player.UpdateRewards(context))
 
 		// add in user name
 		player.Name = user.Name

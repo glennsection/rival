@@ -56,7 +56,7 @@ func EditGuild(context *util.Context) {
 	// parse parameters
 	guildId := context.Params.GetRequiredId("guildId")
 
-	guild, err := models.GetGuildById(context.DB, guildId)
+	guild, err := models.GetGuildById(context, guildId)
 	util.Must(err)
 
 	// get members
@@ -80,10 +80,10 @@ func DeleteGuild(context *util.Context) {
 	guildId := context.Params.GetRequiredId("guildId")
 	page := context.Params.GetInt("page", 1)
 
-	guild, err := models.GetGuildById(context.DB, guildId)
+	guild, err := models.GetGuildById(context, guildId)
 	util.Must(err)
 
-	guild.Delete(context.DB)
+	guild.Delete(context)
 
 	context.Redirect(fmt.Sprintf("/admin/guilds?page=%d", page), 302)
 }

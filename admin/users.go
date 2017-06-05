@@ -57,10 +57,10 @@ func EditUser(context *util.Context) {
 	// parse parameters
 	userId := context.Params.GetRequiredId("userId")
 
-	user, err := models.GetUserById(context.DB, userId)
+	user, err := models.GetUserById(context, userId)
 	util.Must(err)
 
-	player, err := models.GetPlayerByUser(context.DB, userId)
+	player, err := models.GetPlayerByUser(context, userId)
 	if err != nil {
 		if err.Error() != "not found" {
 			panic(err)
@@ -85,7 +85,7 @@ func EditUser(context *util.Context) {
 		}
 
 		if userUpdated {
-			user.Save(context.DB)
+			user.Save(context)
 		}
 
 		if player != nil {
@@ -134,7 +134,7 @@ func EditUser(context *util.Context) {
 				player.MatchCount = matchCount
 			}
 
-			player.Save(context.DB)
+			player.Save(context)
 		}
 
 		context.Message("Player updated!")
@@ -150,10 +150,10 @@ func ResetUser(context *util.Context) {
 	userId := context.Params.GetId("userId")
 
 	if userId.Valid() {
-		player, err := models.GetPlayerByUser(context.DB, userId)
+		player, err := models.GetPlayerByUser(context, userId)
 		util.Must(err)
 
-		player.Reset(context.DB)
+		player.Reset(context)
 
 		context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userId.Hex()), 302)
 	} else {
@@ -162,7 +162,7 @@ func ResetUser(context *util.Context) {
 		context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
 
 		for _, player := range players {
-			player.Reset(context.DB)
+			player.Reset(context)
 		}
 
 		context.Redirect("/admin/users", 302)
@@ -174,14 +174,14 @@ func DeleteUser(context *util.Context) {
 	userId := context.Params.GetRequiredId("userId")
 	page := context.Params.GetInt("page", 1)
 
-	user, err := models.GetUserById(context.DB, userId)
+	user, err := models.GetUserById(context, userId)
 	util.Must(err)
 
-	player, err := models.GetPlayerByUser(context.DB, userId)
+	player, err := models.GetPlayerByUser(context, userId)
 	util.Must(err)
 
-	user.Delete(context.DB)
-	player.Delete(context.DB)
+	user.Delete(context)
+	player.Delete(context)
 
 	context.Redirect(fmt.Sprintf("/admin/users?page=%d", page), 302)
 }

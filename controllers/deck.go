@@ -32,7 +32,7 @@ func SetLeaderCard(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Deck)
 
-	player.Save(context.DB)
+	player.Save(context)
 }
 
 func SetDeckCard(context *util.Context) {
@@ -60,7 +60,7 @@ func SetDeckCard(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Deck)
 
-	player.Save(context.DB)
+	player.Save(context)
 }
 
 func SwitchDeck(context *util.Context) {
@@ -80,5 +80,5 @@ func SwitchDeck(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Loadout)
 
-	player.Save(context.DB)
+	player.Save(context)
 }

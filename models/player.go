@@ -99,15 +99,15 @@ func ensureIndexPlayer(database *mgo.Database) {
 	}))
 }
 
-func GetPlayerById(database *mgo.Database, id bson.ObjectId) (player *Player, err error) {
+func GetPlayerById(context *util.Context, id bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
-	err = database.C(PlayerCollectionName).Find(bson.M { "_id": id } ).One(&player)
+	err = context.DB.C(PlayerCollectionName).Find(bson.M { "_id": id } ).One(&player)
 	return
 }
 
-func GetPlayerByUser(database *mgo.Database, userId bson.ObjectId) (player *Player, err error) {
+func GetPlayerByUser(context *util.Context, userId bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
-	err = database.C(PlayerCollectionName).Find(bson.M { "us": userId } ).One(&player)
+	err = context.DB.C(PlayerCollectionName).Find(bson.M { "us": userId } ).One(&player)
 	return
 }
 
@@ -131,8 +131,8 @@ func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	return
 }
 
-func (player *Player) CreatePlayerClient(database *mgo.Database) (client *PlayerClient, err error) {
-	playerUser, err := GetUserById(database, player.UserID)
+func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClient, err error) {
+	playerUser, err := GetUserById(context, player.UserID)
 	if err != nil {
 		return
 	}
@@ -162,17 +162,17 @@ func (player *Player) CreatePlayerClient(database *mgo.Database) (client *Player
 	return
 }
 
-func (player *Player) Reset(database *mgo.Database) (err error) {
+func (player *Player) Reset(context *util.Context) (err error) {
 	// reset player and update in database
 	player.loadDefaults()
 
-	return player.Save(database)
+	return player.Save(context)
 }
 
-func ResetPlayers(database *mgo.Database) error {
+func ResetPlayers(context *util.Context) error {
 	// TODO - this is an example of a bulk aggregate operation, but isn't fully tested...
 	var result bson.D
-	return database.Run(bson.D {
+	return context.DB.Run(bson.D {
 		bson.DocElem { "update",  PlayerCollectionName },
 		bson.DocElem { "updates",  []bson.M {
 			bson.M {
@@ -200,7 +200,7 @@ func ResetPlayers(database *mgo.Database) error {
 	}, &result)
 }
 
-func (player *Player) Save(database *mgo.Database) (err error) {
+func (player *Player) Save(context *util.Context) (err error) {
 	if !player.ID.Valid() {
 		player.ID = bson.NewObjectId()
 	}
@@ -208,46 +208,37 @@ func (player *Player) Save(database *mgo.Database) (err error) {
 	// last active time
 	player.LastTime = time.Now()
 
-	// HACK !!!!!!!
-	raw, _ := json.Marshal(player.Tomes)
-	log.Printf("Saving player %s: %d/%d/%d %s", player.ID.Hex(), player.WinCount, player.LossCount, player.MatchCount, string(raw))
-
 	// update entire player to database
-	_, err = database.C(PlayerCollectionName).Upsert(bson.M { "_id": player.ID }, player)
-
-	// HACK !!!!!
-	if err != nil {
-		log.Errorf("Saving player: %v", err);
-	}
+	_, err = context.DB.C(PlayerCollectionName).Upsert(bson.M { "_id": player.ID }, player)
 	return
 }
 
-func (player *Player) UpdateFromJson(database *mgo.Database, data string) (err error) {
+func (player *Player) UpdateFromJson(context *util.Context, data string) (err error) {
 	// parse updated data
 	err = json.Unmarshal([]byte(data), &player)
 	if err == nil {
 		// update database
-		err = player.Save(database)
+		err = player.Save(context)
 	}
 	return
 }
 
-func (player *Player) Update(database *mgo.Database, updates bson.M) (err error) {
+func (player *Player) Update(context *util.Context, updates bson.M) (err error) {
 	// update given values
-	err = database.C(PlayerCollectionName).Update(bson.M { "_id": player.ID }, bson.M { "$set": updates })
+	err = context.DB.C(PlayerCollectionName).Update(bson.M { "_id": player.ID }, bson.M { "$set": updates })
 	return
 }
 
-func (player *Player) Delete(database *mgo.Database) (err error) {
+func (player *Player) Delete(context *util.Context) (err error) {
 	// delete player from database
-	return database.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
+	return context.DB.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
 }
 
 func (player *Player) GetLevel() int {
 	return data.GetAccountLevel(player.XP)
 }
 
-func (player *Player) AddVictoryTome(database *mgo.Database) (index int, tome *Tome) {
+func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *Tome) {
 	//first check to see if the player has an available tome slot, else return
 	tome = nil
 	index = -1
@@ -286,7 +277,7 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (index int, tome *T
 	return
 }
 
-func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *TomeReward, err error) {
+func (player *Player) AddRewards(context *util.Context, tome *Tome) (reward *TomeReward, err error) {
 	reward = tome.OpenTome(player.GetLevel())
 	player.PremiumCurrency += reward.PremiumCurrency
 	player.StandardCurrency += reward.StandardCurrency
@@ -295,11 +286,11 @@ func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *To
 		player.AddCards(id, reward.NumRewarded[i])
 	}
 
-	err = player.Save(database)
+	err = player.Save(context)
 	return
 }
 
-func (player *Player) UpdateRewards(database *mgo.Database) error {
+func (player *Player) UpdateRewards(context *util.Context) error {
 	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
 
 	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
@@ -313,10 +304,10 @@ func (player *Player) UpdateRewards(database *mgo.Database) error {
 		(&player.Tomes[i]).UpdateTome()
 	}
 
-	return player.Save(database)
+	return player.Save(context)
 }
 
-func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (*TomeReward, error) {
+func (player *Player) ClaimTome(context *util.Context, tomeId string) (*TomeReward, error) {
 	tome := &Tome {
 		DataID: data.ToDataId(tomeId),
 	}
@@ -324,11 +315,11 @@ func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (*TomeRew
 	// check currency
 	// TODO
 
-	return player.AddRewards(database, tome)
+	return player.AddRewards(context, tome)
 }
 
-func (player *Player) ClaimFreeTome(database *mgo.Database) (tomeReward *TomeReward, err error) {
-	err = player.UpdateRewards(database)
+func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *TomeReward, err error) {
+	err = player.UpdateRewards(context)
 
 	if player.FreeTomes == 0 || err != nil {
 		return
@@ -340,17 +331,17 @@ func (player *Player) ClaimFreeTome(database *mgo.Database) (tomeReward *TomeRew
 
 	player.FreeTomes--
 
-	return player.ClaimTome(database, "TOME_COMMON")
+	return player.ClaimTome(context, "TOME_COMMON")
 }
 
-func (player *Player) ClaimArenaTome(database *mgo.Database) (tomeReward *TomeReward, err error) {
+func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *TomeReward, err error) {
 	if player.ArenaPoints < 10 {
 		return
 	}
 
 	player.ArenaPoints = 0;
 
-	return player.ClaimTome(database, "TOME_RARE")
+	return player.ClaimTome(context, "TOME_RARE")
 }
 
 func (player *Player) ModifyArenaPoints(val int) {
@@ -536,11 +527,11 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 	
 	if util.CheckMask(dirtyMask, PlayerDataMask_Guild) {
 		if player.GuildID.Valid() {
-			guild, err := GetGuildById(context.DB, player.GuildID)
+			guild, err := GetGuildById(context, player.GuildID)
 			if err != nil {
 				log.Error(err)
 			} else {
-				dataMap["guild"], err = guild.CreateGuildClient(context.DB)
+				dataMap["guild"], err = guild.CreateGuildClient(context)
 				if err != nil {
 					log.Error(err)
 				}

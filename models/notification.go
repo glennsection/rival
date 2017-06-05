@@ -57,7 +57,7 @@ func ensureIndexNotification(database *mgo.Database) {
 	}))
 }
 
-func (notification* Notification) Save(database *mgo.Database) (err error) {
+func (notification* Notification) Save(context *util.Context) (err error) {
 	// check if notification is new
 	if !notification.ID.Valid() {
 		notification.ID = bson.NewObjectId()
@@ -65,27 +65,27 @@ func (notification* Notification) Save(database *mgo.Database) (err error) {
 	}
 
 	// update in DB
-	_, err = database.C(NotificationCollectionName).Upsert(bson.M { "_id": notification.ID }, notification)
+	_, err = context.DB.C(NotificationCollectionName).Upsert(bson.M { "_id": notification.ID }, notification)
 	return
 }
 
-func (notification *Notification) Delete(database *mgo.Database) (err error) {
-	return database.C(NotificationCollectionName).Remove(bson.M { "_id": notification.ID })
+func (notification *Notification) Delete(context *util.Context) (err error) {
+	return context.DB.C(NotificationCollectionName).Remove(bson.M { "_id": notification.ID })
 }
 
-func GetNotificationById(database *mgo.Database, id bson.ObjectId) (notification *Notification, err error) {
+func GetNotificationById(context *util.Context, id bson.ObjectId) (notification *Notification, err error) {
 	// find notification by ID
-	err = database.C(NotificationCollectionName).Find(bson.M { "_id": id } ).One(&notification)
+	err = context.DB.C(NotificationCollectionName).Find(bson.M { "_id": id } ).One(&notification)
 	return
 }
 
-func GetSentNotifications(database *mgo.Database, player *Player) (notifications []*Notification, err error) {
+func GetSentNotifications(context *util.Context, player *Player) (notifications []*Notification, err error) {
 	// get all notifications sent from player
-	err = database.C(NotificationCollectionName).Find(bson.M { "sid": player.ID } ).Sort("t0").All(&notifications)
+	err = context.DB.C(NotificationCollectionName).Find(bson.M { "sid": player.ID } ).Sort("t0").All(&notifications)
 	return
 }
 
-func GetReceivedNotifications(database *mgo.Database, player *Player, types []string) (notifications []*Notification, err error) {
+func GetReceivedNotifications(context *util.Context, player *Player, types []string) (notifications []*Notification, err error) {
 	conditions := []bson.M {
 		bson.M { "gd": false, "rid": player.ID, },
 		bson.M { "gd": false, "rid": bson.M { "$exists": false }, },
@@ -102,16 +102,16 @@ func GetReceivedNotifications(database *mgo.Database, player *Player, types []st
 	}
 
 	// get all pending notifications sent to player
-	err = database.C(NotificationCollectionName).Find(bson.M { "$or": conditions }).Sort("t0").All(&notifications)
+	err = context.DB.C(NotificationCollectionName).Find(bson.M { "$or": conditions }).Sort("t0").All(&notifications)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func ViewNotificationsByIds(database *mgo.Database, ids []bson.ObjectId) (err error) {
+func ViewNotificationsByIds(context *util.Context, ids []bson.ObjectId) (err error) {
 	// remove all viewed notifications that require no action from the user
-	_, err = database.C(NotificationCollectionName).RemoveAll(bson.M {
+	_, err = context.DB.C(NotificationCollectionName).RemoveAll(bson.M {
 		"_id": bson.M {
 			"$in": ids,
 		},

@@ -49,7 +49,7 @@ func authenticateToken(context *util.Context, required bool) (err error) {
 			if claims, ok := token.Claims.(jwt.MapClaims); ok {
 				if username, ok := claims["username"].(string); ok {
 					var user *models.User
-					user, err = models.GetUserByUsername(context.DB, username)
+					user, err = models.GetUserByUsername(context, username)
 
 					if user == nil {
 						err = errors.New(fmt.Sprintf("Failed to find user indicated by authentication token: %v (%v)", username, err))

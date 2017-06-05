@@ -17,7 +17,7 @@ func MatchClear(context *util.Context) {
 	player := GetPlayer(context)
 
 	// clear invalid matches
-	util.Must(models.ClearMatches(context.DB, player))
+	util.Must(models.ClearMatches(context, player))
 }
 
 func MatchFind(context *util.Context) {
@@ -27,7 +27,7 @@ func MatchFind(context *util.Context) {
 	player := GetPlayer(context)
 
 	// find or queue match
-	match, err := models.FindMatch(context.DB, player, matchType)
+	match, err := models.FindMatch(context, player, matchType)
 	util.Must(err)
 
 	// respond
@@ -38,7 +38,7 @@ func MatchFail(context *util.Context) {
 	player := GetPlayer(context)
 
 	// fail any current match
-	util.Must(models.FailMatch(context.DB, player))
+	util.Must(models.FailMatch(context, player))
 }
 
 func MatchResult(context *util.Context) {

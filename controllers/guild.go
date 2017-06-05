@@ -20,6 +20,6 @@ func CreateGuild(context *util.Context) {
 	// TODO - make sure player doesn't already own a guild...
 
 	// create guild
-	_, err := models.CreateGuild(context.DB, player, name)
+	_, err := models.CreateGuild(context, player, name)
 	util.Must(err)
 }

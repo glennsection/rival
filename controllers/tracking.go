@@ -48,6 +48,6 @@ func InsertTracking(context *util.Context, event string, data bson.M, expireAfte
 	}
 
 	// insert tracking
-	util.Must(tracking.Insert(context.DB))
+	util.Must(tracking.Insert(context))
 	return
 }
