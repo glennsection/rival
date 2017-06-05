@@ -51,6 +51,7 @@ type Player struct {
 	StandardCurrency    int             `bson:"cs" json:"standardCurrency"`
 	PremiumCurrency     int             `bson:"cp" json:"premiumCurrency"`
 	Cards               []Card          `bson:"cd" json:"cards"`
+	UncollectedCards    []Card          `bson:"uc" json:"uncollectedCards"`
 	Decks               []Deck          `bson:"ds" json:"decks"`
 	CurrentDeck         int             `bson:"dc" json:"currentDeck"`
 	Tomes               []Tome          `bson:"tm" json:"tomes"`
@@ -403,7 +404,6 @@ func (player *Player) UpdatePlace(context *util.Context) {
 		pointsFactor := player.ArenaPoints
 
 		score := winsFactor + matchesFactor + pointsFactor
-		log.Printf("Player.UpdatePlace %s => %d", player.ID.Hex(), score)
 		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
 	}
 }
@@ -492,6 +492,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 	
 	if util.CheckMask(dirtyMask, PlayerDataMask_Cards) {
 		dataMap["cards"] = player.Cards
+		dataMap["uncollectedCards"] = player.UncollectedCards
 	}
 	
 	if util.CheckMask(dirtyMask, PlayerDataMask_Deck) {
