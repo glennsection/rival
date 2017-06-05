@@ -53,9 +53,9 @@ func authenticateToken(context *util.Context, required bool) (err error) {
 
 					if user == nil {
 						err = errors.New(fmt.Sprintf("Failed to find user indicated by authentication token: %v (%v)", username, err))
+					} else {
+						SetUser(context, user)
 					}
-
-					SetUser(context, user)
 				}
 			}
 		}

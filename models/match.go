@@ -338,7 +338,6 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 
 			// update match in database
 			saveErr := match.Save(context)
-			log.Printf("SAVED MATCH: %v", match.RoomID)
 			if saveErr != nil {
 				log.Error(saveErr)
 			}
@@ -367,7 +366,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 	}
 
 	// check that all is well, and update player in database
-	if match.State != MatchInvalid && err == nil && outcome != MatchSurrender {
+	if match.State != MatchInvalid && err == nil {
 		matchReward = &MatchReward {}
 		var playerResults *MatchPlayerResult
 
@@ -378,9 +377,13 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		} else {
 			playerResults = &matchResult.Guest
 		}
-		previousArenaPoints := player.ArenaPoints
-		player.ModifyArenaPoints(playerResults.Score)
-		matchReward.ArenaPoints = player.ArenaPoints - previousArenaPoints
+
+		if outcome != MatchSurrender {
+			previousArenaPoints := player.ArenaPoints
+			player.ModifyArenaPoints(playerResults.Score)
+			matchReward.ArenaPoints = player.ArenaPoints - previousArenaPoints
+		}
+
 		if isWinner {
 			matchReward.TomeIndex, matchReward.Tome = player.AddVictoryTome(context)
 			player.WinCount += 1

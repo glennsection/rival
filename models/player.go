@@ -403,6 +403,7 @@ func (player *Player) UpdatePlace(context *util.Context) {
 		pointsFactor := player.ArenaPoints
 
 		score := winsFactor + matchesFactor + pointsFactor
+		log.Printf("Player.UpdatePlace %s => %d", player.ID.Hex(), score)
 		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
 	}
 }
