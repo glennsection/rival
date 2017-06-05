@@ -31,7 +31,7 @@ type QuestData struct { // must be embedded in all structs implementing QuestDat
 	Disposable 				bool 				`json:"disposable"`		
 	Time 					int64 				`json:"time"`
 	PercentChance			float32 			`json:"percentChance"`
-	Objectives 				*util.Stream	
+	Objectives 				map[string]interface{}	
 }
 
 type QuestDataClientAlias QuestData
@@ -83,17 +83,16 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 	quest.RewardID = ToDataId(client.RewardID)
 
 	// assign objectives
-	quest.Objectives = NewQuestObjectivesStreamSource()
+	quest.Objectives = map[string]interface{}{}
 	switch client.LogicType {
 
 	case "Battle":
 		quest.LogicType = QuestLogicType_Battle
-
-		quest.Objectives.Set("completionCondition", client.VictoryCount)
-		quest.Objectives.Set("requiresVictory", client.RequiresVictory)
-		quest.Objectives.Set("winAsLeader", client.WinAsLeader)
-		quest.Objectives.Set("useRandomCard", client.UseRandomCard)
-		quest.Objectives.Set("cardId", ToDataId(client.CardID))
+		quest.Objectives["completionCondition"] = client.VictoryCount
+		quest.Objectives["requiresVictory"] = client.RequiresVictory
+		quest.Objectives["winAsLeader"] = client.WinAsLeader
+		quest.Objectives["useRandomCard"] = client.UseRandomCard
+		quest.Objectives["cardId"] = client.CardID
 	default:
 	}
 

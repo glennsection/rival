@@ -58,7 +58,7 @@ type Player struct {
 	FreeTomes           int             `bson:"ft" json:"freeTomes"`
 	FreeTomeUnlockTime  int64           `bson:"fu" json:"freeTomeUnlockTime"`
 
-	Quests 				[3]QuestSlot 	`bson:"qu" json:"quests"`
+	Quests 				[]QuestSlot 	`bson:"qu" json:"quests"`
 
 	GuildID             bson.ObjectId   `bson:"gd,omitempty" json:"-"`
 	GuildRole           GuildRole       `bson:"gr,omitempty" json:"-"`
@@ -126,6 +126,11 @@ func (player *Player) loadDefaults() {
 func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	player = &Player {}
 	player.loadDefaults()
+
+	player.Quests = make([]QuestSlot,3,3)
+	for i,_ := range player.Quests {
+		player.AssignRandomQuest(&(player.Quests[i]))
+	}
 	
 	player.UserID = userID
 	return

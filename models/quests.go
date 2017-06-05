@@ -25,10 +25,43 @@ type QuestSlot struct {
 	ExpireTime 		int64 					`bson:"et"`
 }
 
+type QuestSlotClient struct {
+	Quest 			string 					`json:"questInstance"`
+	State 			string 					`json:"questSlotState"`
+	UnlockTime 		int64 					`json:"questUnlockTime"`
+	ExpireTime 		int64 					`json:"questExpireTime"`
+}
+
 type Quest struct {
 	DataID 			data.DataId 			`bson:"id"`
 	LogicType 		data.QuestLogicType 	`bson:"lt"`
-	Progress		util.Stream 			`bson:"qp"`
+	Progress		map[string]interface{}	`bson:"qp"`
+}
+
+func (slot *QuestSlot) MarshalJSON() ([]byte, error) {
+	// create client model
+	client := &QuestSlotClient{
+		UnlockTime: slot.UnlockTime,
+		ExpireTime: slot.ExpireTime,
+	}
+
+	// client quest 
+	quest,_ := json.Marshal(&slot.Quest)
+	client.Quest = string(quest)
+
+	// client quest state
+	switch(slot.State) {
+		case QuestState_Ready:
+			client.State = "Ready"
+		case QuestState_InProgress:
+			client.State = "InProgress"
+		case QuestState_Collect:
+			client.State = "Collect"
+		case QuestState_Cooldown:
+			client.State = "Cooldown"
+	}
+
+	return json.Marshal(client)
 }
 
 func (quest *Quest) MarshalJSON() ([]byte, error) {
@@ -40,8 +73,8 @@ func (quest *Quest) MarshalJSON() ([]byte, error) {
 
 	case data.QuestLogicType_Battle:
 		client["logicType"] = "Battle"
-		client["numGamesWon"] = quest.Progress.GetRequiredInt("progress")
-		client["chosenCardId"] = data.ToDataName(data.DataId(quest.Progress.GetRequiredInt64("cardId")))
+		client["numGamesWon"] = quest.Progress["progress"].(int)
+		client["chosenCardId"] = quest.Progress["cardId"].(string)
 
 	default:
 	}
@@ -70,15 +103,15 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	questData := data.GetQuestData(quest.DataID)
 
 	//objectives
-	completionCondition := questData.Objectives.GetRequiredInt("completionCondition")
-	requiresVictory := questData.Objectives.GetRequiredBool("requiresVictory")
-	winAsLeader := questData.Objectives.GetRequiredBool("winAsLeader")
+	completionCondition := questData.Objectives["completionCondition"].(int)
+	requiresVictory := questData.Objectives["requiresVictory"].(bool)
+	winAsLeader := questData.Objectives["winAsLeader"].(bool)
 
 	//progress
-	progress := quest.Progress.GetRequiredInt("progress")
-	totalGamesWon := quest.Progress.GetRequiredInt("totalGamesWon")
-	totalGamesPlayed := quest.Progress.GetRequiredInt("totalGamesPlayed")
-	cardId := data.DataId(quest.Progress.GetRequiredInt64("cardId"))
+	progress := quest.Progress["progress"].(int)
+	totalGamesWon := quest.Progress["totalGamesWon"].(int)
+	totalGamesPlayed := quest.Progress["totalGamesPlayed"].(int)
+	cardId := data.ToDataId(quest.Progress["cardId"].(string))
 
 	// check update conditions and incremement progress if the conditions are met
 	if requiresVictory && totalGamesWon < player.WinCount {
@@ -108,9 +141,9 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 		progress = completionCondition
 	}
 
-	quest.Progress.Set("progress", progress)
-	quest.Progress.Set("totalGamesWon", player.WinCount)
-	quest.Progress.Set("totalGamesPlayed", player.MatchCount)
+	quest.Progress["progress"] = progress
+	quest.Progress["totalGamesWon"] = player.WinCount
+	quest.Progress["totalGamesPlayed"] = player.MatchCount
 
 	return
 }
@@ -139,25 +172,28 @@ func (player *Player) AssignRandomQuest(slot *QuestSlot) {
 
 	// prepare our BaseQuestData with an identifier
 	questId, questData := data.GetRandomQuestData()
-	quest := Quest {
+	slot.Quest = Quest {
 		DataID: questId,
 		LogicType: questData.LogicType,
-		Progress: *data.NewQuestObjectivesStreamSource(),
+		Progress: map[string]interface{}{},
 	}
 
 	// determine the logic type of the quest and prepare its progress based on the objectives specific to its type
-	switch quest.LogicType {
+	switch slot.Quest.LogicType {
 
 		case data.QuestLogicType_Battle:
-			quest.Progress.Set("progress", 0)
-			quest.Progress.Set("totalGamesWon", player.WinCount)
-			quest.Progress.Set("totalGamesPlayed", player.MatchCount)
-			
-			if questData.Objectives.GetRequiredBool("useRandomCard") {
-				//Get a random card
+			slot.Quest.Progress["progress"] = 0
+			slot.Quest.Progress["totalGamesWon"] = player.WinCount
+			slot.Quest.Progress["totalGamesPlayed"] = player.MatchCount
+
+			var cardId string
+			if questData.Objectives["useRandomCard"].(bool) {
+				cardDataId,_ := data.GetRandomCard()
+				cardId = data.ToDataName(cardDataId)
 			} else {
-				quest.Progress.Set("cardId", data.DataId(questData.Objectives.GetRequiredInt64("cardId")))
+				cardId = questData.Objectives["cardId"].(string)
 			}
+			slot.Quest.Progress["cardId"] = cardId
 
 		default:
 	}

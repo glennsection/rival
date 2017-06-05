@@ -3,7 +3,7 @@
 		{
 			"id": "VICTORY_QUEST",
 			"description": "Win 5 Matches",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "SOFT_CURRENCY_REWARD",
 			"disposable": true,
@@ -15,7 +15,7 @@
 		{
 			"id": "VICTORY_QUEST_PLAY",
 			"description": "Play 5 Matches",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "SOFT_CURRENCY_REWARD",
 			"disposable": true,
@@ -28,7 +28,7 @@
 		{
 			"id": "VICTORY_QUEST_RANDOM_LEADER",
 			"description": "Win 5 Matches as Leader",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "PREMIUM_CURRENCY_REWARD",
 			"disposable": true,
@@ -42,7 +42,7 @@
 		{
 			"id": "VICTORY_QUEST_RANDOM_DECK",
 			"description": "Win 5 Matches in deck",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "SOFT_CURRENCY_REWARD",
 			"disposable": true,
@@ -56,7 +56,7 @@
 		{
 			"id": "VICTORY_QUEST_PLAY_RANDOM_LEADER",
 			"description": "Play 5 Matches",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "SOFT_CURRENCY_REWARD",
 			"disposable": true,
@@ -71,7 +71,7 @@
 		{
 			"id": "VICTORY_QUEST_PLAY_RANDOM_DECK",
 			"description": "Win 5 Matches in deck",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "SOFT_CURRENCY_REWARD",
 			"disposable": true,
@@ -86,7 +86,7 @@
 		{
 			"id": "VICTORY_QUEST_SKELETON_INDECK",
 			"description": "Win 5 Matches with Armored Skeleton as leader",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "PREMIUM_CURRENCY_REWARD",
 			"disposable": true,
@@ -100,7 +100,7 @@
 		{
 			"id": "VICTORY_QUEST_RANDOM_LEADER_WEEKLY",
 			"description": "Win 20 Matches as Leader",
-			"questLogicType": "Victory",
+			"questLogicType": "Battle",
 			"type": "Weekly",
 			"rewardID": "PREMIUM_CURRENCY_REWARD_WEEKLY",
 			"disposable": true,
