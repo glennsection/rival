@@ -31,6 +31,6 @@ func CompleteQuest(context *util.Context) {
 		context.Fail("Invalid Request")
 	}
 
-	player.SetDirty(models.PlayerDataMask_Quests)
+	player.SetDirty(models.PlayerDataMask_Quests, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_XP)
 	context.SetData("reward", reward)
 }
