@@ -12,12 +12,14 @@ import (
 	"encoding/json"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/config"
 	"bloodtales/log"
 )
 
 type Context struct {
+	UserID          bson.ObjectId          `json:"-"`
 	DB              *mgo.Database          `json:"-"`
 	Session         *Session               `json:"-"`
 	Cache           *Cache                 `json:"-"`
@@ -192,13 +194,23 @@ func (context *Context) EndRequest(startTime time.Time) {
 	// show response profiling info
 	switch config.Config.Logging.Requests {
 	case config.BriefLogging, config.FullLogging:
+		// get success
 		successMessage := "Success"
 		successColor := "green!"
 		if context.Success == false {
 			successMessage = "Failed"
 			successColor = "red!"
 		}
-		Profile(log.Sprintf("[cyan]Request handled: %v%v ([" + successColor + "]%s[-][cyan])[-]", context.Request.Host, context.Request.URL.Path, successMessage), startTime)
+
+		// get user ID
+		userID := "Anonymous"
+		userColor := "yellow"
+		if context.UserID.Valid() {
+			userID = context.UserID.Hex()
+			userColor = "yellow!"
+		}
+
+		Profile(log.Sprintf("[cyan]Request handled: %v%v ([" + successColor + "]%s[-][cyan], User: [" + userColor + "]%s[-])[-]", context.Request.Host, context.Request.URL.Path, successMessage, userID), startTime)
 
 		if caughtErr == nil && context.Success == false {
 			log.Errorf("Request failed with: %s", context.Messages[0])

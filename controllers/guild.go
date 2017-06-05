@@ -23,4 +23,3 @@ func CreateGuild(context *util.Context) {
 	_, err := models.CreateGuild(context.DB, player, name)
 	util.Must(err)
 }
-

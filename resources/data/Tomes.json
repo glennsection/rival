@@ -12,14 +12,14 @@
     "gemsToUnlock": "18",
     "minGemReward": "2",
     "maxGemReward": "3",
-    "minGoldReward": "175",
-    "maxGoldReward": "350"
+    "minGoldReward": "35",
+    "maxGoldReward": "70"
   },
   {
     "id": "TOME_RARE",
     "rarity": "RARE",
-    "prefab": "UI/Tomes/Uncommon/Uncommon",
-    "icon": "UI/Tomes/Sprites/tome_UNCOMMON",
+    "prefab": "UI/Tomes/Rare/Rare",
+    "icon": "UI/Tomes/Sprites/tome_RARE",
     "chance": "30",
     "guaranteedRarities": "[3,2,0,0]",
     "cardsRewarded": "[13,4,1,1]",
@@ -33,8 +33,8 @@
   {
     "id": "TOME_EPIC",
     "rarity": "EPIC",
-    "prefab": "UI/Tomes/Rare/Rare",
-    "icon": "UI/Tomes/Sprites/tome_RARE",
+    "prefab": "UI/Tomes/Epic/Epic",
+    "icon": "UI/Tomes/Sprites/tome_EPIC",
     "chance": "15",
     "guaranteedRarities": "[3,2,1,0]",
     "cardsRewarded": "[25,6,2,1]",

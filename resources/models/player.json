@@ -58,7 +58,7 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_SPELL_HARPY",
+            "cardId": "CARD_LIGHTNING_SWORD",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -66,69 +66,6 @@
         },
         {
             "cardId": "CARD_SKULL_SWARM",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_EARTH_ELEMENTAL",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_WEREWOLF",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_SPELL_FROST_ORB",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_BOMB_ZOMBIE",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_DARK_MAGE",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_FRANKENSTEIN",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_GREMLINS",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_HELLHOUND",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_AUTOMATON",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -145,7 +82,7 @@
                 "CARD_MERC_SOLDIERS",
                 "CARD_GARGOYLE",
                 "CARD_GOLEM",
-                "CARD_SPELL_HARPY",
+                "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM"
             ]
         },
@@ -158,7 +95,7 @@
                 "CARD_MERC_SOLDIERS",
                 "CARD_GARGOYLE",
                 "CARD_GOLEM",
-                "CARD_SPELL_HARPY",
+                "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM"
             ]
         },
@@ -171,7 +108,7 @@
                 "CARD_MERC_SOLDIERS",
                 "CARD_GARGOYLE",
                 "CARD_GOLEM",
-                "CARD_SPELL_HARPY",
+                "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM"
             ]
         }

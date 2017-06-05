@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"gopkg.in/mgo.v2/bson"
+
 	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/system"
@@ -56,6 +58,9 @@ func OpenTome(context *util.Context) {
 		return
 	}
 
+	// analytics
+	InsertTracking(context, "tomeOpened", bson.M { "rarity": player.Tomes[index].GetData().Rarity }, 0)
+
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
 	util.Must(err)
 
@@ -78,6 +83,9 @@ func RushTome(context *util.Context) {
 		return
 	}
 
+	// analytics
+	InsertTracking(context, "tomeOpened", bson.M { "rarity": player.Tomes[index].GetData().Rarity }, 0)
+
 	player.PremiumCurrency -= cost
 
 	reward, err := player.AddRewards(context.DB, &player.Tomes[index]) 
@@ -97,6 +105,9 @@ func ClaimFreeTome(context *util.Context) {
 		return
 	}
 
+	// analytics
+	InsertTracking(context, "tomeOpened", bson.M { "rarity": "Free" }, 0)
+
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
 }
@@ -110,6 +121,9 @@ func ClaimArenaTome(context *util.Context) {
 		context.Fail("Not enough arena points")
 		return
 	}
+
+	// analytics
+	InsertTracking(context, "tomeOpened", bson.M { "rarity": "Arena" }, 0)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)

@@ -11,10 +11,10 @@ import (
 )
 
 func handlePlayer() {
-	handleGameAPI("/player/set", system.TokenAuthentication, SetPlayer)
-	handleGameAPI("/player/name", system.TokenAuthentication, SetPlayerName)
+	handleGameAPI("/player/set", system.TokenAuthentication, OverwritePlayer) // HACK
 	//handleGameAPI("/player/get", system.TokenAuthentication, GetPlayer)
-	handleGameAPI("/player/refresh", system.TokenAuthentication, updateAllPlayersPlace)
+	handleGameAPI("/player/name", system.TokenAuthentication, SetPlayerName)
+	handleGameAPI("/player/refresh", system.TokenAuthentication, models.UpdateAllPlayersPlace) // HACK
 
 	// template functions
 	util.AddTemplateFunc("getUserName", GetUserName)
@@ -101,42 +101,35 @@ func GetPlayerName(context *util.Context, playerID bson.ObjectId) string {
 	return name
 }
 
-func GetPlayerPlace(context *util.Context, player *models.Player) int {
-	return context.Cache.GetScore("Leaderboard", player.ID.Hex())
-}
+func GetUserIdByPlayerId(context *util.Context, playerID bson.ObjectId) bson.ObjectId {
+	// get cache key
+	key := fmt.Sprintf("PlayerUserId:%s", playerID.Hex())
 
-func updateAllPlayersPlace(context *util.Context) {
-	var players []*models.Player
-	context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
+	// get cached ID
+	userIDHex := context.Cache.GetString(key, "")
+	var userID bson.ObjectId
 
-	for _, player := range players {
-		updatePlayerPlace(context, player)
+	if bson.IsObjectIdHex(userIDHex) {
+		// user cached ID
+		userID = bson.ObjectIdHex(userIDHex)
+	} else {
+		// get and cache ID
+		player, _ := models.GetPlayerById(context.DB, playerID)
+		if player != nil {
+			userID = player.UserID
+			context.Cache.Set(key, userID.Hex())
+		}
 	}
+	return userID
 }
 
-func updatePlayerPlace(context *util.Context, player *models.Player) {
-	matches := player.MatchCount
-	if matches > 0 {
-		// calculate placement score
-		winsFactor := player.WinCount * 1000000 / matches
-		matchesFactor := matches * 1000
-		pointsFactor := player.ArenaPoints
-
-		score := winsFactor + matchesFactor + pointsFactor
-		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
-	}
-}
-
-func SetPlayer(context *util.Context) {
+func OverwritePlayer(context *util.Context) {
 	// parse parameters
 	data := context.Params.GetRequiredString("data")
 
 	// update data
-	user := system.GetUser(context)
-	_, err := models.UpdatePlayer(context.DB, user, data)
-	util.Must(err)
-
-	context.Message("Player updated successfully")
+	player := GetPlayer(context)
+	util.Must(player.UpdateFromJson(context.DB, data))
 }
 
 func FetchPlayer(context *util.Context) {

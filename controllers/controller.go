@@ -15,6 +15,7 @@ func HandleGame() {
 	handlePurchase()
 	handleNotification()
 	handleStore()
+	handleFriends()
 	handleGuild()
 	handleTracking()
 }

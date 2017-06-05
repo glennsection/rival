@@ -23,6 +23,7 @@ func init() {
 }
 
 func SetUser(context *util.Context, user *models.User) {
+	context.UserID = user.ID
 	context.Params.Set("_user", user)
 }
 

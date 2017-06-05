@@ -8,6 +8,9 @@
     "cardBackImage": "UI/Cards/Cardbacks/cardback_common",
     "damageLevelMultiplier": "0.1",
     "healthLevelMultiplier": "0.1",
+    "normalizedPowerLevel": "7",
+    "tournamentLevel": "9",
+    "skillUnlocks": "[1,6,11]",
     "craftingCost": "200",
     "craftingXp": "1",
     "craftingXpNeeded": "2"
@@ -20,6 +23,9 @@
     "cardBackImage": "UI/Cards/Cardbacks/cardback_rare",
     "damageLevelMultiplier": "0.1",
     "healthLevelMultiplier": "0.1",
+    "normalizedPowerLevel": "5",
+    "tournamentLevel": "7",
+    "skillUnlocks": "[3,5,9]",
     "craftingCost": "400",
     "craftingXp": "1",
     "craftingXpNeeded": "4"
@@ -32,6 +38,9 @@
     "cardBackImage": "UI/Cards/Cardbacks/cardback_epic",
     "damageLevelMultiplier": "0.1",
     "healthLevelMultiplier": "0.1",
+    "normalizedPowerLevel": "3",
+    "tournamentLevel": "5",
+    "skillUnlocks": "[2,4,7]",
     "craftingCost": "800",
     "craftingXp": "1",
     "craftingXpNeeded": "3"
@@ -44,6 +53,9 @@
     "cardBackImage": "UI/Cards/Cardbacks/cardback_legendary",
     "damageLevelMultiplier": "0.1",
     "healthLevelMultiplier": "0.1",
+    "normalizedPowerLevel": "1",
+    "tournamentLevel": "3",
+    "skillUnlocks": "[1,3,5]",
     "craftingCost": "1600",
     "craftingXp": "1",
     "craftingXpNeeded": "5"

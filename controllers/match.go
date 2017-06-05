@@ -54,14 +54,6 @@ func MatchResult(context *util.Context) {
 	_, reward, err := models.CompleteMatch(context, player, roomID, outcome, playerScore, opponentScore)
 	util.Must(err)
 
-	// get opponent
-	// opponent, err := match.GetOpponent(context.DB)
-	// util.Must(err)
-
-	// update leaderboards
-	updatePlayerPlace(context, player)
-	// updatePlayerPlace(context, opponent)
-
 	if reward != nil {
 		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars)
 		context.SetData("reward", reward)
