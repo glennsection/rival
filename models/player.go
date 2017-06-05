@@ -58,7 +58,7 @@ type Player struct {
 	FreeTomes           int             `bson:"ft" json:"freeTomes"`
 	FreeTomeUnlockTime  int64           `bson:"fu" json:"freeTomeUnlockTime"`
 
-	Quests              string          `bson:"qu,omitempty" json:"quests,omitempty"` // FIXME - temp fix until full quest system built on server
+	Quests 				[3]QuestSlot 	`bson:"qu" json:"quests"`
 
 	FriendIDs           []bson.ObjectId `bson:"fd,omitempty" json:"-"`
 	GuildID             bson.ObjectId   `bson:"gd,omitempty" json:"-"`
@@ -276,7 +276,7 @@ func (player *Player) AddVictoryTome(database *mgo.Database) (tome *Tome, err er
 	return
 }
 
-func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *TomeReward, err error) {
+func (player *Player) AddRewards(database *mgo.Database, tome *Tome) (reward *Reward, err error) {
 	reward = tome.OpenTome(player.GetLevel())
 	player.PremiumCurrency += reward.PremiumCurrency
 	player.StandardCurrency += reward.StandardCurrency
@@ -306,7 +306,7 @@ func (player *Player) UpdateRewards(database *mgo.Database) error {
 	return player.Save(database)
 }
 
-func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (*TomeReward, error) {
+func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (*Reward, error) {
 	tome := &Tome {
 		DataID: data.ToDataId(tomeId),
 	}
@@ -317,7 +317,7 @@ func (player *Player) ClaimTome(database *mgo.Database, tomeId string) (*TomeRew
 	return player.AddRewards(database, tome)
 }
 
-func (player *Player) ClaimFreeTome(database *mgo.Database) (tomeReward *TomeReward, err error) {
+func (player *Player) ClaimFreeTome(database *mgo.Database) (tomeReward *Reward, err error) {
 	err = player.UpdateRewards(database)
 
 	if player.FreeTomes == 0 || err != nil {
@@ -333,7 +333,7 @@ func (player *Player) ClaimFreeTome(database *mgo.Database) (tomeReward *TomeRew
 	return player.ClaimTome(database, "TOME_COMMON")
 }
 
-func (player *Player) ClaimArenaTome(database *mgo.Database) (tomeReward *TomeReward, err error) {
+func (player *Player) ClaimArenaTome(database *mgo.Database) (tomeReward *Reward, err error) {
 	if player.ArenaPoints < 10 {
 		return
 	}

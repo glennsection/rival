@@ -20,6 +20,15 @@ type Stream struct {
 	source  StreamSource
 }
 
+func (stream *Stream) SetSource(newSource StreamSource) bool {
+	if stream.source != nil {
+		return false
+	}
+
+	stream.source = newSource
+	return true
+}
+
 func missingStreamValue(name string) string {
 	return fmt.Sprintf("Missing required value: \"%v\"", name)
 }
@@ -186,6 +195,64 @@ func (stream *Stream) GetRequiredInts(name string) []int {
 	var err error
 	for i, subvalue := range subvalues {
 		results[i], err = parseInt(fmt.Sprintf("%s[%d]", name, i), subvalue)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return results
+}
+
+func parseInt64(name string, value interface{}) (int64, error) {
+	if int64Value, ok := value.(int64); ok {
+		return int64Value, nil
+	}
+
+	if stringValue, ok := value.(string); ok {
+		if stringValue != "" {
+			result, err := strconv.ParseInt(stringValue, 10, 64)
+			if err == nil {
+				return result, nil
+			} else {
+				return 0, errors.New(invalidStreamValue(name, value, err))
+			}
+		}
+	}
+
+	return 0, errors.New(missingStreamValue(name))
+}
+
+func (stream *Stream) GetInt64(name string, defaultValue int64) int64 {
+	value := stream.source.Get(name)
+
+	result, err := parseInt64(name, value)
+	if err != nil {
+		return defaultValue
+	}
+
+	return result
+} 
+
+func (stream *Stream) GetRequiredInt64(name string) int64 {
+	value := stream.source.Get(name)
+
+	result, err := parseInt64(name, value)
+	if err != nil {
+		panic(err)
+	}
+
+	return result
+}
+
+func (stream *Stream) GetRequiredInt64s(name string) []int64 {
+	value := stream.GetRequiredString(name)
+
+	subvalues := strings.Split(value, ",")
+
+	results := make([]int64, len(subvalues))
+	var err error
+	for i, subvalue := range subvalues {
+		results[i], err = parseInt64(fmt.Sprintf("%s[%d]", name, i), subvalue)
 		if err != nil {
 			panic(err)
 		}
