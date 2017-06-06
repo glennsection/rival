@@ -1,7 +1,7 @@
 {
 	"QuestTypes": [
 		{
-			"id": "VICTORY_QUEST",
+			"id": "BATTLE_QUEST_VICTORY",
 			"description": "Win 5 Matches",
 			"questLogicType": "Battle",
 			"type": "Daily",
@@ -17,7 +17,7 @@
 			"cardId": ""
 		},
 		{
-			"id": "VICTORY_QUEST_PLAY",
+			"id": "BATTLE_QUEST_PLAY",
 			"description": "Play 5 Matches",
 			"questLogicType": "Battle",
 			"type": "Daily",
@@ -33,7 +33,7 @@
 			"cardId": ""
 		},
 		{
-			"id": "VICTORY_QUEST_RANDOM_LEADER",
+			"id": "BATTLE_QUEST_VICTORY_RANDOM_LEADER",
 			"description": "Win 5 Matches as Leader",
 			"questLogicType": "Battle",
 			"type": "Daily",
@@ -49,7 +49,7 @@
 			"cardId": ""
 		},
 		{
-			"id": "VICTORY_QUEST_RANDOM_DECK",
+			"id": "BATTLE_QUEST_VICTORY_RANDOM_INDECK",
 			"description": "Win 5 Matches in deck",
 			"questLogicType": "Battle",
 			"type": "Daily",
@@ -65,7 +65,7 @@
 			"cardId": ""
 		},
 		{
-			"id": "VICTORY_QUEST_PLAY_RANDOM_LEADER",
+			"id": "BATTLE_QUEST_PLAY_RANDOM_LEADER",
 			"description": "Play 5 Matches",
 			"questLogicType": "Battle",
 			"type": "Daily",
@@ -81,7 +81,7 @@
 			"cardId": ""
 		},
 		{
-			"id": "VICTORY_QUEST_PLAY_RANDOM_DECK",
+			"id": "BATTLE_QUEST_PLAY_RANDOM_INDECK",
 			"description": "Win 5 Matches in deck",
 			"questLogicType": "Battle",
 			"type": "Daily",
@@ -97,7 +97,7 @@
 			"cardId": ""
 		},
 		{
-			"id": "VICTORY_QUEST_SKELETON_INDECK",
+			"id": "BATTLE_QUEST_VICTORY_SKELETON_INDECK",
 			"description": "Win 5 Matches with Armored Skeleton in deck",
 			"questLogicType": "Battle",
 			"type": "Daily",
@@ -113,7 +113,7 @@
 			"cardId": "CARD_ARMORED_SKELETON"
 		},
 		{
-			"id": "VICTORY_QUEST_RANDOM_LEADER_WEEKLY",
+			"id": "BATTLE_QUEST_VICTORY_RANDOM_LEADER_WEEKLY",
 			"description": "Win 20 Matches as Leader",
 			"questLogicType": "Battle",
 			"type": "Weekly",
