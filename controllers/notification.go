@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"strings"
 
 	"bloodtales/util"
@@ -33,7 +34,7 @@ func GetNotifications(context *util.Context) {
 
 	// insert all sender names
 	for _, notification := range notifications {
-		util.Must(prepareNotification(context, notification))
+		prepareNotification(context, notification)
 	}
 
 	// result
@@ -49,7 +50,7 @@ func RespondNotification(context *util.Context) {
 	notification, err := models.GetNotificationById(context, notificationID)
 	util.Must(err)
 
-	util.Must(respondNotification(context, notification, action))
+	respondNotification(context, notification, action)
 }
 
 func ViewNotifications(context *util.Context) {
@@ -61,39 +62,40 @@ func ViewNotifications(context *util.Context) {
 }
 
 // TODO - migrate these into a more generic/universal system...
-func prepareNotification(context *util.Context, notification *models.Notification) (err error) {
+func prepareNotification(context *util.Context, notification *models.Notification) {
 	// get sender name
 	if notification.SenderID.Valid() {
 		notification.SenderName = GetPlayerName(context, notification.SenderID)
 	} else {
-		notification.SenderName = "" // internal message?
+		notification.SenderName = "" // "System Message"?
 	}
 
 	switch notification.Type {
 
 	case "FriendRequest":
-		// TODO - add PlayerClient into data here...
-		//playerClient, err := player.GetPlayerClient(context) // TODO
-		//util.Must(err)
+	case "FriendBattle":
+		prepareFriendNotification(context, notification)
 
 	}
-
-	return
 }
 
-func respondNotification(context *util.Context, notification *models.Notification, action string) (err error) {
+func respondNotification(context *util.Context, notification *models.Notification, action string) {
 	switch notification.Type {
 
 	case "FriendRequest":
 		// handle friend request
 		if action == "accept" {
-			AcceptFriendRequest(context, notification.SenderID, notification.ReceiverID)
+			acceptFriendRequest(context, notification.SenderID, notification.ReceiverID)
 		}
 
 	}
 
-	// delete notification
-	err = notification.Delete(context)
+	// notify sender
+	if notification.SenderID.Valid() {
+		senderUserID := GetUserIdByPlayerId(context, notification.SenderID)
+		system.SocketSend(senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
+	}
 
-	return
+	// delete notification
+	util.Must(notification.Delete(context))
 }
