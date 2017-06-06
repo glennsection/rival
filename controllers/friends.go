@@ -17,7 +17,7 @@ func handleFriends() {
 	handleGameAPI("/friends/battle", system.TokenAuthentication, FriendBattle)
 }
 
-func sendFriendNotification(context *util.Context, tag string, notificationType string, image string, message string, acceptName string, acceptAction string, declineName string, declineAction string, expiresAt time.Time) {
+func sendFriendNotification(context *util.Context, tag string, notificationType string, image string, message string, acceptName string, acceptAction string, declineName string, declineAction string, data map[string]interface{}, expiresAt time.Time) {
 	// sending player
 	player := GetPlayer(context)
 	playerClient, err := player.GetPlayerClient(context)
@@ -48,12 +48,30 @@ func sendFriendNotification(context *util.Context, tag string, notificationType 
 				Value: declineAction,
 			},
 		},
-		// Data: bson.M { "player": playerClient }, // FIXME - this happens on each fetch now, since info can change
+		Data: data,
 	}
 	util.Must(notification.Save(context))
 
 	// notify receiver
-	system.SocketSend(friendUser.ID, notificationType, map[string]interface{} { "notification": notification, "player": playerClient })
+	socketData := map[string]interface{} { "notification": notification, "player": playerClient }
+	for key, value := range data {
+		socketData[key] = value
+	}
+	system.SocketSend(friendUser.ID, notificationType, socketData)
+}
+
+func prepareFriendNotification(context *util.Context, notification *models.Notification) {
+	// get sender player
+	player, err := models.GetPlayerById(context, notification.SenderID)
+	util.Must(err)
+
+	// create sender player info
+	var playerClient *models.PlayerClient
+	playerClient, err = player.GetPlayerClient(context)
+	util.Must(err)
+
+	// add sender player info
+	notification.Data = bson.M { "player": playerClient }
 }
 
 func GetFriends(context *util.Context) {
@@ -94,10 +112,10 @@ func FriendRequest(context *util.Context) {
 	message := fmt.Sprintf("Friend Request from: %s", GetUserName(context, context.UserID))
 	expiresAt := time.Now().Add(time.Hour * time.Duration(168))
 
-	sendFriendNotification(context, tag, "FriendRequest", image, message, "Accept", "accept", "Decline", "decline", expiresAt)
+	sendFriendNotification(context, tag, "FriendRequest", image, message, "Accept", "accept", "Decline", "decline", nil, expiresAt)
 }
 
-func AcceptFriendRequest(context *util.Context, senderID bson.ObjectId, receiverID bson.ObjectId) {
+func acceptFriendRequest(context *util.Context, senderID bson.ObjectId, receiverID bson.ObjectId) {
 	// get sender friends
 	var senderFriends *models.Friends
 	senderFriends, err := models.GetFriendsByPlayerId(context, senderID, true)
@@ -117,45 +135,23 @@ func AcceptFriendRequest(context *util.Context, senderID bson.ObjectId, receiver
 	receiverFriends.FriendIDs = append(receiverFriends.FriendIDs, senderID)
 	err = receiverFriends.Save(context)
 	util.Must(err)
-
-	// notify sender
-	senderUserID := GetUserIdByPlayerId(context, senderID)
-	system.SocketSend(senderUserID, "FriendRequest-Accept", nil)
 }
 
 func FriendBattle(context *util.Context) {
 	// parse parameters
 	tag := context.Params.GetRequiredString("tag")
 
+	// generate Room ID
+	roomID := util.GenerateUUID()
+
 	image := ""
 	message := fmt.Sprintf("Battle Request from: %s", GetUserName(context, context.UserID))
+	data := map[string]interface{} {
+		"roomId": roomID,
+	}
 	expiresAt := time.Now().Add(time.Hour)
 
-	sendFriendNotification(context, tag, "FriendBattle", image, message, "Battle", "accept", "Decline", "decline", expiresAt)
+	sendFriendNotification(context, tag, "FriendBattle", image, message, "Battle", "accept", "Decline", "decline", data, expiresAt)
+
+	context.SetData("roomId", roomID)
 }
-
-// func AcceptFriendBattle(context *util.Context, senderID bson.ObjectId, receiverID bson.ObjectId) {
-// 	// get sender friends
-// 	var senderFriends *models.Friends
-// 	senderFriends, err := models.GetFriendsByPlayerId(context.DB, senderID, true)
-// 	util.Must(err)
-
-// 	// append sender friends
-// 	senderFriends.FriendIDs = append(senderFriends.FriendIDs, receiverID)
-// 	err = senderFriends.Save(context.DB)
-// 	util.Must(err)
-
-// 	// get receiver friends
-// 	var receiverFriends *models.Friends
-// 	receiverFriends, err = models.GetFriendsByPlayerId(context.DB, receiverID, true)
-// 	util.Must(err)
-
-// 	// append receiver friends
-// 	receiverFriends.FriendIDs = append(receiverFriends.FriendIDs, senderID)
-// 	err = receiverFriends.Save(context.DB)
-// 	util.Must(err)
-
-// 	// notify sender
-// 	senderUserID := GetUserIdByPlayerId(context, senderID)
-// 	system.SocketSend(senderUserID, "FriendRequest-Accept", nil)
-// }

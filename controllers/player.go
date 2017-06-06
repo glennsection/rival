@@ -141,8 +141,9 @@ func FetchPlayer(context *util.Context) {
 		// update rewards
 		util.Must(player.UpdateRewards(context))
 
-		// add in user name
+		// add in user name and tag
 		player.Name = user.Name
+		player.Tag = user.Tag
 		
 		// set all dirty flags
 		player.SetAllDirty()

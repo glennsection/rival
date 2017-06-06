@@ -40,6 +40,7 @@ type Player struct {
 	UserID              bson.ObjectId   `bson:"us" json:"-"`
 	LastTime            time.Time       `bson:"tz" json:"-"`
 	Name                string          `bson:"-" json:"name"`
+	Tag                 string          `bson:"-" json:"tag"`
 	XP                  int             `bson:"xp" json:"xp"`
 	RankPoints          int             `bson:"rk" json:"rankPoints"`
 	Rating              int             `bson:"rt" json:"rating"`
@@ -478,6 +479,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 	// check all updated data
 	if util.CheckMask(dirtyMask, PlayerDataMask_Name) {
 		dataMap["name"] = player.Name
+		dataMap["tag"] = player.Tag
 	}
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Currency) {

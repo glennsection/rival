@@ -18,6 +18,12 @@ const (
 	// time allowed to write a message to the peer
 	writeWait = 10 * time.Second
 
+	// Time allowed to read the next pong message from the peer.
+	pongWait = 60 * time.Second
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
+
 	// maximum message size allowed from peer
 	maxMessageSize = 512
 
@@ -60,7 +66,8 @@ func SocketSend(userID bson.ObjectId, message string, data map[string]interface{
 			Data: data,
 		}
 	} else {
-		log.Errorf("Failed to find socket connection for User ID: %v", userID)
+		// client may be offline
+		//log.Errorf("Failed to find socket connection for User ID: %v", userID)
 	}
 }
 
@@ -155,8 +162,14 @@ func socketHandler(context *util.Context) {
 
 // socket client write
 func (client *SocketClient) write() {
+	// ping ticker
+	ticker := time.NewTicker(pingPeriod)
+
 	// cleanup in case of exit
-	defer client.close()
+	defer func() {
+		ticker.Stop()
+		client.close()
+	}()
 
 	for {
 		// check for message to send
@@ -184,6 +197,13 @@ func (client *SocketClient) write() {
 			}
 
 			logSocket("Socket sent message to User ID: %v (%v)", client.userID, message.Message)
+
+		case <-ticker.C:
+			client.connection.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := client.connection.WriteMessage(websocket.PingMessage, []byte {}); err != nil {
+				return
+			}
+
 		}
 	}
 }
@@ -195,6 +215,11 @@ func (client *SocketClient) read() {
 
 	// settings
 	client.connection.SetReadLimit(maxMessageSize)
+	client.connection.SetReadDeadline(time.Now().Add(pongWait))
+	client.connection.SetPongHandler(func(string) error {
+		client.connection.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
 
 	for {
 		// check for message to read

@@ -29,6 +29,7 @@ type MatchState int
 const (
 	MatchInvalid MatchState = iota
 	MatchOpen
+	MatchPrivate
 	MatchActive
 	MatchCompleting
 	MatchComplete
@@ -208,6 +209,37 @@ func ClearMatches(context *util.Context, player *Player) (err error) {
 		},
  	})
  	return
+}
+
+func JoinMatch(context *util.Context, player *Player, matchType MatchType, roomID string) (match *Match, err error) {
+	// find existing match (TODO - verify that no other pending matches exist for player)
+	err = context.DB.C(MatchCollectionName).Find(bson.M {
+		"rm": roomID,
+	}).One(&match)
+
+	//log.Printf("JoinMatch(%v [%v], %v, %v) => %v", player.Name, player.ID, matchType, roomID, match)
+
+	if match != nil {
+		// match players and mark as active
+		match.GuestID = player.ID
+		match.State = MatchActive
+		match.StartTime = time.Now()
+		match.Hosting = false
+	} else {
+		// queue new match
+		match = &Match {
+			HostID: player.ID,
+			Type: matchType,
+			RoomID: roomID,
+			State: MatchPrivate,
+			StartTime: time.Now(),
+			Hosting: true,
+		}
+	}
+
+	// update database
+	err = match.Save(context)
+	return
 }
 
 func FindMatch(context *util.Context, player *Player, matchType MatchType) (match *Match, err error) {
