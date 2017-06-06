@@ -36,22 +36,6 @@ type TomeClient struct {
 	*TomeClientAlias
 }
 
-//server model
-type TomeReward struct {
-	Cards 				[]data.DataId
-	NumRewarded			[]int 			
-	PremiumCurrency 	int 			
-	StandardCurrency 	int 			
-}
-
-//client model
-type TomeRewardClient struct {
-	Cards 				[]data.CardData	`json:cards`
-	NumRewarded			[]int 			`json:numRewarded` 			
-	PremiumCurrency 	int 			`json:PremiumCurrency`		
-	StandardCurrency 	int 			`json:StandardCurrency`
-}
-
 // custom marshalling
 func (tome *Tome) MarshalJSON() ([]byte, error) {
 	// create client model
@@ -71,23 +55,6 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 	}
 	
 	// marshal with client model
-	return json.Marshal(client)
-}
-
-// custom marshalling
-func (tomeReward *TomeReward) MarshalJSON() ([]byte, error) {
-	//create client model
-	client := &TomeRewardClient {
-		Cards: make([]data.CardData, len(tomeReward.NumRewarded)),
-		NumRewarded: tomeReward.NumRewarded,
-		PremiumCurrency: tomeReward.PremiumCurrency,
-		StandardCurrency: tomeReward.StandardCurrency,
-	}
-
-	for i, id := range tomeReward.Cards {
-		client.Cards[i] = *(data.GetCard(id))
-	}
-
 	return json.Marshal(client)
 }
 
@@ -191,8 +158,8 @@ func (tome *Tome) StartUnlocking() {
 	tome.UnlockTime = time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second)
 }
 
-func (tome *Tome) OpenTome(tier int) (reward *TomeReward) {
-	reward = &TomeReward{}
+func (tome *Tome) OpenTome(tier int) (reward *Reward) {
+	reward = &Reward{}
 	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
 	tomeData := data.GetTome(tome.DataID)
 	reward.Cards = make([]data.DataId, 0, 6)
@@ -238,4 +205,75 @@ func (tome *Tome) UpdateTome() {
 	if tome.State == TomeUnlocking && time.Now().After(tome.UnlockTime) {
 		tome.State = TomeUnlocked
 	} 
+}
+
+func (player *Player) UpdateTomes(context *util.Context) error {
+	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
+
+	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
+		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
+		player.FreeTomes++
+	}
+
+	player.FreeTomeUnlockTime = util.TimeToTicks(unlockTime)
+
+	for i, _ := range player.Tomes {
+		(&player.Tomes[i]).UpdateTome()
+	}
+
+	var err error
+	if context != nil {
+		err = player.Save(context)
+	}
+
+	return err
+}
+
+func (player *Player) ModifyArenaPoints(val int) {
+	if val < 1 {
+		return
+	}
+
+	player.ArenaPoints += val
+
+	if player.ArenaPoints > 10 {
+		player.ArenaPoints = 10
+	}
+}
+
+func (player *Player) ClaimTome(context *util.Context, tomeId string) (*Reward, error) {
+	tome := &Tome {
+		DataID: data.ToDataId(tomeId),
+	}
+
+	// check currency
+	// TODO
+
+	return player.AddRewards(context, tome)
+}
+
+func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward, err error) {
+	err = player.UpdateTomes(context)
+
+	if player.FreeTomes == 0 || err != nil {
+		return
+	}
+
+	if player.FreeTomes == 3 {
+		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
+	}
+
+	player.FreeTomes--
+
+	return player.ClaimTome(context, "TOME_COMMON")
+}
+
+func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward, err error) {
+	if player.ArenaPoints < 10 {
+		return
+	}
+
+	player.ArenaPoints = 0;
+
+	return player.ClaimTome(context, "TOME_RARE")
 }

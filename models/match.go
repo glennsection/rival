@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"bloodtales/data"
 	"bloodtales/util"
 	"bloodtales/log"
 )
@@ -424,6 +425,9 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		}
 		player.RankPoints += playerResults.RankPoints
 		player.Rating += playerResults.Rating
+
+		// update battle quests
+		player.UpdateQuests(nil, data.QuestLogicType_Battle)
 
 		// save player
 		err = player.Save(context)

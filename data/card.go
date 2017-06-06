@@ -102,6 +102,16 @@ func GetCard(id DataId) (card *CardData) {
 	return cards[id]
 }
 
+func GetRandomCard() (dataId DataId, cardData *CardData) {
+	for id, card := range cards {
+		dataId = id
+		cardData = card
+		break //we can break after the first iteration because items in golang maps are accessed in randomized order
+	}
+
+	return
+}
+
 func GetCards(condition func(*CardData) bool) []DataId {
 	cardSlice := make([]DataId, 0)
 

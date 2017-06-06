@@ -1,0 +1,115 @@
+{
+	"QuestTypes": [
+		{
+			"id": "VICTORY_QUEST",
+			"description": "Win 5 Matches",
+			"questLogicType": "Battle",
+			"type": "Daily",
+			"rewardID": "SOFT_CURRENCY_REWARD",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.6,
+			
+			"victoryCount": 5
+		},
+		{
+			"id": "VICTORY_QUEST_PLAY",
+			"description": "Play 5 Matches",
+			"questLogicType": "Battle",
+			"type": "Daily",
+			"rewardID": "SOFT_CURRENCY_REWARD",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.3,
+			
+			"victoryCount": 5,
+			"requireVictory": false
+		},
+		{
+			"id": "VICTORY_QUEST_RANDOM_LEADER",
+			"description": "Win 5 Matches as Leader",
+			"questLogicType": "Battle",
+			"type": "Daily",
+			"rewardID": "PREMIUM_CURRENCY_REWARD",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.8,
+			
+			"victoryCount": 5,
+			"winAsLeader": true,
+			"useRandomCard": true
+		},
+		{
+			"id": "VICTORY_QUEST_RANDOM_DECK",
+			"description": "Win 5 Matches in deck",
+			"questLogicType": "Battle",
+			"type": "Daily",
+			"rewardID": "SOFT_CURRENCY_REWARD",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.5,
+			
+			"victoryCount": 5,
+			"winAsLeader": false,
+			"useRandomCard": true
+		},
+		{
+			"id": "VICTORY_QUEST_PLAY_RANDOM_LEADER",
+			"description": "Play 5 Matches",
+			"questLogicType": "Battle",
+			"type": "Daily",
+			"rewardID": "SOFT_CURRENCY_REWARD",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.3,
+			
+			"victoryCount": 5,
+			"winAsLeader": true,
+			"useRandomCard": true,
+			"requireVictory": false
+		},
+		{
+			"id": "VICTORY_QUEST_PLAY_RANDOM_DECK",
+			"description": "Win 5 Matches in deck",
+			"questLogicType": "Battle",
+			"type": "Daily",
+			"rewardID": "SOFT_CURRENCY_REWARD",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.5,
+			
+			"victoryCount": 5,
+			"winAsLeader": false,
+			"useRandomCard": true,
+			"requireVictory": false
+		},
+		{
+			"id": "VICTORY_QUEST_SKELETON_INDECK",
+			"description": "Win 5 Matches with Armored Skeleton as leader",
+			"questLogicType": "Battle",
+			"type": "Daily",
+			"rewardID": "PREMIUM_CURRENCY_REWARD",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.2,
+			
+			"victoryCount": 5,
+			"winAsLeader": false,
+			"cardId": "CARD_ARMORED_SKELETON"
+		},
+		{
+			"id": "VICTORY_QUEST_RANDOM_LEADER_WEEKLY",
+			"description": "Win 20 Matches as Leader",
+			"questLogicType": "Battle",
+			"type": "Weekly",
+			"rewardID": "PREMIUM_CURRENCY_REWARD_WEEKLY",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.8,
+			
+			"victoryCount": 20,
+			"winAsLeader": true,
+			"useRandomCard": true
+		}
+	]
+}
