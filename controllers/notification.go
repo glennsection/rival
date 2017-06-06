@@ -84,9 +84,11 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 
 	case "FriendRequest":
 		// handle friend request
-		if action == "accept" {
-			acceptFriendRequest(context, notification.SenderID, notification.ReceiverID)
-		}
+		respondFriendRequest(context, notification, action)
+
+	case "FriendBattle":
+		// handle friend battle
+		respondFriendBattle(context, notification, action)
 
 	}
 

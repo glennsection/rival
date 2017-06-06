@@ -102,6 +102,8 @@ func (application *Application) Redirect(pattern string, url string, responseCod
 func (application *Application) Ignore(pattern string) {
 	// ignore these requests
 	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("[red!]Invalid request URL: %s[-]", r.URL.RequestURI())
+
 		http.NotFound(w, r)
 	})
 }

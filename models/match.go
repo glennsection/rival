@@ -212,30 +212,19 @@ func ClearMatches(context *util.Context, player *Player) (err error) {
  	return
 }
 
-func JoinMatch(context *util.Context, player *Player, matchType MatchType, roomID string) (match *Match, err error) {
-	// find existing match (TODO - verify that no other pending matches exist for player)
-	err = context.DB.C(MatchCollectionName).Find(bson.M {
-		"rm": roomID,
-	}).One(&match)
+func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson.ObjectId, matchType MatchType, roomID string) (match *Match, err error) {
+	// check for existing match (TODO - verify that no other pending matches exist for players, and no room exists with this ID)
 
-	//log.Printf("JoinMatch(%v [%v], %v, %v) => %v", player.Name, player.ID, matchType, roomID, match)
+	//log.Printf("StartPrivateMatch(%v, %v, %v, %v) => %v", hostID, guestID, matchType, roomID, match)
 
-	if match != nil {
-		// match players and mark as active
-		match.GuestID = player.ID
-		match.State = MatchActive
-		match.StartTime = time.Now()
-		match.Hosting = false
-	} else {
-		// queue new match
-		match = &Match {
-			HostID: player.ID,
-			Type: matchType,
-			RoomID: roomID,
-			State: MatchPrivate,
-			StartTime: time.Now(),
-			Hosting: true,
-		}
+	// queue new match
+	match = &Match {
+		HostID: hostID,
+		GuestID: guestID,
+		Type: matchType,
+		RoomID: roomID,
+		State: MatchActive,
+		StartTime: time.Now(),
 	}
 
 	// update database
@@ -243,28 +232,28 @@ func JoinMatch(context *util.Context, player *Player, matchType MatchType, roomI
 	return
 }
 
-func FindMatch(context *util.Context, player *Player, matchType MatchType) (match *Match, err error) {
+func FindPublicMatch(context *util.Context, playerID bson.ObjectId, matchType MatchType) (match *Match, err error) {
 	// find existing match (TODO - verify that no other pending matches exist for player)
 	err = context.DB.C(MatchCollectionName).Find(bson.M {
 		"id1": bson.M {
-			"$ne": player.ID,
+			"$ne": playerID,
 		},
 		"st": MatchOpen,
 		"tp": matchType,
 	}).One(&match)
 
-	//log.Printf("FindMatch(%v [%v], %v) => %v", player.Name, player.ID, matchType, match)
+	//log.Printf("FindPublicMatch(%v, %v, %v) => %v", playerID, player.ID, matchType, match)
 
 	if match != nil {
 		// match players and mark as active
-		match.GuestID = player.ID
+		match.GuestID = playerID
 		match.State = MatchActive
 		match.StartTime = time.Now()
 		match.Hosting = false
 	} else {
 		// queue new match
 		match = &Match {
-			HostID: player.ID,
+			HostID: playerID,
 			Type: matchType,
 			RoomID: util.GenerateUUID(),
 			State: MatchOpen,
@@ -278,13 +267,13 @@ func FindMatch(context *util.Context, player *Player, matchType MatchType) (matc
 	return
 }
 
-func FailMatch(context *util.Context, player *Player) (err error) {
+func FailMatch(context *util.Context, playerID bson.ObjectId) (err error) {
 	// find and remove all invalid matches with player
 	var matches []*Match
 	err = context.DB.C(MatchCollectionName).Find(bson.M {
 		"$or": []bson.M {
-			bson.M { "id1": player.ID, },
-			bson.M { "id2": player.ID, },
+			bson.M { "id1": playerID, },
+			bson.M { "id2": playerID, },
 		},
 		"st": bson.M {
 			"$in": []interface{} {
@@ -298,7 +287,7 @@ func FailMatch(context *util.Context, player *Player) (err error) {
 		// fix all found matches
 		for _, match := range matches {
 			if match.State == MatchActive {
-				if match.HostID == player.ID {
+				if match.HostID == playerID {
 					match.HostID = match.GuestID
 				}
 				match.GuestID = bson.ObjectId("")
@@ -349,36 +338,45 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 
 	// check if opponent's result has already been submitted
 	if foundResult {
+		log.Printf("FOUND RESULT")
+		// complete match
+		match.State = MatchComplete
+		match.EndTime = time.Now()
+
 		// validate outcome
 		if outcome == MatchSurrender {
-			// do nothing
+			// use opponent's results
+			match.Outcome = matchResult.Outcome
+			match.HostScore = matchResult.Host.Score
+			match.GuestScore = matchResult.Guest.Score
 		} else {
 			log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", matchResult.Outcome, outcome, matchResult.Host.Score, hostScore, matchResult.Guest.Score, guestScore)
 			
 			if matchResult.Outcome == MatchSurrender || (matchResult.Outcome == outcome && matchResult.Host.Score == hostScore && matchResult.Guest.Score == guestScore) {
-				match.State = MatchComplete
-				match.EndTime = time.Now()
+				// store results in match
 				match.Outcome = outcome
 				match.HostScore = hostScore
 				match.GuestScore = guestScore
 			} else {
+				// invalid match
 				match.State = MatchInvalid
 
 				err = util.NewError("Non-symmetrical match outcomes reported by clients!")
 
 				// TODO - revert stats for other player
 			}
+		}
 
-			// update match in database
-			saveErr := match.Save(context)
-			if saveErr != nil {
-				log.Error(saveErr)
-			}
+		// update match in database
+		saveErr := match.Save(context)
+		if saveErr != nil {
+			log.Error(saveErr)
 		}
 
 		// clear results in cache
 		ClearMatchResult(context, roomID)
 	} else {
+		log.Printf("NO RESULT YET")
 		// get players
 		var host *Player
 		host, err = match.GetHost(context)
