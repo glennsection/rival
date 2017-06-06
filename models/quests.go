@@ -111,12 +111,14 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	totalGamesWon := quest.Progress["totalGamesWon"].(int)
 	totalGamesPlayed := quest.Progress["totalGamesPlayed"].(int)
 	cardId := data.ToDataId(quest.Progress["cardId"].(string)) // will be "" if quest requires no specific card
+	noCard := data.ToDataId("")
+	currentDeck := player.Decks[player.CurrentDeck]
 
 	// check update conditions and incremement progress if the conditions are met
 	if requiresVictory && totalGamesWon < player.WinCount {
 		diff := player.WinCount - totalGamesWon
 
-		if cardId == "" || checkDeckConditions(cardId, asLeader) {
+		if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
 			progress += diff
 		}
 
@@ -124,7 +126,7 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 		if totalGamesPlayed < player.MatchCount {
 			diff := player.MatchCount - totalGamesPlayed
 			
-			if cardId == "" || checkDeckConditions(cardId, asLeader) {
+			if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
 				progress += diff
 			}
 		}
@@ -143,9 +145,7 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	return
 }
 
-func checkDeckConditions(cardId data.DataId, asLeader bool) bool { // helper func for UpdateBattleQuests
-	currentDeck := player.Decks[player.CurrentDeck]
-		
+func checkDeckConditions(currentDeck Deck, cardId data.DataId, asLeader bool) bool { // helper func for UpdateBattleQuests
 	if asLeader {
 		if currentDeck.LeaderCardID == cardId {
 			return true
