@@ -104,36 +104,31 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	//objectives
 	completionCondition := questData.Objectives["completionCondition"].(int)
 	requiresVictory := questData.Objectives["requiresVictory"].(bool)
-	winAsLeader := questData.Objectives["winAsLeader"].(bool)
+	asLeader := questData.Objectives["asLeader"].(bool)
 
 	//progress
 	progress := quest.Progress["progress"].(int)
 	totalGamesWon := quest.Progress["totalGamesWon"].(int)
 	totalGamesPlayed := quest.Progress["totalGamesPlayed"].(int)
-	cardId := data.ToDataId(quest.Progress["cardId"].(string))
+	cardId := data.ToDataId(quest.Progress["cardId"].(string)) // will be "" if quest requires no specific card
+	noCard := data.ToDataId("")
+	currentDeck := player.Decks[player.CurrentDeck]
 
 	// check update conditions and incremement progress if the conditions are met
 	if requiresVictory && totalGamesWon < player.WinCount {
 		diff := player.WinCount - totalGamesWon
 
-		currentDeck := player.Decks[player.CurrentDeck]
-
-		if winAsLeader {
-			if currentDeck.LeaderCardID == cardId {
-				progress += diff
-			}
-		} else {
-			for _,id := range currentDeck.CardIDs {
-				if id == cardId {
-					progress += diff
-					break
-				}
-			}
+		if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
+			progress += diff
 		}
+
 	} else {
 		if totalGamesPlayed < player.MatchCount {
 			diff := player.MatchCount - totalGamesPlayed
-			progress += diff
+			
+			if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
+				progress += diff
+			}
 		}
 	}
 
@@ -148,6 +143,22 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	quest.Progress["totalGamesPlayed"] = player.MatchCount
 
 	return
+}
+
+func checkDeckConditions(currentDeck Deck, cardId data.DataId, asLeader bool) bool { // helper func for UpdateBattleQuests
+	if asLeader {
+		if currentDeck.LeaderCardID == cardId {
+			return true
+		}
+	} else {
+		for _,id := range currentDeck.CardIDs {
+			if id == cardId {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (quest *Quest) IsQuestCompleted() bool {
@@ -193,7 +204,11 @@ func (player *Player) AssignRandomQuest(slot *QuestSlot) {
 
 	// prepare our BaseQuestData with an identifier
 	questId, questData := data.GetRandomQuestData()
-	slot.QuestInstance = Quest {
+	player.AssignQuest(questId, questData, slot)
+}
+
+func (player *Player) AssignQuest(questId data.DataId, questData data.QuestData, slot *QuestSlot) {
+		slot.QuestInstance = Quest {
 		DataID: questId,
 		LogicType: questData.LogicType,
 		Progress: map[string]interface{}{},

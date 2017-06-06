@@ -122,17 +122,17 @@ func (player *Player) loadDefaults() {
 		return
 	}
 
+	player.Quests = make([]QuestSlot,3,3)
+	for i,_ := range player.Quests {
+		player.AssignRandomQuest(&(player.Quests[i]))
+	}
+
 	err = json.Unmarshal(file, player)
 }
 
 func CreatePlayer(userID bson.ObjectId) (player *Player) {
 	player = &Player {}
 	player.loadDefaults()
-
-	player.Quests = make([]QuestSlot,3,3)
-	for i,_ := range player.Quests {
-		player.AssignRandomQuest(&(player.Quests[i]))
-	}
 	
 	player.UserID = userID
 	return
