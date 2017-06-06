@@ -10,6 +10,7 @@ import (
 
 func handleQuests() {
 	handleGameAPI("/quests/complete", system.TokenAuthentication, CompleteQuest)
+	handleGameAPI("/quests/refresh", system.TokenAuthentication, RefreshQuests)
 }
 
 func CompleteQuest(context *util.Context) {
@@ -39,4 +40,10 @@ func CompleteQuest(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Quests, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_XP)
 	context.SetData("reward", reward)
+}
+
+func RefreshQuests(context *util.Context) {
+	player := GetPlayer(context)
+	player.UpdateQuests(context)
+	player.SetDirty(models.PlayerDataMask_Quests)
 }
