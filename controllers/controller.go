@@ -12,6 +12,7 @@ func HandleGame() {
 	handleCard()
 	handleDeck()
 	handleMatch()
+	handleQuests()
 	handlePurchase()
 	handleNotification()
 	handleStore()

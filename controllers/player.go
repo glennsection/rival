@@ -138,11 +138,12 @@ func FetchPlayer(context *util.Context) {
 	player := GetPlayer(context)
 	
 	if player != nil {
-		// update rewards
-		util.Must(player.UpdateRewards(context))
-
 		// add in user name
 		player.Name = user.Name
+
+		// update time sensetive player data
+		util.Must(player.UpdateQuests(nil)) // should only write to the db once, so pass nil for context
+		util.Must(player.UpdateTomes(context))
 		
 		// set all dirty flags
 		player.SetAllDirty()

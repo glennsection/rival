@@ -89,7 +89,7 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 	case "Battle":
 		quest.LogicType = QuestLogicType_Battle
 		quest.Objectives["completionCondition"] = client.VictoryCount
-		quest.Objectives["requiresVictory"] = client.RequiresVictory
+		quest.Objectives["requiresVictory"] = client.RequiresVictory || client.WinAsLeader
 		quest.Objectives["winAsLeader"] = client.WinAsLeader
 		quest.Objectives["useRandomCard"] = client.UseRandomCard
 		quest.Objectives["cardId"] = client.CardID

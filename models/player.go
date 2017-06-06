@@ -296,72 +296,6 @@ func (player *Player) AddRewards(context *util.Context, tome *Tome) (reward *Rew
 	return
 }
 
-func (player *Player) UpdateRewards(context *util.Context) error {
-	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
-
-	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
-		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
-		player.FreeTomes++
-	}
-
-	player.FreeTomeUnlockTime = util.TimeToTicks(unlockTime)
-
-	for i, _ := range player.Tomes {
-		(&player.Tomes[i]).UpdateTome()
-	}
-
-	return player.Save(context)
-}
-
-func (player *Player) ClaimTome(context *util.Context, tomeId string) (*Reward, error) {
-	tome := &Tome {
-		DataID: data.ToDataId(tomeId),
-	}
-
-	// check currency
-	// TODO
-
-	return player.AddRewards(context, tome)
-}
-
-func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward, err error) {
-	err = player.UpdateRewards(context)
-
-	if player.FreeTomes == 0 || err != nil {
-		return
-	}
-
-	if player.FreeTomes == 3 {
-		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
-	}
-
-	player.FreeTomes--
-
-	return player.ClaimTome(context, "TOME_COMMON")
-}
-
-func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward, err error) {
-	if player.ArenaPoints < 10 {
-		return
-	}
-
-	player.ArenaPoints = 0;
-
-	return player.ClaimTome(context, "TOME_RARE")
-}
-
-func (player *Player) ModifyArenaPoints(val int) {
-	if val < 1 {
-		return
-	}
-
-	player.ArenaPoints += val
-
-	if player.ArenaPoints > 10 {
-		player.ArenaPoints = 10
-	}
-}
-
 func (player *Player) GetDrawCount() int {
 	return player.MatchCount - player.WinCount - player.LossCount
 }
@@ -420,44 +354,6 @@ func UpdateAllPlayersPlace(context *util.Context) {
 	for _, player := range players {
 		player.UpdatePlace(context)
 	}
-}
-
-func (player *Player) HasCard(id data.DataId) (*Card, bool) {
-	for i, card := range player.Cards {
-		if card.DataID == id {
-			return &player.Cards[i], true
-		}
-	}
-
-	return nil, false
-}
-
-func (player *Player) AddCards(id data.DataId, num int) {
-	//update the card if we already have it, otherwise instantiate a new one and add it in
-	for i, card := range player.Cards {
-		if card.DataID == id {
-			player.Cards[i].CardCount += num
-			return
-		}
-	}
-
-	card := Card {
-		DataID: id,
-		Level: 1,
-		CardCount: num,
-		WinCount: 0,
-		LeaderWinCount: 0,
-	}
-
-	player.Cards = append(player.Cards, card)
-}
-
-func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
-	cardMap := map[data.DataId]int {}
-	for index, card := range player.Cards {
-		cardMap[card.DataID] = index
-	}
-	return cardMap
 }
 
 func (player *Player) SetDirty(flags ...util.Bits) {

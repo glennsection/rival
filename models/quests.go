@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 	"encoding/json"
+	//"fmt"
 	
 	"bloodtales/data"
 	"bloodtales/util"
@@ -17,14 +18,14 @@ const (
 )
 
 type QuestSlot struct {
-	Quest 			Quest 					`bson:"qi"`
+	QuestInstance	Quest 					`bson:"qi"`
 	State 			QuestState 				`bson:"qs"`
 	UnlockTime 		int64 					`bson:"ut"`
 	ExpireTime 		int64 					`bson:"et"`
 }
 
 type QuestSlotClient struct {
-	Quest 			string 					`json:"questInstance"`
+	QuestInstance 	string 					`json:"questInstance"`
 	State 			string 					`json:"questSlotState"`
 	UnlockTime 		int64 					`json:"questUnlockTime"`
 	ExpireTime 		int64 					`json:"questExpireTime"`
@@ -44,8 +45,8 @@ func (slot *QuestSlot) MarshalJSON() ([]byte, error) {
 	}
 
 	// client quest 
-	quest,_ := json.Marshal(&slot.Quest)
-	client.Quest = string(quest)
+	quest,_ := json.Marshal(&slot.QuestInstance)
+	client.QuestInstance = string(quest)
 
 	// client quest state
 	switch(slot.State) {
@@ -82,7 +83,7 @@ func (quest *Quest) MarshalJSON() ([]byte, error) {
 
 func (slot *QuestSlot) StartCooldown() {
 	slot.State = QuestState_Cooldown
-	slot.UnlockTime = util.TimeToTicks(time.Now().Add(data.QuestSlotCooldownTime * time.Minute))
+	slot.UnlockTime = util.TimeToTicks(time.Now().UTC().Add(data.QuestSlotCooldownTime * time.Minute))
 }
 
 
@@ -115,15 +116,18 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	if requiresVictory && totalGamesWon < player.WinCount {
 		diff := player.WinCount - totalGamesWon
 
-		if !winAsLeader {
-			for _,id := range player.Decks[player.CurrentDeck].CardIDs {
-				if id == cardId {
-					progress += diff
-				}
+		currentDeck := player.Decks[player.CurrentDeck]
+
+		if winAsLeader {
+			if currentDeck.LeaderCardID == cardId {
+				progress += diff
 			}
 		} else {
-			if player.Decks[player.CurrentDeck].LeaderCardID == cardId {
-				progress += diff
+			for _,id := range currentDeck.CardIDs {
+				if id == cardId {
+					progress += diff
+					break
+				}
 			}
 		}
 	} else {
@@ -146,10 +150,29 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	return
 }
 
-// player specific quest functions below
+func (quest *Quest) IsQuestCompleted() bool {
+	switch quest.LogicType {
 
+	case data.QuestLogicType_Battle:
+		return quest.IsBattleQuestCompleted()
+	default:
+	}
+
+	return false
+}
+
+func (quest *Quest) IsBattleQuestCompleted() bool {
+	questData := data.GetQuestData(quest.DataID)
+
+	completionCondition := questData.Objectives["completionCondition"].(int)
+	progress := quest.Progress["progress"].(int)
+
+	return progress >= completionCondition
+}
+
+// player specific quest functions below
 func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, bool) {
-	if player.Quests[index].State != QuestState_Collect {
+	if player.Quests[index].State != QuestState_Collect && !(&player.Quests[index].QuestInstance).IsQuestCompleted() {
 		return nil, false
 	}
 
@@ -170,19 +193,19 @@ func (player *Player) AssignRandomQuest(slot *QuestSlot) {
 
 	// prepare our BaseQuestData with an identifier
 	questId, questData := data.GetRandomQuestData()
-	slot.Quest = Quest {
+	slot.QuestInstance = Quest {
 		DataID: questId,
 		LogicType: questData.LogicType,
 		Progress: map[string]interface{}{},
 	}
 
 	// determine the logic type of the quest and prepare its progress based on the objectives specific to its type
-	switch slot.Quest.LogicType {
+	switch slot.QuestInstance.LogicType {
 
 		case data.QuestLogicType_Battle:
-			slot.Quest.Progress["progress"] = 0
-			slot.Quest.Progress["totalGamesWon"] = player.WinCount
-			slot.Quest.Progress["totalGamesPlayed"] = player.MatchCount
+			slot.QuestInstance.Progress["progress"] = 0
+			slot.QuestInstance.Progress["totalGamesWon"] = player.WinCount
+			slot.QuestInstance.Progress["totalGamesPlayed"] = player.MatchCount
 
 			var cardId string
 			if questData.Objectives["useRandomCard"].(bool) {
@@ -191,7 +214,7 @@ func (player *Player) AssignRandomQuest(slot *QuestSlot) {
 			} else {
 				cardId = questData.Objectives["cardId"].(string)
 			}
-			slot.Quest.Progress["cardId"] = cardId
+			slot.QuestInstance.Progress["cardId"] = cardId
 
 		default:
 	}
@@ -200,10 +223,10 @@ func (player *Player) AssignRandomQuest(slot *QuestSlot) {
 	switch questData.Type {
 
 	case data.QuestType_Daily:
-		slot.ExpireTime = util.TimeToTicks(time.Now().Add(data.MinutesTillDailyQuestExpires * time.Minute))
+		slot.ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillDailyQuestExpires * time.Minute))
 
 	case data.QuestType_Weekly:
-		slot.ExpireTime = util.TimeToTicks(time.Now().Add(data.MinutesTillWeeklyQuestExpires * time.Minute))
+		slot.ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillWeeklyQuestExpires * time.Minute))
 
 	default: //events
 		// TODO need to identify the event and assign its expiration time to this quest slot
@@ -215,7 +238,7 @@ func (player *Player) AssignRandomQuest(slot *QuestSlot) {
 
 // Certain quests types (ex: battle quests) should only update at specific times (ex: immediately after
 // a battle), so this function will only update those quests whose logic types are passed as args
-func (player *Player) UpdateQuests(logicTypes ...data.QuestLogicType) {
+func (player *Player) UpdateQuests(context *util.Context, logicTypes ...data.QuestLogicType) error {
 	currentTime := util.TimeToTicks(time.Now().UTC())
 
 	//instead of iterating over n logicTypes 3 times (once per slot), add the n logicTypes into a map so
@@ -225,29 +248,35 @@ func (player *Player) UpdateQuests(logicTypes ...data.QuestLogicType) {
 		updatables[logicType] = i
 	}
 
-	for _, slot := range player.Quests {
+	for i,_ := range player.Quests {
 
-		if slot.State == QuestState_InProgress {
+		if player.Quests[i].State == QuestState_InProgress {
 			// check to see if the quest has expired
-			if currentTime > slot.ExpireTime {
-				slot.StartCooldown()
+			if currentTime > player.Quests[i].ExpireTime {
+				player.Quests[i].StartCooldown()
 				continue
 			}
 
 			// check to see if we should update this quest
-			if _,updatable := updatables[slot.Quest.LogicType]; !updatable {
+			if _,updatable := updatables[player.Quests[i].QuestInstance.LogicType]; !updatable {
 				continue
-			}
+			} 
 
 			// call individual update func and check for completion
-			if slot.Quest.UpdateQuest(player) { // returns true on completion
-				slot.State = QuestState_Collect
+			if player.Quests[i].QuestInstance.UpdateQuest(player) { // returns true on completion
+				player.Quests[i].State = QuestState_Collect
 			}
 		} else { // check to see if we're ready for a new quest
-			if slot.State == QuestState_Cooldown && currentTime > slot.UnlockTime {
-				slot.State = QuestState_Ready
-				player.AssignRandomQuest(&slot)
+			if player.Quests[i].State == QuestState_Cooldown && currentTime > player.Quests[i].UnlockTime {
+				player.Quests[i].State = QuestState_Ready
+				player.AssignRandomQuest(&player.Quests[i])
 			}
 		}
 	}
+
+	var err error
+	if context != nil {
+		err = player.Save(context)
+	}
+	return err
 }

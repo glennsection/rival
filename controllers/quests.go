@@ -21,15 +21,21 @@ func CompleteQuest(context *util.Context) {
 	} else {
 		if index < 0 || index > len(player.Quests) {
 			context.Fail("Invalid Index")
+			return
 		}
 	}
 
-	player.UpdateQuests()
+	player.UpdateQuests(context)
 
 	reward, success := player.CollectQuest(index, context)
 	if !success {
+		player.SetDirty(models.PlayerDataMask_Quests)
 		context.Fail("Invalid Request")
+		return
 	}
+
+	player.StandardCurrency += reward.StandardCurrency
+	player.Save(context)
 
 	player.SetDirty(models.PlayerDataMask_Quests, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_XP)
 	context.SetData("reward", reward)

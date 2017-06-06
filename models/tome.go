@@ -206,3 +206,74 @@ func (tome *Tome) UpdateTome() {
 		tome.State = TomeUnlocked
 	} 
 }
+
+func (player *Player) UpdateTomes(context *util.Context) error {
+	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
+
+	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
+		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
+		player.FreeTomes++
+	}
+
+	player.FreeTomeUnlockTime = util.TimeToTicks(unlockTime)
+
+	for i, _ := range player.Tomes {
+		(&player.Tomes[i]).UpdateTome()
+	}
+
+	var err error
+	if context != nil {
+		err = player.Save(context)
+	}
+
+	return err
+}
+
+func (player *Player) ModifyArenaPoints(val int) {
+	if val < 1 {
+		return
+	}
+
+	player.ArenaPoints += val
+
+	if player.ArenaPoints > 10 {
+		player.ArenaPoints = 10
+	}
+}
+
+func (player *Player) ClaimTome(context *util.Context, tomeId string) (*Reward, error) {
+	tome := &Tome {
+		DataID: data.ToDataId(tomeId),
+	}
+
+	// check currency
+	// TODO
+
+	return player.AddRewards(context, tome)
+}
+
+func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward, err error) {
+	err = player.UpdateTomes(context)
+
+	if player.FreeTomes == 0 || err != nil {
+		return
+	}
+
+	if player.FreeTomes == 3 {
+		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
+	}
+
+	player.FreeTomes--
+
+	return player.ClaimTome(context, "TOME_COMMON")
+}
+
+func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward, err error) {
+	if player.ArenaPoints < 10 {
+		return
+	}
+
+	player.ArenaPoints = 0;
+
+	return player.ClaimTome(context, "TOME_RARE")
+}

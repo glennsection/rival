@@ -82,3 +82,41 @@ func (card *Card) GetPotentialLevel() (level int) {
 
 	return level
 }
+
+func (player *Player) HasCard(id data.DataId) (*Card, bool) {
+	for i, card := range player.Cards {
+		if card.DataID == id {
+			return &player.Cards[i], true
+		}
+	}
+
+	return nil, false
+}
+
+func (player *Player) AddCards(id data.DataId, num int) {
+	//update the card if we already have it, otherwise instantiate a new one and add it in
+	for i, card := range player.Cards {
+		if card.DataID == id {
+			player.Cards[i].CardCount += num
+			return
+		}
+	}
+
+	card := Card {
+		DataID: id,
+		Level: 1,
+		CardCount: num,
+		WinCount: 0,
+		LeaderWinCount: 0,
+	}
+
+	player.Cards = append(player.Cards, card)
+}
+
+func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
+	cardMap := map[data.DataId]int {}
+	for index, card := range player.Cards {
+		cardMap[card.DataID] = index
+	}
+	return cardMap
+}
