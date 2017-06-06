@@ -204,7 +204,11 @@ func (player *Player) AssignRandomQuest(slot *QuestSlot) {
 
 	// prepare our BaseQuestData with an identifier
 	questId, questData := data.GetRandomQuestData()
-	slot.QuestInstance = Quest {
+	player.AssignQuest(questId, questData, slot)
+}
+
+func (player *Player) AssignQuest(questId data.DataId, questData data.QuestData, slot *QuestSlot) {
+		slot.QuestInstance = Quest {
 		DataID: questId,
 		LogicType: questData.LogicType,
 		Progress: map[string]interface{}{},
