@@ -205,7 +205,6 @@ func ClearMatches(context *util.Context, player *Player) (err error) {
 			"$in": []interface{} {
 				MatchInvalid,
 				MatchOpen,
-				MatchActive,
 			},
 		},
  	})
@@ -242,7 +241,7 @@ func FindPublicMatch(context *util.Context, playerID bson.ObjectId, matchType Ma
 		"tp": matchType,
 	}).One(&match)
 
-	//log.Printf("FindPublicMatch(%v, %v, %v) => %v", playerID, player.ID, matchType, match)
+	//log.Printf("FindPublicMatch(%v, %v, %v) => %v", playerID, matchType, match)
 
 	if match != nil {
 		// match players and mark as active
@@ -338,7 +337,6 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 
 	// check if opponent's result has already been submitted
 	if foundResult {
-		log.Printf("FOUND RESULT")
 		// complete match
 		match.State = MatchComplete
 		match.EndTime = time.Now()
@@ -376,7 +374,6 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		// clear results in cache
 		ClearMatchResult(context, roomID)
 	} else {
-		log.Printf("NO RESULT YET")
 		// get players
 		var host *Player
 		host, err = match.GetHost(context)
@@ -500,6 +497,8 @@ func (match *Match) GetHost(context *util.Context) (player *Player, err error) {
 	if match.host == nil {
 		if match.HostID.Valid() {
 			match.host, err = GetPlayerById(context, match.HostID)
+		} else {
+			err = util.NewError(fmt.Sprintf("Invalid Host set in match: %s", match.RoomID))
 		}
 	}
 	return match.host, err
@@ -509,6 +508,8 @@ func (match *Match) GetGuest(context *util.Context) (player *Player, err error) 
 	if match.guest == nil {
 		if match.GuestID.Valid() {
 			match.guest, err = GetPlayerById(context, match.GuestID)
+		} else {
+			err = util.NewError(fmt.Sprintf("Invalid Guest set in match: %s", match.RoomID))
 		}
 	}
 	return match.guest, err
