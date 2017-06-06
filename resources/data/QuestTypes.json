@@ -10,7 +10,11 @@
 			"time": 0,
 			"percentChance": 0.6,
 			
-			"victoryCount": 5
+			"victoryCount": 5,
+			"requireVictory": true,
+			"asLeader": false,
+			"useRandomCard": false,
+			"cardId": ""
 		},
 		{
 			"id": "VICTORY_QUEST_PLAY",
@@ -21,9 +25,12 @@
 			"disposable": true,
 			"time": 0,
 			"percentChance": 0.3,
-			
+
 			"victoryCount": 5,
-			"requireVictory": false
+			"requireVictory": false,
+			"asLeader": false,
+			"useRandomCard": false,
+			"cardId": ""
 		},
 		{
 			"id": "VICTORY_QUEST_RANDOM_LEADER",
@@ -34,10 +41,12 @@
 			"disposable": true,
 			"time": 0,
 			"percentChance": 0.8,
-			
+
 			"victoryCount": 5,
-			"winAsLeader": true,
-			"useRandomCard": true
+			"requireVictory": true,
+			"asLeader": true,
+			"useRandomCard": true,
+			"cardId": ""
 		},
 		{
 			"id": "VICTORY_QUEST_RANDOM_DECK",
@@ -48,10 +57,12 @@
 			"disposable": true,
 			"time": 0,
 			"percentChance": 0.5,
-			
+
 			"victoryCount": 5,
-			"winAsLeader": false,
-			"useRandomCard": true
+			"requireVictory": true,
+			"asLeader": false,
+			"useRandomCard": true,
+			"cardId": ""
 		},
 		{
 			"id": "VICTORY_QUEST_PLAY_RANDOM_LEADER",
@@ -62,11 +73,12 @@
 			"disposable": true,
 			"time": 0,
 			"percentChance": 0.3,
-			
+
 			"victoryCount": 5,
-			"winAsLeader": true,
+			"requireVictory": false,
+			"asLeader": true,
 			"useRandomCard": true,
-			"requireVictory": false
+			"cardId": ""
 		},
 		{
 			"id": "VICTORY_QUEST_PLAY_RANDOM_DECK",
@@ -77,24 +89,27 @@
 			"disposable": true,
 			"time": 0,
 			"percentChance": 0.5,
-			
+
 			"victoryCount": 5,
-			"winAsLeader": false,
+			"requireVictory": false,
+			"asLeader": false,
 			"useRandomCard": true,
-			"requireVictory": false
+			"cardId": ""
 		},
 		{
 			"id": "VICTORY_QUEST_SKELETON_INDECK",
-			"description": "Win 5 Matches with Armored Skeleton as leader",
+			"description": "Win 5 Matches with Armored Skeleton in deck",
 			"questLogicType": "Battle",
 			"type": "Daily",
 			"rewardID": "PREMIUM_CURRENCY_REWARD",
 			"disposable": true,
 			"time": 0,
 			"percentChance": 0.2,
-			
+
 			"victoryCount": 5,
-			"winAsLeader": false,
+			"requireVictory": true,
+			"asLeader": false,
+			"useRandomCard": false,
 			"cardId": "CARD_ARMORED_SKELETON"
 		},
 		{
@@ -106,10 +121,12 @@
 			"disposable": true,
 			"time": 0,
 			"percentChance": 0.8,
-			
+
 			"victoryCount": 20,
-			"winAsLeader": true,
-			"useRandomCard": true
+			"requireVictory": true,
+			"asLeader": true,
+			"useRandomCard": true,
+			"cardId": ""
 		}
 	]
 }

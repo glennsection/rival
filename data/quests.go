@@ -44,7 +44,7 @@ type QuestDataClient struct {
 	// Victory Quests
 	VictoryCount 			int 				`json:"victoryCount"`
 	RequiresVictory 		bool 				`json:"requireVictory"`
-	WinAsLeader 			bool 				`json:"winAsLeader"`
+	WinAsLeader 			bool 				`json:"asLeader"`
 	UseRandomCard 			bool 				`json:"useRandomCard"`
 	CardID 					string 				`json:"cardID"`
 
@@ -89,8 +89,8 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 	case "Battle":
 		quest.LogicType = QuestLogicType_Battle
 		quest.Objectives["completionCondition"] = client.VictoryCount
-		quest.Objectives["requiresVictory"] = client.RequiresVictory || client.WinAsLeader
-		quest.Objectives["winAsLeader"] = client.WinAsLeader
+		quest.Objectives["requiresVictory"] = client.RequiresVictory
+		quest.Objectives["asLeader"] = client.WinAsLeader
 		quest.Objectives["useRandomCard"] = client.UseRandomCard
 		quest.Objectives["cardId"] = client.CardID
 	default:
