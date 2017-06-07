@@ -13,6 +13,7 @@ type CurrencyType int
 const (
 	CurrencyReal CurrencyType = iota
 	CurrencyPremium
+	CurrencyStandard
 )
 
 // store category
@@ -124,8 +125,10 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 	switch client.Currency {
 	case "Real":
 		storeItem.Currency = CurrencyReal
-	default:
+	case "Premium":
 		storeItem.Currency = CurrencyPremium
+	default:
+		storeItem.Currency = CurrencyStandard
 	}
 
 	return nil
@@ -160,8 +163,10 @@ func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
 	switch storeItem.Currency {
 	case CurrencyReal:
 		client.Currency = "Real"
-	default:
+	case CurrencyPremium:
 		client.Currency = "Premium"
+	default:
+		client.Currency = "Standard"
 	}
 
 	return json.Marshal(client)
