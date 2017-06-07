@@ -45,7 +45,10 @@ func authenticateDevice(context *util.Context, required bool) (err error) {
 				util.Must(err)
 
 				// insert new player
-				player := models.CreatePlayer(user.ID)
+				var player *models.Player
+				player, err = models.CreatePlayer(user.ID)
+				util.Must(err)
+
 				util.Must(player.Save(context))
 			}
 		}

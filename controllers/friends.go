@@ -109,7 +109,7 @@ func FriendRequest(context *util.Context) {
 	tag := context.Params.GetRequiredString("tag")
 
 	image := ""
-	message := fmt.Sprintf("Friend Request from: %s", GetUserName(context, context.UserID))
+	message := fmt.Sprintf("Friend Request from: %s", models.GetUserName(context, context.UserID))
 	expiresAt := time.Now().Add(time.Hour * time.Duration(168))
 
 	sendFriendNotification(context, tag, "FriendRequest", image, message, "Accept", "accept", "Decline", "decline", nil, expiresAt)
@@ -147,7 +147,7 @@ func FriendBattle(context *util.Context) {
 	roomID := util.GenerateUUID()
 
 	image := ""
-	message := fmt.Sprintf("Battle Request from: %s", GetUserName(context, context.UserID))
+	message := fmt.Sprintf("Battle Request from: %s", models.GetUserName(context, context.UserID))
 	data := map[string]interface{} {
 		"roomId": roomID,
 	}

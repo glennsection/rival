@@ -112,27 +112,35 @@ func GetPlayerByUser(context *util.Context, userId bson.ObjectId) (player *Playe
 	return
 }
 
-func (player *Player) loadDefaults() {
-	// template for initial player
+func (player *Player) loadDefaults() (err error) {
+	// template file path for initial player data
 	path := "./resources/models/player.json"
 
-	file, err := ioutil.ReadFile(path)
+	// read template file
+	var file []byte
+	file, err = ioutil.ReadFile(path)
 	if err != nil {
 		return
 	}
 
-	//assign starting quests
+	// assign starting quests
 	player.Quests = make([]QuestSlot,3,3)
 	for i,_ := range player.Quests {
 		player.AssignRandomQuest(&(player.Quests[i]))
 	}
 
 	err = json.Unmarshal(file, player)
+	return
 }
 
-func CreatePlayer(userID bson.ObjectId) (player *Player) {
+func CreatePlayer(userID bson.ObjectId) (player *Player, err error) {
 	player = &Player {}
-	player.loadDefaults()
+
+	// load initial player data values
+	err = player.loadDefaults()
+	if err != nil {
+		return
+	}
 	
 	player.UserID = userID
 	return
@@ -170,9 +178,19 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 }
 
 func (player *Player) Reset(context *util.Context) (err error) {
-	// reset player and update in database
-	player.loadDefaults()
+	// reset player data values
+	err = player.loadDefaults()
+	if err != nil {
+		return
+	}
 
+	// clear cache for player
+	context.Cache.Set("PlayerUserId:" + player.ID.Hex(), nil)
+	context.Cache.Set("PlayerName:" + player.ID.Hex(), nil)
+	context.Cache.Set("UserName:" + player.UserID.Hex(), nil)
+	context.Cache.RemoveScore("Leaderboard", player.ID.Hex())
+
+	// update database
 	return player.Save(context)
 }
 
@@ -239,6 +257,77 @@ func (player *Player) Update(context *util.Context, updates bson.M) (err error) 
 func (player *Player) Delete(context *util.Context) (err error) {
 	// delete player from database
 	return context.DB.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
+}
+
+func GetUserIdByPlayerId(context *util.Context, playerID bson.ObjectId) bson.ObjectId {
+	// get cache key
+	key := fmt.Sprintf("PlayerUserId:%s", playerID.Hex())
+
+	// get cached ID
+	userIDHex := context.Cache.GetString(key, "")
+	var userID bson.ObjectId
+
+	if bson.IsObjectIdHex(userIDHex) {
+		// user cached ID
+		userID = bson.ObjectIdHex(userIDHex)
+	} else {
+		// get and cache ID
+		player, _ := GetPlayerById(context, playerID)
+		if player != nil {
+			userID = player.UserID
+			context.Cache.Set(key, userID.Hex())
+		}
+	}
+	return userID
+}
+
+func (player *Player) CacheName(context *util.Context, name string) {
+	// get cache keys
+	userKey := fmt.Sprintf("UserName:%s", player.UserID.Hex())
+	playerKey := fmt.Sprintf("PlayerName:%s", player.ID.Hex())
+
+	// refresh cached names
+	context.Cache.Set(userKey, name)
+	context.Cache.Set(playerKey, name)
+}
+
+func GetUserName(context *util.Context, userID bson.ObjectId) string {
+	// get cache key
+	key := fmt.Sprintf("UserName:%s", userID.Hex())
+
+	// get cached name
+	name := context.Cache.GetString(key, "")
+
+	// immediately cache latest name
+	if name == "" {
+		user, err := GetUserById(context, userID)
+		if err == nil && user != nil {
+			context.Cache.Set(key, user.Name)
+			name = user.Name
+		}
+	}
+	return name
+}
+
+func GetPlayerName(context *util.Context, playerID bson.ObjectId) string {
+	// get cache key
+	key := fmt.Sprintf("PlayerName:%s", playerID.Hex())
+
+	// get cached name
+	name := context.Cache.GetString(key, "")
+
+	// immediately cache latest name
+	if name == "" {
+		player, _ := GetPlayerById(context, playerID)
+		if player != nil {
+			user, _ := GetUserById(context, player.UserID)
+			if user != nil {
+				context.Cache.Set(key, user.Name)
+				name = user.Name
+			}
+		}
+	}
+	return name
 }
 
 func (player *Player) GetLevel() int {
@@ -348,6 +437,7 @@ func (player *Player) UpdatePlace(context *util.Context) {
 	}
 }
 
+// HACK - inefficient
 func UpdateAllPlayersPlace(context *util.Context) {
 	var players []*Player
 	context.DB.C(PlayerCollectionName).Find(nil).All(&players)
