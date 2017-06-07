@@ -44,7 +44,6 @@ func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	// get individual card offers
 	cards := make([]data.StoreData, 0)
 	cards = append(cards, player.GetStoreCard("COMMON", cards))
-	cards = append(cards, player.GetStoreCard("COMMON", cards))
 	cards = append(cards, player.GetStoreCard("RARE", cards))
 	cards = append(cards, player.GetStoreCard("EPIC", cards))
 	return cards
