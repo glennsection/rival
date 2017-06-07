@@ -185,25 +185,25 @@ func (quest *Quest) IsBattleQuestCompleted() bool {
 // player specific quest functions below
 
 func (player *Player) SetupQuestDefaults() {
-	player.Quests = make([]QuestSlot,3,3)
+	player.QuestSlots = make([]QuestSlot,3,3)
 
-	player.Quests[0].SupportedTypes = []data.QuestType{data.QuestType_Daily, data.QuestType_Event}
-	player.Quests[1].SupportedTypes = []data.QuestType{data.QuestType_Daily, data.QuestType_Event}
-	player.Quests[2].SupportedTypes = []data.QuestType{data.QuestType_Weekly}
+	player.QuestSlots[0].SupportedTypes = []data.QuestType{data.QuestType_Daily, data.QuestType_Event}
+	player.QuestSlots[1].SupportedTypes = []data.QuestType{data.QuestType_Daily, data.QuestType_Event}
+	player.QuestSlots[2].SupportedTypes = []data.QuestType{data.QuestType_Weekly}
 
-	for i,_ := range player.Quests {
+	for i,_ := range player.QuestSlots {
 		player.AssignRandomQuest(i)
 	}
 }
 
 func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, bool) {
-	if player.Quests[index].State != QuestState_Collect && !(&player.Quests[index].QuestInstance).IsQuestCompleted() {
+	if player.QuestSlots[index].State != QuestState_Collect && !(&player.QuestSlots[index].QuestInstance).IsQuestCompleted() {
 		return nil, false
 	}
 
 	//temp
 	currency := 100
-	questData := data.GetQuestData(player.Quests[index].QuestInstance.DataID)
+	questData := data.GetQuestData(player.QuestSlots[index].QuestInstance.DataID)
 	if questData.Type == data.QuestType_Weekly {
 		currency = 1000
 	}
@@ -213,20 +213,20 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 	}
 	//end temp
 
-	player.Quests[index].StartCooldown()
+	player.QuestSlots[index].StartCooldown()
 	player.Save(context)
 	return reward, true
 }
 
 func (player *Player) AssignRandomQuest(index int, questTypes ...data.QuestType) {
 	if len(questTypes) == 0 { // if no quest types have been specified, use the supported types for the slot
-		questTypes = player.Quests[index].SupportedTypes
+		questTypes = player.QuestSlots[index].SupportedTypes
 	}
 
 	/* we need to ensure there are no duplicate quests, so build a slice for each populated by complete or in-progress 
 		quests and use it in getQuestType to enforce the unique condition */
 	currentQuests := make([]data.QuestData,0)
-	for i,questSlot := range player.Quests {
+	for i,questSlot := range player.QuestSlots {
 		if i != index && (questSlot.State == QuestState_InProgress || questSlot.State == QuestState_InProgress) {
 			currentQuests = append(currentQuests, data.GetQuestData(questSlot.QuestInstance.DataID))
 		}
@@ -262,23 +262,23 @@ func (player *Player) AssignRandomQuest(index int, questTypes ...data.QuestType)
 }
 
 func (player *Player) AssignQuest(index int, questId data.DataId, questData data.QuestData) {
-	if player.Quests[index].State != QuestState_Ready {
+	if player.QuestSlots[index].State != QuestState_Ready {
 		return 
 	}
 
-	player.Quests[index].QuestInstance = Quest {
+	player.QuestSlots[index].QuestInstance = Quest {
 		DataID: questId,
 		LogicType: questData.LogicType,
 		Progress: map[string]interface{}{},
 	}
 
 	// determine the logic type of the quest and prepare its progress based on the objectives specific to its type
-	switch player.Quests[index].QuestInstance.LogicType {
+	switch player.QuestSlots[index].QuestInstance.LogicType {
 
 		case data.QuestLogicType_Battle:
-			player.Quests[index].QuestInstance.Progress["progress"] = 0
-			player.Quests[index].QuestInstance.Progress["totalGamesWon"] = player.WinCount
-			player.Quests[index].QuestInstance.Progress["totalGamesPlayed"] = player.MatchCount
+			player.QuestSlots[index].QuestInstance.Progress["progress"] = 0
+			player.QuestSlots[index].QuestInstance.Progress["totalGamesWon"] = player.WinCount
+			player.QuestSlots[index].QuestInstance.Progress["totalGamesPlayed"] = player.MatchCount
 
 			var cardId string
 			if questData.Objectives["useRandomCard"].(bool) {
@@ -287,7 +287,7 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 			} else {
 				cardId = questData.Objectives["cardId"].(string)
 			}
-			player.Quests[index].QuestInstance.Progress["cardId"] = cardId
+			player.QuestSlots[index].QuestInstance.Progress["cardId"] = cardId
 
 		default:
 	}
@@ -296,17 +296,17 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 	switch questData.Type {
 
 	case data.QuestType_Daily:
-		player.Quests[index].ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillDailyQuestExpires * time.Minute))
+		player.QuestSlots[index].ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillDailyQuestExpires * time.Minute))
 
 	case data.QuestType_Weekly:
-		player.Quests[index].ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillWeeklyQuestExpires * time.Minute))
+		player.QuestSlots[index].ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillWeeklyQuestExpires * time.Minute))
 
 	default: //events
 		// TODO need to identify the event and assign its expiration time to this quest slot
 	}
 
-	player.Quests[index].State = QuestState_InProgress
-	player.Quests[index].UnlockTime = util.TimeToTicks(time.Now().UTC())
+	player.QuestSlots[index].State = QuestState_InProgress
+	player.QuestSlots[index].UnlockTime = util.TimeToTicks(time.Now().UTC())
 }
 
 // Certain quests types (ex: battle quests) should only update at specific times (ex: immediately after
@@ -321,27 +321,27 @@ func (player *Player) UpdateQuests(context *util.Context, logicTypes ...data.Que
 		updatables[logicType] = i
 	}
 
-	for i,_ := range player.Quests {
+	for i,_ := range player.QuestSlots {
 
-		if player.Quests[i].State == QuestState_InProgress {
+		if player.QuestSlots[i].State == QuestState_InProgress {
 			// check to see if the quest has expired
-			if currentTime > player.Quests[i].ExpireTime {
-				player.Quests[i].StartCooldown()
+			if currentTime > player.QuestSlots[i].ExpireTime {
+				player.QuestSlots[i].StartCooldown()
 				continue
 			}
 
 			// check to see if we should update this quest
-			if _,updatable := updatables[player.Quests[i].QuestInstance.LogicType]; !updatable {
+			if _,updatable := updatables[player.QuestSlots[i].QuestInstance.LogicType]; !updatable {
 				continue
 			} 
 
 			// call individual update func and check for completion
-			if player.Quests[i].QuestInstance.UpdateQuest(player) { // returns true on completion
-				player.Quests[i].State = QuestState_Collect
+			if player.QuestSlots[i].QuestInstance.UpdateQuest(player) { // returns true on completion
+				player.QuestSlots[i].State = QuestState_Collect
 			}
 		} else { // check to see if we're ready for a new quest
-			if player.Quests[i].State == QuestState_Cooldown && currentTime > player.Quests[i].UnlockTime {
-				player.Quests[i].State = QuestState_Ready
+			if player.QuestSlots[i].State == QuestState_Cooldown && currentTime > player.QuestSlots[i].UnlockTime {
+				player.QuestSlots[i].State = QuestState_Ready
 				player.AssignRandomQuest(i)
 			}
 		}
