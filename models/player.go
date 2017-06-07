@@ -122,6 +122,7 @@ func (player *Player) loadDefaults() {
 		return
 	}
 
+	//assign starting quests
 	player.Quests = make([]QuestSlot,3,3)
 	for i,_ := range player.Quests {
 		player.AssignRandomQuest(&(player.Quests[i]))

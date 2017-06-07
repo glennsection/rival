@@ -43,16 +43,22 @@ func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 
 	// get individual card offers
 	cards := make([]data.StoreData, 0)
-	cards = append(cards, player.GetStoreCard("COMMON"))
-	cards = append(cards, player.GetStoreCard("RARE"))
-	cards = append(cards, player.GetStoreCard("EPIC"))
+	cards = append(cards, player.GetStoreCard("COMMON", cards))
+	cards = append(cards, player.GetStoreCard("COMMON", cards))
+	cards = append(cards, player.GetStoreCard("RARE", cards))
+	cards = append(cards, player.GetStoreCard("EPIC", cards))
 	return cards
 }
 
-func (player *Player) GetStoreCard(rarity string) data.StoreData {
+func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) data.StoreData {
 	// get cards of the desired rarity
 	getCard := func(card *data.CardData) bool {
-		return card.Rarity == rarity
+		for _,item := range storeCards { // ensure no duplicates
+			if item.Name == card.Name {
+				return false
+			}
+		}
+		return card.Rarity == rarity // ensure rarity is correct
 	}
 	cards := data.GetCards(getCard)
 
@@ -70,7 +76,7 @@ func (player *Player) GetStoreCard(rarity string) data.StoreData {
 		Category: data.StoreCategoryCards,
 		ItemID: fmt.Sprintf("STORE_CARD_%s", rarity),
 		Quantity: 1,
-		Currency: data.CurrencyPremium,
+		Currency: data.CurrencyStandard,
 		Cost: player.GetCardCost(id, rarity),
 	}
 

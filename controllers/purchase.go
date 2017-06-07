@@ -50,6 +50,14 @@ func Purchase(context *util.Context) {
 		}
 		player.PremiumCurrency -= cost
 
+	case data.CurrencyStandard:
+		cost := int(storeItem.Cost)
+		if player.StandardCurrency < cost {
+			context.Fail("Insufficient funds")
+			return
+		}
+		player.StandardCurrency -= cost
+
 	}
 
 	// handle store item category
