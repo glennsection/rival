@@ -4,24 +4,10 @@ import (
 	"time"
 	"math/rand"
 	"sort"
-	"fmt"
 
 	"bloodtales/data"
 	"bloodtales/util"
 )
-
-func (player *Player) GetNumCardsPurchased(rarity string) *int {
-	switch rarity {
-		case "COMMON":
-			return &player.CardsPurchased[0]
-		case "RARE":
-			return &player.CardsPurchased[1]
-		case "EPIC":
-			return &player.CardsPurchased[2]
-	}
-
-	return nil
-}
 
 func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	// seed random with current utc date + unique identifer
@@ -29,27 +15,39 @@ func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	date := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
 
 	// ensure our card purchase counts are up to date
+	reset := false
 	if player.PurchaseResetTime < date {
 		player.PurchaseResetTime = util.TimeToTicks(time.Now())
-
-		for i, _ := range player.CardsPurchased {
-			player.CardsPurchased[i] = 0
-		}
-
-		player.Save(context)
+		reset = true
 	}
 
 	rand.Seed(player.PurchaseResetTime)
 
 	// get individual card offers
-	cards := make([]data.StoreData, 0)
-	cards = append(cards, player.GetStoreCard("COMMON", cards))
-	cards = append(cards, player.GetStoreCard("RARE", cards))
-	cards = append(cards, player.GetStoreCard("EPIC", cards))
-	return cards
+	storeCards := make([]data.StoreData, 0)
+	cardTypes := [...]string{"COMMON","COMMON","RARE","EPIC"}
+
+	for _,cardType := range cardTypes {
+		id, storeCard := player.GetStoreCard(cardType, storeCards)
+		storeCards = append(storeCards, storeCard)
+
+		// reset purchase counts if necessary
+		if reset { // should check this condition first before iterating through n cards in HasCard
+			if card,ok := player.HasCard(id); ok {
+				card.PurchaseCount = 0
+			}
+		}
+	}
+
+	// if we've reset purchase counts, save the changes to the db
+	if reset {
+		player.Save(context)
+	}
+
+	return storeCards
 }
 
-func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) data.StoreData {
+func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (data.DataId, data.StoreData) {
 	// get cards of the desired rarity
 	getCard := func(card *data.CardData) bool {
 		for _,item := range storeCards { // ensure no duplicates
@@ -57,65 +55,55 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) d
 				return false
 			}
 		}
+
 		return card.Rarity == rarity // ensure rarity is correct
 	}
-	cards := data.GetCards(getCard)
+	cardIds := data.GetCards(getCard)
 
 	// sort these cards to ensure we get the same cards for the generated index every time
-	sort.Sort(data.DataIdCollection(cards))
+	sort.Sort(data.DataIdCollection(cardIds))
 
 	// select a card
-	id := cards[rand.Intn(len(cards))]
-	card := data.GetCard(id)
+	cardId := cardIds[rand.Intn(len(cardIds))]
+	card := data.GetCard(cardId)
 
 	storeCard := data.StoreData {
 		Name: card.Name,
 		DisplayName: card.Name,
 		Image: card.Portrait,
 		Category: data.StoreCategoryCards,
-		ItemID: fmt.Sprintf("STORE_CARD_%s", rarity),
+		ItemID: card.Name,
 		Quantity: 1,
 		Currency: data.CurrencyStandard,
-		Cost: player.GetCardCost(id, rarity),
+		Cost: player.GetCardCost(cardId),
 	}
 
-	//fmt.Println(fmt.Sprintf("Name: %s, Rarity: %s", card.Name, rarity))
-
-	return storeCard
+	return cardId, storeCard
 }
 
-func (player *Player) GetCardCost(id data.DataId, rarity string) float64 {
-	//TODO need to handle card levels > level 9
-
+func (player *Player) GetCardCost(id data.DataId) float64 {
 	level := 1
+	var purchaseCount int
+	var rarity string
+
 	if cardRef, hasCard := player.HasCard(id); hasCard {
 		level = cardRef.GetPotentialLevel()
+		purchaseCount = cardRef.PurchaseCount
+		rarity = data.GetCard(cardRef.DataID).Rarity
 	}
+
 	baseCost := data.GetCardCost(rarity, level)
 
-	return float64(baseCost + (*player.GetNumCardsPurchased(rarity) * baseCost))
+	return float64(baseCost + (purchaseCount * baseCost))
 }
 
 func (player *Player) HandleCardPurchase(storeItem *data.StoreData) {
 		id := data.ToDataId(storeItem.Name)
-		var rarity string
-
-		fmt.Println(fmt.Sprintf("Name: %s", storeItem.Name))
-
-		switch storeItem.ItemID {
-
-		case "STORE_CARD_COMMON":
-			rarity = "COMMON"
-
-		case "STORE_CARD_RARE":
-			rarity = "RARE"
-
-		case "STORE_CARD_EPIC":
-			rarity = "EPIC"
-		}
-
-		(*player.GetNumCardsPurchased(rarity))++
-		storeItem.Cost = player.GetCardCost(id, rarity)
 
 		player.AddCards(id, storeItem.Quantity)
+
+		storeItem.Cost = player.GetCardCost(id)
+
+		cardRef,_ := player.HasCard(id)
+		cardRef.PurchaseCount++
 }

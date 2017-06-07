@@ -13,6 +13,7 @@ type Card struct {
 	CardCount      			int           `bson:"nm" json:"cardCount"`
 	WinCount       			int           `bson:"wc" json:"winCount"`
 	LeaderWinCount 			int           `bson:"wl" json:"leaderWinCount"`
+	PurchaseCount 			int 		  `bson:"pc"`
 }
 
 // client model
