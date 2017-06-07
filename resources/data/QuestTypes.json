@@ -97,22 +97,6 @@
 			"cardId": ""
 		},
 		{
-			"id": "BATTLE_QUEST_VICTORY_SKELETON_INDECK",
-			"description": "Win 5 Matches with Armored Skeleton in deck",
-			"questLogicType": "Battle",
-			"type": "Daily",
-			"rewardID": "PREMIUM_CURRENCY_REWARD",
-			"disposable": true,
-			"time": 0,
-			"percentChance": 0.2,
-
-			"victoryCount": 5,
-			"requireVictory": true,
-			"asLeader": false,
-			"useRandomCard": false,
-			"cardId": "CARD_ARMORED_SKELETON"
-		},
-		{
 			"id": "BATTLE_QUEST_VICTORY_RANDOM_LEADER_WEEKLY",
 			"description": "Win 20 Matches as Leader",
 			"questLogicType": "Battle",
@@ -125,6 +109,54 @@
 			"victoryCount": 20,
 			"requireVictory": true,
 			"asLeader": true,
+			"useRandomCard": true,
+			"cardId": ""
+		},
+		{
+			"id": "BATTLE_QUEST_PLAY_RANDOM_LEADER_WEEKLY",
+			"description": "Win 20 Matches as Leader",
+			"questLogicType": "Battle",
+			"type": "Weekly",
+			"rewardID": "PREMIUM_CURRENCY_REWARD_WEEKLY",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.8,
+
+			"victoryCount": 20,
+			"requireVictory": false,
+			"asLeader": true,
+			"useRandomCard": true,
+			"cardId": ""
+		},
+		{
+			"id": "BATTLE_QUEST_VICTORY_RANDOM_INDECK_WEEKLY",
+			"description": "Win 20 Matches as Leader",
+			"questLogicType": "Battle",
+			"type": "Weekly",
+			"rewardID": "PREMIUM_CURRENCY_REWARD_WEEKLY",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.8,
+
+			"victoryCount": 20,
+			"requireVictory": true,
+			"asLeader": false,
+			"useRandomCard": true,
+			"cardId": ""
+		},
+		{
+			"id": "BATTLE_QUEST_PLAY_RANDOM_INDECK_WEEKLY",
+			"description": "Win 20 Matches as Leader",
+			"questLogicType": "Battle",
+			"type": "Weekly",
+			"rewardID": "PREMIUM_CURRENCY_REWARD_WEEKLY",
+			"disposable": true,
+			"time": 0,
+			"percentChance": 0.8,
+
+			"victoryCount": 20,
+			"requireVictory": false,
+			"asLeader": false,
 			"useRandomCard": true,
 			"cardId": ""
 		}

@@ -119,11 +119,13 @@ func GetQuestData(id DataId) QuestData {
 	return quests[id]
 }
 
-func GetRandomQuestData() (dataId DataId, questData QuestData) {
+func GetRandomQuestData(condition func(DataId, QuestData) bool) (dataId DataId, questData QuestData) {
 	for id,quest := range quests {
-		dataId = id
-		questData = quest
-		break //we can break after the first iteration because items in golang maps are accessed in randomized order
+		if condition(id, quest) { //condition should be defined {return true} for any quest to be returned
+			dataId = id
+			questData = quest
+			break //we can break after the first successful iteration because items in golang maps are accessed in randomized order
+		}
 	}
 
 	return dataId, questData

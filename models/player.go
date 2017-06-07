@@ -122,10 +122,7 @@ func (player *Player) loadDefaults() {
 	}
 
 	//assign starting quests
-	player.Quests = make([]QuestSlot,3,3)
-	for i,_ := range player.Quests {
-		player.AssignRandomQuest(&(player.Quests[i]))
-	}
+	player.SetupQuestDefaults()
 
 	err = json.Unmarshal(file, player)
 }
