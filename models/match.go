@@ -579,7 +579,7 @@ func (match *Match) GetOutcomeName() string {
 func invertOutcome(outcome MatchOutcome) MatchOutcome {
 	switch outcome {
 	case MatchSurrender:
-		return MatchSurrender
+		return MatchWin
 	case MatchLoss:
 		return MatchWin
 	case MatchWin:

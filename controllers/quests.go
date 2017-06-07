@@ -20,7 +20,7 @@ func CompleteQuest(context *util.Context) {
 	if err != nil {
 		panic(err)
 	} else {
-		if index < 0 || index > len(player.Quests) {
+		if index < 0 || index > len(player.QuestSlots) {
 			context.Fail("Invalid Index")
 			return
 		}
