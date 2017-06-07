@@ -8,7 +8,6 @@ import (
 
 func handleMatch() {
 	handleGameAPI("/match/clear", system.TokenAuthentication, MatchClear)
-	handleGameAPI("/match/join", system.TokenAuthentication, MatchJoin)
 	handleGameAPI("/match/find", system.TokenAuthentication, MatchFind)
 	handleGameAPI("/match/fail", system.TokenAuthentication, MatchFail)
 	handleGameAPI("/match/result", system.TokenAuthentication, MatchResult)
@@ -21,21 +20,6 @@ func MatchClear(context *util.Context) {
 	util.Must(models.ClearMatches(context, player))
 }
 
-func MatchJoin(context *util.Context) {
-	// parse parameters
-	matchType := models.MatchType(context.Params.GetInt("type", int(models.MatchRanked)))
-	roomID := context.Params.GetRequiredString("roomId")
-
-	player := GetPlayer(context)
-
-	// find or queue match
-	match, err := models.JoinMatch(context, player, matchType, roomID)
-	util.Must(err)
-
-	// respond
-	context.SetData("match", match)
-}
-
 func MatchFind(context *util.Context) {
 	// parse parameters
 	matchType := models.MatchType(context.Params.GetInt("type", int(models.MatchRanked)))
@@ -43,7 +27,7 @@ func MatchFind(context *util.Context) {
 	player := GetPlayer(context)
 
 	// find or queue match
-	match, err := models.FindMatch(context, player, matchType)
+	match, err := models.FindPublicMatch(context, player.ID, matchType)
 	util.Must(err)
 
 	// respond
@@ -54,7 +38,7 @@ func MatchFail(context *util.Context) {
 	player := GetPlayer(context)
 
 	// fail any current match
-	util.Must(models.FailMatch(context, player))
+	util.Must(models.FailMatch(context, player.ID))
 }
 
 func MatchResult(context *util.Context) {

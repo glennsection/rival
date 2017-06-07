@@ -115,26 +115,28 @@ func FriendRequest(context *util.Context) {
 	sendFriendNotification(context, tag, "FriendRequest", image, message, "Accept", "accept", "Decline", "decline", nil, expiresAt)
 }
 
-func acceptFriendRequest(context *util.Context, senderID bson.ObjectId, receiverID bson.ObjectId) {
-	// get sender friends
-	var senderFriends *models.Friends
-	senderFriends, err := models.GetFriendsByPlayerId(context, senderID, true)
-	util.Must(err)
+func respondFriendRequest(context *util.Context, notification *models.Notification, action string) {
+	if action == "accept" {
+		// get sender friends
+		var senderFriends *models.Friends
+		senderFriends, err := models.GetFriendsByPlayerId(context, notification.SenderID, true)
+		util.Must(err)
 
-	// append sender friends
-	senderFriends.FriendIDs = append(senderFriends.FriendIDs, receiverID)
-	err = senderFriends.Save(context)
-	util.Must(err)
+		// append sender friends
+		senderFriends.FriendIDs = append(senderFriends.FriendIDs, notification.ReceiverID)
+		err = senderFriends.Save(context)
+		util.Must(err)
 
-	// get receiver friends
-	var receiverFriends *models.Friends
-	receiverFriends, err = models.GetFriendsByPlayerId(context, receiverID, true)
-	util.Must(err)
+		// get receiver friends
+		var receiverFriends *models.Friends
+		receiverFriends, err = models.GetFriendsByPlayerId(context, notification.ReceiverID, true)
+		util.Must(err)
 
-	// append receiver friends
-	receiverFriends.FriendIDs = append(receiverFriends.FriendIDs, senderID)
-	err = receiverFriends.Save(context)
-	util.Must(err)
+		// append receiver friends
+		receiverFriends.FriendIDs = append(receiverFriends.FriendIDs, notification.SenderID)
+		err = receiverFriends.Save(context)
+		util.Must(err)
+	}
 }
 
 func FriendBattle(context *util.Context) {
@@ -154,4 +156,13 @@ func FriendBattle(context *util.Context) {
 	sendFriendNotification(context, tag, "FriendBattle", image, message, "Battle", "accept", "Decline", "decline", data, expiresAt)
 
 	context.SetData("roomId", roomID)
+}
+
+func respondFriendBattle(context *util.Context, notification *models.Notification, action string) {
+	if action == "accept" {
+		// create private match
+		roomID := notification.Data["roomId"].(string)
+		_, err := models.StartPrivateMatch(context, notification.SenderID, notification.ReceiverID, models.MatchRanked, roomID)
+		util.Must(err)
+	}
 }
