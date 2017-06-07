@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"errors"
 
+	"gopkg.in/mgo.v2/bson"
 	"github.com/dgrijalva/jwt-go"
 
 	"bloodtales/config"
@@ -43,21 +44,35 @@ func authenticateToken(context *util.Context, required bool) (err error) {
 
 			return authenticationSecret, nil
 		})
+		if err != nil {
+			return
+		}
 
 		// get user if valid token
-		if err == nil && token.Valid {
-			if claims, ok := token.Claims.(jwt.MapClaims); ok {
-				if username, ok := claims["username"].(string); ok {
+		if !token.Valid {
+			return errors.New(fmt.Sprintf("Invalid authentication token: %v", token))
+		}
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			if id, ok := claims["id"].(string); ok {
+				if bson.IsObjectIdHex(id) {
 					var user *models.User
-					user, err = models.GetUserByUsername(context, username)
+					user, err = models.GetUserById(context, bson.ObjectIdHex(id))
 
 					if user == nil {
-						err = errors.New(fmt.Sprintf("Failed to find user indicated by authentication token: %v (%v)", username, err))
+						err = errors.New(fmt.Sprintf("Failed to find user indicated by authentication token. ID: %v, Error: %v", id, err))
 					} else {
 						SetUser(context, user)
+						return
 					}
+				} else {
+					err = errors.New(fmt.Sprintf("Invalid ID claim from authentication token: %v", id))
 				}
+			} else {
+				err = errors.New(fmt.Sprintf("Failed to retrieve ID claim from authentication token: %v", token))
 			}
+		} else {
+			err = errors.New(fmt.Sprintf("Failed to retrieve claims from authentication token: %v", token))
 		}
 	} else {
 		if required {
@@ -67,7 +82,7 @@ func authenticateToken(context *util.Context, required bool) (err error) {
 	return
 }
 
-func AppendAuthToken(context *util.Context) (err error) {
+func appendAuthToken(context *util.Context) (err error) {
 	user := GetUser(context)
 	if user == nil {
 		err = errors.New("No User set for context to apply auth token")
@@ -76,7 +91,7 @@ func AppendAuthToken(context *util.Context) (err error) {
 
 	// create auth token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims {
-		"username": user.Username,
+		"id": user.ID.Hex(),
 		"exp": time.Now().Add(time.Second * config.Config.Authentication.TokenExpiration).Unix(),
 	})
 

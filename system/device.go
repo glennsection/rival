@@ -10,7 +10,10 @@ import (
 
 func authenticateDevice(context *util.Context, required bool) (err error) {
 	// parse parameters
-	uuid := context.Params.GetString("uuid", "")
+	// TODO - should be passing multiple credentials (Provider, ID), and processing the entirety
+	credentialProvider := "UUID"
+	credentialID := context.Params.GetString("uuid", "")
+
 	tag := context.Params.GetString("tag", "")
 	token := context.Params.GetString("debug", "")
 
@@ -26,17 +29,19 @@ func authenticateDevice(context *util.Context, required bool) (err error) {
 			}
 		}
 	} else {
-		// handle identifier as UUID
-		if uuid != "" {
-			// find user with UUID
-			user, err = models.GetUserByUUID(context, uuid)
+		// login using credentials
+		if credentialID != "" {
+			// build credentials
+			credentials := []models.Credential {
+				models.Credential { Provider: credentialProvider, ID: credentialID },
+			}
+
+			// find user with credentials
+			user, err = models.GetUserByCredentials(context, credentials)
 
 			if required && user == nil {
-				// generate unique player tag
-				tag := util.GenerateTag()
-
 				// insert new user
-				user, err = models.InsertUserWithUUID(context, uuid, tag)
+				user, err = models.InsertUserWithCredentials(context, credentials)
 				util.Must(err)
 
 				// insert new player
@@ -49,7 +54,7 @@ func authenticateDevice(context *util.Context, required bool) (err error) {
 	if user != nil {
 		SetUser(context, user)
 
-		err = AppendAuthToken(context)
+		err = appendAuthToken(context)
 	} else if required {
 		err = errors.New("Unauthorized user")
 	}
