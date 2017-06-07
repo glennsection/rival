@@ -56,7 +56,7 @@ func authenticatePassword(context *util.Context, required bool) (err error) {
 		// set user in context
 		SetUser(context, user)
 
-		err = AppendAuthToken(context)
+		err = appendAuthToken(context)
 	} else {
 		if required {
 			err = errors.New("Invalid Username/Password submitted")

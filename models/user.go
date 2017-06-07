@@ -13,17 +13,23 @@ import (
 
 const UserCollectionName = "users"
 
+// auth credentials
+type Credential struct {
+	Provider     string        `bson:"pv" json:"provider"`
+	ID           string        `bson:"id" json:"id"`
+}
+
 type User struct {
 	ID           bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	Admin        bool          `bson:"ad" json:"admin"`
-	Username     string        `bson:"un" json:"username"`
-	Password     []byte        `bson:"ps" json:"-"`
-	Email        string        `bson:"em,omitempty" json:"email,omitempty"`
+	Admin        bool          `bson:"ad" json:"-"`
+	Username     string        `bson:"un,omitempty" json:"-"`
+	Password     []byte        `bson:"ps,omitempty" json:"-"`
+	Email        string        `bson:"em,omitempty" json:"-"`
 	CreatedTime  time.Time     `bson:"t0" json:"created"`
 
-	UUID         string        `bson:"uuid" json:"uuid,omitempty"`
+	Credentials  []Credential  `bson:"cds" json:"-"`
+	Tag          string        `bson:"tag" json:"tag"`
 	Name         string        `bson:"nm" json"name"`
-	Tag          string        `bson:"tag" json:"tag,omitempty"`
 }
 
 func ensureIndexUser(database *mgo.Database) {
@@ -38,9 +44,9 @@ func ensureIndexUser(database *mgo.Database) {
 		Sparse:     true,
 	}))
 
-	// UUID index
+	// Credentials index
 	util.Must(c.EnsureIndex(mgo.Index {
-		Key:        []string { "uuid" },
+		Key:        []string { "cds.pv", "cds.id" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
@@ -67,19 +73,17 @@ func (user *User) HashPassword(password string) {
 	user.Password = hash
 }
 
-func InsertUserWithUUID(context *util.Context, uuid string, tag string) (user *User, err error) {
-	// // check existing user
-	// user, _ = GetUserByUUID(context, uuid)
-	// if user != nil {
-	// 	panic(fmt.Sprintf("User already exists with UUID: %s", uuid))
-	// }
+func InsertUserWithCredentials(context *util.Context, credentials []Credential) (user *User, err error) {
+	// TODO check for existing user?  - prevented by database
+
+	// generate unique user tag
+	tag := util.GenerateTag()
 
 	// create user
 	user = &User {
 		ID: bson.NewObjectId(),
-		UUID: uuid,
+		Credentials: credentials,
 		Tag: tag,
-		Username: uuid,
 		CreatedTime: time.Now(),
 	}
 
@@ -88,11 +92,7 @@ func InsertUserWithUUID(context *util.Context, uuid string, tag string) (user *U
 }
 
 func InsertUserWithUsername(context *util.Context, username string, password string) (user *User, err error) {
-	// // check existing user
-	// user, _ = GetUserByUsername(context, username)
-	// if user != nil {
-	// 	panic(fmt.Sprintf("User already exists with username: %s", username))
-	// }
+	// TODO check for existing user?  - prevented by database
 
 	return InsertUserWithUsernameAndDatabase(context.DB, username, password, false)
 }
@@ -116,8 +116,18 @@ func GetUserById(context *util.Context, id bson.ObjectId) (user *User, err error
 	return
 }
 
-func GetUserByUUID(context *util.Context, uuid string) (user *User, err error) {
-	err = context.DB.C(UserCollectionName).Find(bson.M { "uuid": uuid } ).One(&user)
+func GetUserByCredentials(context *util.Context, credentials []Credential) (user *User, err error) {
+	// convert credentials into bson.M
+	var query []bson.M = make([]bson.M, len(credentials), len(credentials))
+	for i, credential := range credentials {
+		query[i] = bson.M {
+			"cds.pv": credential.Provider,
+			"cds.id": credential.ID,
+		}
+	}
+
+	// get user by credentials (TODO - prioritize social over device?)
+	err = context.DB.C(UserCollectionName).Find(bson.M { "$or": query }).One(&user)
 	return
 }
 
