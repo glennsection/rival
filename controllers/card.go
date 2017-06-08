@@ -85,7 +85,7 @@ func CraftCard(context *util.Context) {
 	}
 
 	player := GetPlayer(context)
-	cost := data.GetCraftingCost(rarity)
+	baseCost := data.GetCraftingCost(rarity)
 	cardsNeeded := data.GetCraftingXpNeeded(rarity)
 
 	cardsSupplied := 0
@@ -108,16 +108,15 @@ func CraftCard(context *util.Context) {
 		context.Fail("Insufficient Cards")
 		return
 	} else {
-		if player.StandardCurrency < cost {
+		if player.StandardCurrency < baseCost {
 			context.Fail("Insufficient Funds")
 			return
 		}
 	}
 
 	// subtract the cost of the transaction and add (cardsSupplied/cost) random cards
-	player.StandardCurrency -= cost
-
 	numCards := cardsSupplied / cardsNeeded
+	player.StandardCurrency -= baseCost * numCards
 
 	accountLevel := player.GetLevel()
 	getCards := func(card *data.CardData) bool {
