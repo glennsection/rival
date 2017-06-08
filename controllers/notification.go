@@ -65,7 +65,7 @@ func ViewNotifications(context *util.Context) {
 func prepareNotification(context *util.Context, notification *models.Notification) {
 	// get sender name
 	if notification.SenderID.Valid() {
-		notification.SenderName = GetPlayerName(context, notification.SenderID)
+		notification.SenderName = models.GetPlayerName(context, notification.SenderID)
 	} else {
 		notification.SenderName = "" // "System Message"?
 	}
@@ -94,7 +94,7 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 
 	// notify sender
 	if notification.SenderID.Valid() {
-		senderUserID := GetUserIdByPlayerId(context, notification.SenderID)
+		senderUserID := models.GetUserIdByPlayerId(context, notification.SenderID)
 		system.SocketSend(senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
 	}
 

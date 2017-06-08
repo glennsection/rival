@@ -10,6 +10,7 @@ import (
 
 func handleAdminLeaderboards() {
 	handleAdminTemplate("/admin/leaderboard", system.NoAuthentication, ViewLeaderboard, "leaderboard.tmpl.html")
+	handleAdminTemplate("/admin/refresh", system.TokenAuthentication, RefreshLeaderboard, "") // HACK
 }
 
 func ViewLeaderboard(context *util.Context) {
@@ -60,4 +61,9 @@ func ViewLeaderboard(context *util.Context) {
 
 	// set template bindings
 	context.Params.Set("players", players)
+}
+
+func RefreshLeaderboard(context *util.Context) {
+	// HACK - inefficient
+	models.UpdateAllPlayersPlace(context)
 }
