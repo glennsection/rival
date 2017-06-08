@@ -66,4 +66,6 @@ func ViewLeaderboard(context *util.Context) {
 func RefreshLeaderboard(context *util.Context) {
 	// HACK - inefficient
 	models.UpdateAllPlayersPlace(context)
+
+	context.Redirect("/admin/leaderboard", 302)
 }

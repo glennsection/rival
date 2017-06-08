@@ -35,7 +35,6 @@
 							<div class="content table-responsive table-full-width">
 								<table id="users" class="table table-hover table-striped">
 									<thead>
-										<th>Username</th>
 										<th>{{ sortHeader $ "Name" "nm" }}</th>
 										<th>Player Tag</th>
 										<th>Joined</th>
@@ -44,7 +43,6 @@
 									<tbody>
 										{{ range $index, $user := .Params.Get "users" }}
 										<tr>
-											<td>{{ $user.Username }}</td>
 											<td>{{ getUserName $ $user.ID }}</td>
 											<td>{{ $user.Tag }}</td>
 											<td>{{ shortTime $user.CreatedTime }}</td>

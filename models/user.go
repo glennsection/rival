@@ -102,6 +102,7 @@ func InsertUserWithUsernameAndDatabase(database *mgo.Database, username string, 
 	user = &User {
 		ID: bson.NewObjectId(),
 		Username: username,
+		Name: username,
 		Admin: admin,
 		CreatedTime: time.Now(),
 	}

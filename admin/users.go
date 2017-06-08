@@ -153,7 +153,7 @@ func ResetUser(context *util.Context) {
 		player, err := models.GetPlayerByUser(context, userId)
 		util.Must(err)
 
-		player.Reset(context)
+		util.Must(player.Reset(context))
 
 		context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userId.Hex()), 302)
 	} else {
@@ -180,8 +180,8 @@ func DeleteUser(context *util.Context) {
 	player, err := models.GetPlayerByUser(context, userId)
 	util.Must(err)
 
-	user.Delete(context)
-	player.Delete(context)
+	util.Must(user.Delete(context))
+	util.Must(player.Delete(context))
 
 	context.Redirect(fmt.Sprintf("/admin/users?page=%d", page), 302)
 }

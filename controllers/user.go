@@ -34,20 +34,14 @@ func UserConnect(context *util.Context) {
 }
 
 func UserLogin(context *util.Context) {
-	if context.Success {
-		// analytics tracking
-		InsertTracking(context, "login", nil, 0)
+	// analytics tracking
+	InsertTracking(context, "login", nil, 0)
 
-		// respond with player data
-		FetchPlayer(context)
-	}
+	// respond with player data
+	FetchPlayer(context)
 }
 
 func UserLogout(context *util.Context) {
 	// clear auth token
 	system.ClearAuthToken(context)
-
-	if context.Success {
-		context.Message("User logged out successfully")
-	}
 }

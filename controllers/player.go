@@ -21,13 +21,10 @@ func GetPlayer(context *util.Context) (player *models.Player) {
 	// get player for current context, with cache in params
 	player, ok := context.Params.Get("_player").(*models.Player)
 	if ok == false {
-		user := system.GetUser(context)
-		if user != nil {
-			player, _ = models.GetPlayerByUser(context, user.ID)
+		player, _ = models.GetPlayerByUser(context, context.UserID)
 
-			if player != nil {
-				context.Params.Set("_player", player)
-			}
+		if player != nil {
+			context.Params.Set("_player", player)
 		}
 	}
 	return
@@ -79,6 +76,6 @@ func FetchPlayer(context *util.Context) {
 		// set all dirty flags
 		player.SetAllDirty()
 	} else {
-		context.Fail(fmt.Sprintf("Failed to find player for user: %v", user.Name))
+		context.Fail(fmt.Sprintf("Failed to find player for user: %v (%v)", user.Name, user.ID.Hex()))
 	}
 }
