@@ -181,6 +181,8 @@ func (player *Player) Reset(context *util.Context) (err error) {
 		return
 	}
 
+	fmt.Println("Data reset")
+
 	// clear cache for player
 	context.Cache.Set("PlayerUserId:" + player.ID.Hex(), nil)
 	context.Cache.Set("PlayerName:" + player.ID.Hex(), nil)

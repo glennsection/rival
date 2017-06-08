@@ -44,6 +44,13 @@ func CompleteQuest(context *util.Context) {
 
 func RefreshQuests(context *util.Context) {
 	player := GetPlayer(context)
-	player.UpdateQuests(context)
+
+	if len(player.QuestSlots) < 3 {
+		player.SetupQuestDefaults()
+		player.Save(context)
+	} else {
+		player.UpdateQuests(context)
+	}
+
 	player.SetDirty(models.PlayerDataMask_Quests)
 }
