@@ -151,7 +151,7 @@ func CraftCard(context *util.Context) {
 	}
 
 	for cardId, num := range cardsGained {
-		InsertTracking(context, "cardConsumed", bson.M { "time":util.TimeToTicks(time.Now().UTC()),
+		InsertTracking(context, "cardCrafted", bson.M { "time":util.TimeToTicks(time.Now().UTC()),
 															"cardId":cardId,
 															"count":num }, 0)		
 	} 
