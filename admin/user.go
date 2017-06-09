@@ -55,12 +55,12 @@ func ViewUsers(context *util.Context) {
 
 func EditUser(context *util.Context) {
 	// parse parameters
-	userId := context.Params.GetRequiredId("userId")
+	userID := context.Params.GetRequiredId("userId")
 
-	user, err := models.GetUserById(context, userId)
+	user, err := models.GetUserById(context, userID)
 	util.Must(err)
 
-	player, err := models.GetPlayerByUser(context, userId)
+	player, err := models.GetPlayerByUser(context, userID)
 	if err != nil {
 		if err.Error() != "not found" {
 			panic(err)
@@ -147,15 +147,23 @@ func EditUser(context *util.Context) {
 
 func ResetUser(context *util.Context) {
 	// parse parameters
-	userId := context.Params.GetId("userId")
+	userID := context.Params.GetId("userId")
 
-	if userId.Valid() {
-		player, err := models.GetPlayerByUser(context, userId)
-		util.Must(err)
+	if userID.Valid() {
+		player, err := models.GetPlayerByUser(context, userID)
+		if player == nil {
+			// create new player for user
+			player, err = models.CreatePlayer(userID)
+			util.Must(err)
 
-		util.Must(player.Reset(context))
+			util.Must(player.Save(context))
+		} else {
+			util.Must(err)
 
-		context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userId.Hex()), 302)
+			util.Must(player.Reset(context))
+		}
+
+		context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userID.Hex()), 302)
 	} else {
 		// get all players
 		var players []*models.Player
@@ -171,13 +179,13 @@ func ResetUser(context *util.Context) {
 
 func DeleteUser(context *util.Context) {
 	// parse parameters
-	userId := context.Params.GetRequiredId("userId")
+	userID := context.Params.GetRequiredId("userId")
 	page := context.Params.GetInt("page", 1)
 
-	user, err := models.GetUserById(context, userId)
+	user, err := models.GetUserById(context, userID)
 	util.Must(err)
 
-	player, err := models.GetPlayerByUser(context, userId)
+	player, err := models.GetPlayerByUser(context, userID)
 	util.Must(err)
 
 	util.Must(user.Delete(context))
