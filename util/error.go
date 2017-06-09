@@ -33,7 +33,7 @@ func (e *errorStack) Error() string {
 	return e.err.Error()
 }
 
-func PrintError(message string, err interface{}) {
+func LogError(message string, err interface{}) {
 	log.Errorf("%s: %v", message, err)
 
 	// get stack

@@ -13,7 +13,8 @@ func init() {
 }
 
 func templateSortHeader(context *Context, name string, field string) template.HTML {
-	sorted := (context.Params.GetString("sort-field", "") == field)
+	sortDefault := (context.Params.GetString("sort", "") == "")
+	sorted := (!sortDefault && (context.Params.GetString("sort-field", "") == field))
 	desc := context.Params.GetBool("sort-desc", false)
 
 	// icon and query URL
@@ -39,9 +40,9 @@ func templateSortHeader(context *Context, name string, field string) template.HT
 	return template.HTML(fmt.Sprintf("<a href=\"%s\">%s <i class=\"fa fa-%s text-info\"></i></a>", url.String(), name, icon))
 }
 
-func (context *Context) Sort(query *mgo.Query) (*mgo.Query) {
+func (context *Context) Sort(query *mgo.Query, defaultSort string) (*mgo.Query) {
 	// parse parameters
-	sort := context.Params.GetString("sort", "")
+	sort := context.Params.GetString("sort", defaultSort)
 	desc := false
 
 	if sort != "" {

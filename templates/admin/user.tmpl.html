@@ -31,27 +31,6 @@
 									<form method="post">
 										<input type="hidden" name="userId" value="{{ $user.ID.Hex }}">
 										<div class="row">
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Username</label>
-													<input type="text" class="form-control" disabled value="{{ $user.Username }}">
-												</div>
-											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Display Name</label>
-													<input type="text" class="form-control" name="name" value="{{ getUserName $ $user.ID }}">
-												</div>
-											</div>
-											<div class="col-md-4">
-												<div class="form-group">
-													<label>Player Tag</label>
-													<input type="text" class="form-control" name="tag" value="{{ $user.Tag }}">
-												</div>
-											</div>
-										</div>
-
-										<div class="row">
 											<div class="col-md-3">
 												<div class="form-group">
 													<label>User ID</label>
@@ -60,17 +39,38 @@
 											</div>
 											<div class="col-md-3">
 												<div class="form-group">
+													<label>Player ID</label>
+													<input type="text" class="form-control" disabled value="{{ $player.ID.Hex }}">
+												</div>
+											</div>
+											<div class="col-md-3">
+												<div class="form-group">
+													<label>Display Name</label>
+													<input type="text" class="form-control" name="name" value="{{ getUserName $ $user.ID }}">
+												</div>
+											</div>
+											<div class="col-md-3">
+												<div class="form-group">
+													<label>Player Tag</label>
+													<input type="text" class="form-control" name="tag" value="{{ $user.Tag }}">
+												</div>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-md-4">
+												<div class="form-group">
 													<label>Admin</label>
 													<input type="text" class="form-control" disabled value="{{ $user.Admin }}">
 												</div>
 											</div>
-											<div class="col-md-3">
+											<div class="col-md-4">
 												<div class="form-group">
 													<label>Joined</label>
 													<input type="text" class="form-control" disabled value="{{ shortTime $user.CreatedTime }}">
 												</div>
 											</div>
-											<div class="col-md-3">
+											<div class="col-md-4">
 												<div class="form-group">
 													<label>Last Online</label>
 													<input type="text" class="form-control" disabled value="{{ shortTime $player.LastTime }}">

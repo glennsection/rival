@@ -19,7 +19,7 @@ var (
 func handleErrors() {
 	// handle any panic errors
 	if err := recover(); err != nil {
-		util.PrintError("Occurred during execution", err)
+		util.LogError("Occurred during execution", err)
 	}
 }
 
