@@ -134,6 +134,31 @@ func CraftCard(context *util.Context) {
 		numCards--
 	}
 
+
+	// analytics
+	currentTime := util.TimeToTicks(time.Now().UTC())
+	
+	for cardId, num := range cards {
+		InsertTracking(context, "cardConsumed", bson.M { "time":currentTime,
+															"cardId":cardId,
+															"count":num }, 0)
+	}
+
+	cardsGained := map[string]int{}
+	for _,id := range newCards {
+		if _,ok := cardsGained[id]; ok {
+			cardsGained[id]++
+		} else {
+			cardsGained[id] = 1
+		}
+	}
+
+	for cardId, num := range cardsGained {
+		InsertTracking(context, "cardCrafted", bson.M { "time":currentTime,
+															"cardId":cardId,
+															"count":num }, 0)		
+	} 
+
 	player.Save(context)
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 	context.SetData("cards", newCards)

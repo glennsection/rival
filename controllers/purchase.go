@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"gopkg.in/mgo.v2/bson"
+	"time"
+
 	"bloodtales/system"
 	"bloodtales/models"
 	"bloodtales/data"
@@ -36,13 +39,16 @@ func Purchase(context *util.Context) {
 		}
 	}
 
-	// check store item currency cost
+	// check store item currency cost and store the string converted currency type for tracking
+	var currencyType string
 	switch storeItem.Currency {
 
 	case data.CurrencyReal:
+		currencyType = "USD"
 		// TODO - verify mobile store receipt
 
 	case data.CurrencyPremium:
+		currencyType = "Premium"
 		cost := int(storeItem.Cost)
 		if player.PremiumCurrency < cost {
 			context.Fail("Insufficient funds")
@@ -51,6 +57,7 @@ func Purchase(context *util.Context) {
 		player.PremiumCurrency -= cost
 
 	case data.CurrencyStandard:
+		currencyType = "Standard"
 		cost := int(storeItem.Cost)
 		if player.StandardCurrency < cost {
 			context.Fail("Insufficient funds")
@@ -90,6 +97,12 @@ func Purchase(context *util.Context) {
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 		context.SetData("storeItem", storeItem)
 	}
+
+	InsertTracking(context, "purchase", bson.M { "time": util.TimeToTicks(time.Now().UTC()),
+													"productId":storeItem.Name,
+													"price":storeItem.Cost,
+													"currency":currencyType,
+													"receipt":"" }, 0)
 
 	player.Save(context)
 }
