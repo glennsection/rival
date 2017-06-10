@@ -11,7 +11,7 @@ func init() {
 	defer func() {
 		// handle any panic errors
 		if err := recover(); err != nil {
-			util.PrintError("Occurred during database initialization", err)
+			util.LogError("Occurred during database initialization", err)
 		}
 	}()
 
@@ -21,4 +21,6 @@ func init() {
 	ensureIndexMatch(db)
 	ensureIndexNotification(db);
 	ensureIndexFriends(db);
+
+	util.EnsureIndexFault(db);
 }

@@ -1,12 +1,8 @@
 package admin
 
 import (
-	"time"
 	"fmt"
 
-	"gopkg.in/mgo.v2/bson"
-
-	"bloodtales/controllers"
 	"bloodtales/system"
 	"bloodtales/util"
 	"bloodtales/models"
@@ -16,14 +12,6 @@ func handleAdminTracking() {
 	handleAdminTemplate("/admin/trackings", system.TokenAuthentication, ViewTrackings, "trackings.tmpl.html")
 	handleAdminTemplate("/admin/trackings/view", system.TokenAuthentication, ViewTracking, "tracking.tmpl.html")
 	handleAdminTemplate("/admin/trackings/delete", system.TokenAuthentication, DeleteTracking, "")
-
-	// HACK
-	system.App.HandleAPI("/admin/trackings/test", system.TokenAuthentication, TestTrackings)
-}
-
-// HACK
-func TestTrackings(context *util.Context) {
-	controllers.InsertTracking(context, "test", bson.M { "testArg": time.Now(), "testArg2": 30 }, 1)
 }
 
 func ViewTrackings(context *util.Context) {

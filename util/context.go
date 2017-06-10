@@ -60,6 +60,14 @@ func CreateContext(w http.ResponseWriter, r *http.Request) *Context {
 	return context
 }
 
+func (context *Context) close() {
+	// close database connection
+	context.DB.Session.Close()
+
+	// close redis connection
+	context.Cache.Close()
+}
+
 func (context *Context) Write(p []byte) (n int, err error) {
 	// remember custom was response written
 	context.responseWritten = true
@@ -124,8 +132,8 @@ func (context *Context) BeginRequest(template string) {
 }
 
 func (context *Context) EndRequest(startTime time.Time) {
-	// cleanup connection
-	defer context.DB.Session.Close()
+	// cleanup context connections
+	defer context.close()
 
 	// handle any panics or web errors, which occurred during request
 	var caughtErr interface{}
@@ -140,7 +148,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 	// catch any panics occurring in this function
 	defer func() {
 		if templateErr := recover(); templateErr != nil {
-			PrintError("Occurred during last request", templateErr)
+			LogError("Occurred during last request", templateErr)
 
 			if context.Template != "" {
 				context.Redirect(fmt.Sprintf("/error?message=%v", templateErr), 302) // TODO - can remove parameter once session flashes are working
@@ -217,8 +225,10 @@ func (context *Context) EndRequest(startTime time.Time) {
 		}
 	}
 
-	// show the error caught eariler
+	// log the error caught eariler
 	if caughtErr != nil {
-		PrintError("Occurred during last request", caughtErr)
+		InsertErrorFault(context, caughtErr)
+
+		LogError("Occurred during last request", caughtErr)
 	}
 }

@@ -24,6 +24,7 @@ func HandleAdmin() {
 	handleAdminMatches()
 	handleAdminLeaderboards()
 	handleAdminTracking()
+	handleAdminFaults()
 }
 
 func handleAdminTemplate(pattern string, authType system.AuthenticationType, handler func(*util.Context), template string) {
@@ -80,6 +81,11 @@ func initializeAdmin(context *util.Context) {
 			Name: "Analytics",
 			URL: "/admin/trackings",
 			Icon: "pe-7s-graph2",
+		},
+		{
+			Name: "Faults",
+			URL: "/admin/faults",
+			Icon: "pe-7s-attention",
 		},
 	}
 

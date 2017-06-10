@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+{{ template "header.tmpl.html" }}
+<body>
+
+<div class="wrapper">
+	{{ template "sidebar.tmpl.html" . }}
+ 
+	<div class="main-panel">
+		{{ template "nav.tmpl.html" . }}
+
+		<div class="content">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="card">
+							<div class="header">
+								<div class="pull-right">
+									<form class="form-inline" role="search">
+										<div class="input-group">
+											<input class="form-control" placeholder="Search" name="search" id="search" type="text">
+											<span class="input-group-btn">
+												<button class="btn btn-default" type="submit">
+													<i class="fa fa-search"></i>
+												</button>
+											</span>
+										</div>
+									</form>
+
+									{{ .RenderPagination }}
+								</div>
+								<h4 class="title">Faults</h4>
+								<p class="category">Failure is Not an Option!</p>
+							</div>
+							<div class="content table-responsive table-full-width">
+								<table id="faults" class="table table-hover table-striped">
+									<thead>
+										<th>{{ sortHeader $ "User" "nm" }}</th>
+										<th>Error</th>
+										<th>{{ sortHeader $ "Time" "t0" }}</th>
+										<th></th>
+									</thead>
+									<tbody>
+										{{ range $index, $fault := .Params.Get "faults" }}
+										<tr>
+											<td>{{ getUserName $ $fault.UserID }}</td>
+											<td>{{ $fault.Error }}</td>
+											<td>{{ shortTime $fault.CreatedTime }}</td>
+											<td>
+												<a href="/admin/faults/view?faultId={{ $fault.ID.Hex }}">View</a> |
+												<a href="#"
+													data-href="/admin/faults/delete?faultId={{ $fault.ID.Hex }}&page={{ $.GetPagination.GetPage }}"
+													data-toggle="modal"
+													data-body="Do you want to permanently delete the fault: {{ $fault.Error }}?"
+													data-confirm="Delete"
+													data-deny="Cancel"
+													data-target="#confirm-dialog">Delete</a>
+											</td>
+										</tr>
+										{{ end }}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{{ template "footer.tmpl.html" . }}
+	</div>
+</div>
+
+{{ template "scripts.tmpl.html" . }}
+</body>
+
+</html>

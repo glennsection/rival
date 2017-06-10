@@ -38,7 +38,7 @@ func ViewGuilds(context *util.Context) {
 	}
 
 	// sorting
-	query = context.Sort(query)
+	query = context.Sort(query, "")
 
 	// paginate guilds query
 	pagination, err := context.Paginate(query, DefaultPageSize)

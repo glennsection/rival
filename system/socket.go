@@ -60,14 +60,23 @@ var (
 
 // context socket send
 func SocketSend(userID bson.ObjectId, message string, data map[string]interface{}) {
-	if client, ok := clients[userID]; ok {
-		client.send <- SocketMessage {
-			Message: message,
-			Data: data,
+	if userID.Valid() {
+		if client, ok := clients[userID]; ok {
+			client.send <- SocketMessage {
+				Message: message,
+				Data: data,
+			}
+		} else {
+			// client may be offline
+			//log.Errorf("Failed to find socket connection for User ID: %v", userID)
 		}
 	} else {
-		// client may be offline
-		//log.Errorf("Failed to find socket connection for User ID: %v", userID)
+		for _, client := range clients {
+			client.send <- SocketMessage {
+				Message: message,
+				Data: data,
+			}
+		}
 	}
 }
 

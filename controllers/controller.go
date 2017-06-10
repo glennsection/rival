@@ -18,6 +18,7 @@ func HandleGame() {
 	handleStore()
 	handleFriends()
 	handleGuild()
+	handleChat()
 	handleTracking()
 }
 
