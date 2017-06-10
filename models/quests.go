@@ -196,26 +196,19 @@ func (player *Player) SetupQuestDefaults() {
 	}
 }
 
-func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, bool) {
+func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, bool, error) {
 	if player.QuestSlots[index].State != QuestState_Collect && !(&player.QuestSlots[index].QuestInstance).IsQuestCompleted() {
-		return nil, false
+		return nil, false, nil
 	}
 
-	//temp
-	currency := 100
 	questData := data.GetQuestData(player.QuestSlots[index].QuestInstance.DataID)
-	if questData.Type == data.QuestType_Weekly {
-		currency = 1000
-	}
-
-	reward := &Reward{
-		StandardCurrency: currency,
-	}
-	//end temp
+	reward := GetReward(questData.RewardID, player.GetLevel())
 
 	player.QuestSlots[index].StartCooldown()
-	player.Save(context)
-	return reward, true
+
+	err := player.AddRewards(reward, context)
+
+	return reward, true, err
 }
 
 func (player *Player) AssignRandomQuest(index int, questTypes ...data.QuestType) {

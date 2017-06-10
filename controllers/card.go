@@ -77,9 +77,9 @@ func CraftCard(context *util.Context) {
 	cardsJs := context.Params.GetRequiredString("cards")
 
 	// validate the query
-	var cards map[string]int
-	json.Unmarshal([]byte(cardsJs), &cards)
-	if len(cards) == 0 {
+	var consumableCards map[string]int
+	json.Unmarshal([]byte(cardsJs), &consumableCards)
+	if len(consumableCards) == 0 {
 		context.Fail("Malformed Request")
 		return
 	}
@@ -89,7 +89,7 @@ func CraftCard(context *util.Context) {
 	cardsNeeded := data.GetCraftingXpNeeded(rarity)
 
 	cardsSupplied := 0
-	for cardId, num := range cards {
+	for cardId, num := range consumableCards {
 		dataId := data.ToDataId(cardId)
 		if card, hasCard := player.HasCard(dataId); hasCard && card.CardCount >= num {
 			cardsSupplied += num
@@ -126,31 +126,30 @@ func CraftCard(context *util.Context) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	newCards := make([]string, 0)
+	newCards := make([]string, 0) // response for player
+	cardsGained := map[string]int{} // used for analytics
 	for numCards > 0 {
 		dataId := cardSlice[rand.Intn(len(cardSlice))]
-		newCards = append(newCards, data.ToDataName(dataId))
+		dataName := data.ToDataName(dataId)
+
+		newCards = append(newCards, dataName)
 		player.AddCards(dataId, 1)
 		numCards--
-	}
 
+		if _,ok := cardsGained[dataName]; ok {
+			cardsGained[dataName]++
+		} else {
+			cardsGained[dataName] = 1
+		}
+	}
 
 	// analytics
 	currentTime := util.TimeToTicks(time.Now().UTC())
 	
-	for cardId, num := range cards {
+	for cardId, num := range consumableCards {
 		InsertTracking(context, "cardConsumed", bson.M { "time":currentTime,
 															"cardId":cardId,
 															"count":num }, 0)
-	}
-
-	cardsGained := map[string]int{}
-	for _,id := range newCards {
-		if _,ok := cardsGained[id]; ok {
-			cardsGained[id]++
-		} else {
-			cardsGained[id] = 1
-		}
 	}
 
 	for cardId, num := range cardsGained {

@@ -4,7 +4,6 @@ import (
 	"time"
 	"math"
 	"encoding/json"
-	"math/rand"
 
 	"bloodtales/data"
 	"bloodtales/util"
@@ -159,42 +158,9 @@ func (tome *Tome) StartUnlocking() {
 }
 
 func (tome *Tome) OpenTome(tier int) (reward *Reward) {
-	reward = &Reward{}
-	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
 	tomeData := data.GetTome(tome.DataID)
-	reward.Cards = make([]data.DataId, 0, 6)
-	reward.NumRewarded = make([]int, 0, 6)
 
-	for i := 0; i < len(tomeData.GuaranteedRarities); i++ {
-		getCards := func(card *data.CardData) bool {
-			return card.Rarity == rarities[i] && card.Tier <= tier
-		}
-
-		cardSlice := data.GetCards(getCards)
-
-		for j := 0; j < tomeData.GuaranteedRarities[i]; j++ {
-			if len(cardSlice) == 0 {
-				break
-			}
-
-			rand.Seed(time.Now().UTC().UnixNano())
-			index := rand.Intn(len(cardSlice))
-
-			card := cardSlice[index]
-
-			if index != (len(cardSlice) - 1) {
-				cardSlice[index] = cardSlice[len(cardSlice) - 1]
-			} 
-			cardSlice = cardSlice[:len(cardSlice) - 1]
-
-			reward.Cards = append(reward.Cards, card)
-			reward.NumRewarded = append(reward.NumRewarded, tomeData.CardsRewarded[i])
-		}
-	}
-
-	rand.Seed(time.Now().UTC().UnixNano())
-	reward.PremiumCurrency = tomeData.MinPremiumReward + rand.Intn(tomeData.MaxPremiumReward - tomeData.MinPremiumReward)
-	reward.StandardCurrency = tomeData.MinStandardReward + rand.Intn(tomeData.MaxStandardReward - tomeData.MinStandardReward)
+	reward = GetReward(tomeData.RewardID, tier)
 
 	*tome = GetEmptyTome()
 
@@ -229,6 +195,12 @@ func (player *Player) UpdateTomes(context *util.Context) error {
 	return err
 }
 
+func (player *Player) AddTomeRewards(context *util.Context, tome *Tome) (reward *Reward, err error) {
+	reward = tome.OpenTome(player.GetLevel())
+	err = player.AddRewards(reward, context)
+	return
+}
+
 func (player *Player) ModifyArenaPoints(val int) {
 	if val < 1 {
 		return
@@ -239,17 +211,6 @@ func (player *Player) ModifyArenaPoints(val int) {
 	if player.ArenaPoints > 10 {
 		player.ArenaPoints = 10
 	}
-}
-
-func (player *Player) ClaimTome(context *util.Context, tomeId string) (*Reward, error) {
-	tome := &Tome {
-		DataID: data.ToDataId(tomeId),
-	}
-
-	// check currency
-	// TODO
-
-	return player.AddRewards(context, tome)
 }
 
 func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward, err error) {
@@ -265,7 +226,10 @@ func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward,
 
 	player.FreeTomes--
 
-	return player.ClaimTome(context, "TOME_COMMON")
+	tomeReward = GetReward(data.ToDataId("FREE_TOME_REWARD"), player.GetLevel())
+	err = player.AddRewards(tomeReward, context)
+
+	return 
 }
 
 func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward, err error) {
@@ -275,5 +239,8 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 
 	player.ArenaPoints = 0;
 
-	return player.ClaimTome(context, "TOME_RARE")
+	tomeReward = GetReward(data.ToDataId("ARENA_TOME_REWARD"), player.GetLevel())
+	err = player.AddRewards(tomeReward, context)
+
+	return 
 }

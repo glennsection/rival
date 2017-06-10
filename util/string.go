@@ -43,15 +43,21 @@ func t_Truncate(value string, maxLength int) string {
 	return value
 }
 
-func StringToIntArray(s string) (arr []int) {
-	nums := strings.FieldsFunc(s, func (r rune) bool {
+func StringToStringArray(s string) ([]string) {
+	arr := strings.FieldsFunc(s, func (r rune) bool {
 		return r == '[' || r == ',' || r == ']'
 	})
 
-	arr = make([]int, len(nums))
-	for i, num := range nums {
+	return arr
+}
+
+func StringToIntArray(s string) ([]int) {
+	stringArr := StringToStringArray(s)
+
+	arr := make([]int, len(stringArr))
+	for i, num := range stringArr {
 		arr[i], _ = strconv.Atoi(num)
 	}
 
-	return
+	return arr
 }

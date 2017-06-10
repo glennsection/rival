@@ -16,19 +16,13 @@ type TomeData struct {
 	Chance 					float64		  `json:"chance,string"`
 	TimeToUnlock			int 		  `json:"timeToUnlock,string"`
 	GemsToUnlock			int 		  `json:"gemsToUnlock,string"`
-	MinPremiumReward		int 		  `json:"minGemReward,string"`
-	MaxPremiumReward		int 		  `json:"maxGemReward,string"`
-	MinStandardReward		int 		  `json:"minGoldReward,string"`
-	MaxStandardReward		int  		  `json:"maxGoldReward,string"`
-	GuaranteedRarities		[]int		  `json:"guaranteedRarities"`
-	CardsRewarded			[]int		  `json:"cardsRewarded"`
+	RewardID 				DataId 		  
 }
 
 // client data
 type TomeDataClientAlias TomeData
 type TomeDataClient struct {
-	GuaranteedRarities      string        `json:"guaranteedRarities"`
-	CardsRewarded           string        `json:"cardsRewarded"`
+	RewardID 				string 		  `json:"rewardId"`
 
 	*TomeDataClientAlias
 }
@@ -58,11 +52,8 @@ func (tome *TomeData) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
-	// server guarantees
-	tome.GuaranteedRarities = util.StringToIntArray(client.GuaranteedRarities)
-
 	// server rewards
-	tome.CardsRewarded = util.StringToIntArray(client.CardsRewarded)
+	tome.RewardID = ToDataId(client.RewardID)
 
 	return nil
 }

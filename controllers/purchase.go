@@ -67,35 +67,27 @@ func Purchase(context *util.Context) {
 
 	}
 
+	// add rewards
+	reward := models.GetReward(storeItem.RewardID, player.GetLevel())
+	player.AddRewards(reward, nil)
+
 	// handle store item category
 	switch storeItem.Category {
 
 	case data.StoreCategoryPremiumCurrency:
-		player.PremiumCurrency += storeItem.Quantity
 		player.SetDirty(models.PlayerDataMask_Currency)
 
 	case data.StoreCategoryStandardCurrency:
-		player.StandardCurrency += storeItem.Quantity
 		player.SetDirty(models.PlayerDataMask_Currency)
 
 	case data.StoreCategoryTomes:
-		// claim tome
-		tomeId := storeItem.ItemID
-		reward, err := player.ClaimTome(context, tomeId)
-		util.Must(err)
-		
-		if reward == nil {
-			context.Fail("Invalid store tome purchase: " + tomeId)
-			return
-		}
-
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
-		context.SetData("reward", reward)
+		
 
 	case data.StoreCategoryCards:
 		player.HandleCardPurchase(storeItem)
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
-		context.SetData("storeItem", storeItem)
+		context.SetData("storeItem", storeItem) //include the updated store item
 	}
 
 	InsertTracking(context, "purchase", bson.M { "time": util.TimeToTicks(time.Now().UTC()),
@@ -104,5 +96,6 @@ func Purchase(context *util.Context) {
 													"currency":currencyType,
 													"receipt":"" }, 0)
 
+	context.SetData("reward", reward)
 	player.Save(context)
 }

@@ -28,15 +28,15 @@ func CompleteQuest(context *util.Context) {
 
 	player.UpdateQuests(context)
 
-	reward, success := player.CollectQuest(index, context)
+	reward, success, err := player.CollectQuest(index, context)
 	if !success {
 		player.SetDirty(models.PlayerDataMask_Quests)
 		context.Fail("Invalid Request")
 		return
 	}
-
-	player.StandardCurrency += reward.StandardCurrency
-	player.Save(context)
+	if err != nil {
+		panic(err)
+	}
 
 	player.SetDirty(models.PlayerDataMask_Quests, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_XP)
 	context.SetData("reward", reward)
