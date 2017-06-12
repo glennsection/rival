@@ -33,18 +33,15 @@ func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	cardTypes := [...]string{"COMMON","COMMON","RARE","EPIC"}
 
 	for _,cardType := range cardTypes {
-		id, storeCard := player.GetStoreCard(cardType, storeCards)
-		if id == nil || storeCard == nil {
-			continue
-		}
+		_,storeCard := player.GetStoreCard(cardType, storeCards)
 
-		storeCards = append(storeCards, *storeCard)
+		storeCards = append(storeCards, storeCard)
 	}
 
 	return storeCards
 }
 
-func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (*data.DataId, *data.StoreData) {
+func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (data.DataId, data.StoreData) {
 	// get cards of the desired rarity
 	getCard := func(card *data.CardData) bool {
 		for _,item := range storeCards { // ensure no duplicates
@@ -53,21 +50,9 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (
 			}
 		}
 
-		// check to see if the card is eligible for purchase
-		if cardRef, hasCard := player.HasCard(data.ToDataId(card.Name)); hasCard {
-			level := cardRef.GetPotentialLevel()
-			if !(data.CanPurchaseCard(rarity, level)) {
-				return false
-			}
-		}
-
 		return card.Rarity == rarity // ensure rarity is correct
 	}
 	cardIds := data.GetCards(getCard)
-
-	if len(cardIds) == 0 {
-		return nil, nil
-	}
 
 	// sort these cards to ensure we get the same cards for the generated index every time
 	sort.Sort(data.DataIdCollection(cardIds))
@@ -87,7 +72,7 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (
 		Cost: player.GetCardCost(cardId),
 	}
 
-	return &cardId, &storeCard
+	return cardId, storeCard
 }
 
 func (player *Player) GetCardCost(id data.DataId) float64 {

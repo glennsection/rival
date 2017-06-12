@@ -227,7 +227,7 @@ func CanPurchaseCard(rarity string, level int) bool {
 func GetCardCost(rarity string, level int) int {
 	level -= 1
 
-	if level > len(cardPurchaseCosts[rarity]) {
+	if level >= len(cardPurchaseCosts[rarity]) {
 		level = len(cardPurchaseCosts[rarity]) - 1
 	}
 
