@@ -223,10 +223,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "0",
-    "minPremiumCurrency": "0",
-    "maxStandardCurrency": "30",
-    "minStandardCurrency": "30"
+    "maxPremiumCurrency": "30",
+    "minPremiumCurrency": "30",
+    "maxStandardCurrency": "0",
+    "minStandardCurrency": "0"
   },
   {
     "id": "STORE_PREMIUM_2_REWARD",
@@ -235,10 +235,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "0",
-    "minPremiumCurrency": "0",
-    "maxStandardCurrency": "100",
-    "minStandardCurrency": "100"
+    "maxPremiumCurrency": "100",
+    "minPremiumCurrency": "100",
+    "maxStandardCurrency": "0",
+    "minStandardCurrency": "0"
   },
   {
     "id": "STORE_PREMIUM_3_REWARD",
@@ -247,10 +247,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "0",
-    "minPremiumCurrency": "0",
-    "maxStandardCurrency": "275",
-    "minStandardCurrency": "275"
+    "maxPremiumCurrency": "275",
+    "minPremiumCurrency": "275",
+    "maxStandardCurrency": "0",
+    "minStandardCurrency": "0"
   },
   {
     "id": "STORE_PREMIUM_4_REWARD",
@@ -259,10 +259,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "0",
-    "minPremiumCurrency": "0",
-    "maxStandardCurrency": "575",
-    "minStandardCurrency": "575"
+    "maxPremiumCurrency": "575",
+    "minPremiumCurrency": "575",
+    "maxStandardCurrency": "0",
+    "minStandardCurrency": "0"
   },
   {
     "id": "STORE_PREMIUM_5_REWARD",
@@ -271,10 +271,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "0",
-    "minPremiumCurrency": "0",
-    "maxStandardCurrency": "1225",
-    "minStandardCurrency": "1225"
+    "maxPremiumCurrency": "1225",
+    "minPremiumCurrency": "1225",
+    "maxStandardCurrency": "0",
+    "minStandardCurrency": "0"
   },
   {
     "id": "STORE_STANDARD_1_REWARD",
@@ -283,10 +283,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "5000",
-    "minPremiumCurrency": "5000",
-    "maxStandardCurrency": "0",
-    "minStandardCurrency": "0"
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
+    "maxStandardCurrency": "5000",
+    "minStandardCurrency": "5000"
   },
   {
     "id": "STORE_STANDARD_2_REWARD",
@@ -295,10 +295,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "5000",
-    "minPremiumCurrency": "5000",
-    "maxStandardCurrency": "0",
-    "minStandardCurrency": "0"
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
+    "maxStandardCurrency": "10000",
+    "minStandardCurrency": "10000"
   },
   {
     "id": "STORE_STANDARD_3_REWARD",
@@ -307,10 +307,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "5000",
-    "minPremiumCurrency": "5000",
-    "maxStandardCurrency": "0",
-    "minStandardCurrency": "0"
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
+    "maxStandardCurrency": "25000",
+    "minStandardCurrency": "25000"
   },
   {
     "id": "STORE_STANDARD_4_REWARD",
@@ -319,10 +319,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "5000",
-    "minPremiumCurrency": "5000",
-    "maxStandardCurrency": "0",
-    "minStandardCurrency": "0"
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
+    "maxStandardCurrency": "50000",
+    "minStandardCurrency": "50000"
   },
   {
     "id": "STORE_STANDARD_5_REWARD",
@@ -331,10 +331,10 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "5000",
-    "minPremiumCurrency": "5000",
-    "maxStandardCurrency": "0",
-    "minStandardCurrency": "0"
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
+    "maxStandardCurrency": "150000",
+    "minStandardCurrency": "150000"
   },
   {
     "id": "STORE_TOME_1_REWARD",

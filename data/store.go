@@ -215,12 +215,20 @@ func GetStoreItems() []StoreData {
 	return items
 }
 
+// cards can't be purchased past a certain level specific to each rarity. this function
+// determins if a given card of a provided level is eligible for purchase
+func CanPurchaseCard(rarity string, level int) bool {
+	level -= 1
+
+	return level <= len(cardPurchaseCosts[rarity])
+}
+
 // get card cost by rarity and potential level
 func GetCardCost(rarity string, level int) int {
 	level -= 1
 
 	if level > len(cardPurchaseCosts[rarity]) {
-		return -1
+		level = len(cardPurchaseCosts[rarity]) - 1
 	}
 
 	return cardPurchaseCosts[rarity][level]

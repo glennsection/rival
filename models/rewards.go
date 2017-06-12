@@ -79,13 +79,13 @@ func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData) {
 	if rewardData.MaxPremiumCurrency == rewardData.MinPremiumCurrency {
 		reward.PremiumCurrency = rewardData.MaxPremiumCurrency
 	} else {
-		reward.PremiumCurrency = rewardData.MinPremiumCurrency + rand.Intn(rewardData.MaxPremiumCurrency - rewardData.MinPremiumCurrency)
+		reward.PremiumCurrency = rewardData.MinPremiumCurrency + rand.Intn(rewardData.MaxPremiumCurrency - rewardData.MinPremiumCurrency + 1)
 	}
 	
 	if rewardData.MaxStandardCurrency == rewardData.MinStandardCurrency {
 		reward.StandardCurrency = rewardData.MaxStandardCurrency
 	} else {
-		reward.StandardCurrency = rewardData.MinStandardCurrency + rand.Intn(rewardData.MaxStandardCurrency - rewardData.MinStandardCurrency)
+		reward.StandardCurrency = rewardData.MinStandardCurrency + rand.Intn(rewardData.MaxStandardCurrency - rewardData.MinStandardCurrency + 1)
 	}
 }
 
