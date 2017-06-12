@@ -70,6 +70,83 @@
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_EARTH_ELEMENTAL",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_WEREWOLF",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_SPELL_FROST_ORB",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_BOMB_ZOMBIE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_DARK_MAGE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_FRANKENSTEIN",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GREMLINS",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_HELLHOUND",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_AUTOMATON",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MANA_GENERATOR",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+         {
+            "cardId": "CARD_SPELL_SPIKES",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
         }
     ],
     "decks": [

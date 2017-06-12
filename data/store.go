@@ -36,6 +36,7 @@ type StoreData struct {
 	Quantity                int           `json:"quantity,string"`
 	Currency                CurrencyType  `json:"currency"`
 	Cost                    float64       `json:"cost,string"`
+	RewardID 				DataId
 }
 
 // client data
@@ -49,16 +50,9 @@ type StoreDataClient struct {
 	Quantity                int           `json:"quantity,string"`
 	Currency                string        `json:"currency"`
 	Cost                    float64       `json:"cost,string"`
+	RewardID				string 		  `json:"rewardId"`
 
 	*StoreDataClientAlias
-}
-
-type SpecialOffer struct {
-	ItemID 					string 		  `json:"itemId"`
-	StandardCurrency 		int 		  `json:"standardCurrency"`
-	PremiumCurrency 		int 		  `json:"premiumCurrency"`
-	Tomes 					[]string 	  `json:"tome"`
-	Cards 					[]string 	  `json:"cards"`
 }
 
 type CardPurchaseCost struct {
@@ -106,6 +100,7 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 	storeItem.ItemID = client.ItemID
 	storeItem.Quantity = client.Quantity
 	storeItem.Cost = client.Cost
+	storeItem.RewardID = ToDataId(client.RewardID)
 
 	// server category
 	switch client.Category {
@@ -143,6 +138,7 @@ func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
 		ItemID: storeItem.ItemID,
 		Quantity: storeItem.Quantity,
 		Cost: storeItem.Cost,
+		RewardID: ToDataName(storeItem.RewardID),
 	}
 
 	//client category

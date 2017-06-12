@@ -30,6 +30,7 @@ func init() {
 	loadDataFile("CardPurchaseCosts", LoadCardPurchaseCosts)
 	loadDataFile("Rarity", LoadRarityData)
 	loadDataFile("QuestTypes", LoadQuestData)
+	loadDataFile("Rewards", LoadRewardData)
 	// ------------------------------------------
 
 	// template funcs

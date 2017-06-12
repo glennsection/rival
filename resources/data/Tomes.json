@@ -6,44 +6,29 @@
     "prefab": "UI/Tomes/Common/Common",
     "icon": "UI/Tomes/Sprites/tome_COMMON",
     "chance": "50",
-    "guaranteedRarities": "[3,1,0,0]",
-    "cardsRewarded": "[5,2,1,1]",
+    "rewardId": "TOME_COMMON_REWARD",
     "timeToUnlock": "180",
-    "gemsToUnlock": "18",
-    "minGemReward": "2",
-    "maxGemReward": "3",
-    "minGoldReward": "35",
-    "maxGoldReward": "70"
+    "gemsToUnlock": "18"
   },
   {
     "id": "TOME_RARE",
     "rarity": "RARE",
-    "prefab": "UI/Tomes/Rare/Rare",
-    "icon": "UI/Tomes/Sprites/tome_RARE",
+    "prefab": "UI/Tomes/Uncommon/Uncommon",
+    "icon": "UI/Tomes/Sprites/tome_UNCOMMON",
     "chance": "30",
-    "guaranteedRarities": "[3,2,0,0]",
-    "cardsRewarded": "[13,4,1,1]",
+    "rewardId": "TOME_RARE_REWARD",
     "timeToUnlock": "240",
-    "gemsToUnlock": "30",
-    "minGemReward": "2",
-    "maxGemReward": "4",
-    "minGoldReward": "55",
-    "maxGoldReward": "120"
+    "gemsToUnlock": "30"
   },
   {
     "id": "TOME_EPIC",
     "rarity": "EPIC",
-    "prefab": "UI/Tomes/Epic/Epic",
-    "icon": "UI/Tomes/Sprites/tome_EPIC",
+    "prefab": "UI/Tomes/Rare/Rare",
+    "icon": "UI/Tomes/Sprites/tome_CROSS",
     "chance": "15",
-    "guaranteedRarities": "[3,2,1,0]",
-    "cardsRewarded": "[25,6,2,1]",
+    "rewardId": "TOME_EPIC_REWARD",
     "timeToUnlock": "300",
-    "gemsToUnlock": "55",
-    "minGemReward": "3",
-    "maxGemReward": "5",
-    "minGoldReward": "100",
-    "maxGoldReward": "210"
+    "gemsToUnlock": "55"
   },
   {
     "id": "TOME_LEGENDARY",
@@ -51,14 +36,9 @@
     "prefab": "UI/Tomes/Legendary/Legendary",
     "icon": "UI/Tomes/Sprites/tome_LEGENDARY",
     "chance": "5",
-    "guaranteedRarities": "[1,2,1,2]",
-    "cardsRewarded": "[36,8,4,1]",
+    "rewardId": "TOME_LEGENDARY_REWARD",
     "timeToUnlock": "360",
-    "gemsToUnlock": "78",
-    "minGemReward": "4",
-    "maxGemReward": "6",
-    "minGoldReward": "190",
-    "maxGoldReward": "300"
+    "gemsToUnlock": "78"
   }
 ]
 }

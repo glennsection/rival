@@ -99,14 +99,14 @@
 												<div class="col-md-3">
 													<div class="form-group">
 														<label>Player XP (Level)</label>
-															<div class="row">
-																<div class="col-md-6" style="padding-top: 0px">
-																	<input type="text" class="form-control" placeholder="0" name="xp" value="{{ $player.XP }}">
-																</div>
-																<div class="col-md-6" style="padding-top: 0px">
-																	<p style="padding-top: 8px">(Level {{ $player.GetLevel }})</p>
-																</div>
+														<div class="row">
+															<div class="col-md-6" style="padding-top: 0px">
+																<input type="text" class="form-control" placeholder="0" name="xp" value="{{ $player.XP }}">
 															</div>
+															<div class="col-md-6" style="padding-top: 0px">
+																<p style="padding-top: 8px">(Level {{ $player.GetLevel }})</p>
+															</div>
+														</div>
 													</div>
 												</div>
 												<div class="col-md-3">
@@ -130,22 +130,35 @@
 											</div>
 
 											<div class="row">
-												<div class="col-md-4">
+												<div class="col-md-3">
 													<div class="form-group">
 														<label>Wins</label>
 														<input type="text" class="form-control" placeholder="0" name="winCount" value="{{ $player.WinCount }}">
 													</div>
 												</div>
-												<div class="col-md-4">
+												<div class="col-md-3">
 													<div class="form-group">
 														<label>Losses</label>
 														<input type="text" class="form-control" placeholder="0" name="lossCount" value="{{ $player.LossCount }}">
 													</div>
 												</div>
-												<div class="col-md-4">
+												<div class="col-md-3">
 													<div class="form-group">
 														<label>Total Matches</label>
 														<input type="text" class="form-control" placeholder="0" name="matchCount" value="{{ $player.MatchCount }}">
+													</div>
+												</div>
+												<div class="col-md-3">
+													<div class="form-group">
+														<label>Leaderboard Score</label>
+														<div class="row">
+															<div class="col-md-6" style="padding-top: 0px">
+																<input type="text" class="form-control" disabled value="{{ $player.GetPlace $ }}">
+															</div>
+															<div class="col-md-6" style="padding-top: 0px">
+																<a href="/admin/leaderboard/refresh?playerId={{ $player.ID.Hex }}" class="btn btn-danger">Refresh</a>
+															</div>
+														</div>
 													</div>
 												</div>
 											</div>

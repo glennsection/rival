@@ -84,13 +84,12 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (
 
 func (player *Player) GetCardCost(id data.DataId) float64 {
 	level := 1
-	var purchaseCount int
-	var rarity string
+	rarity := data.GetCard(id).Rarity
+	purchaseCount := 0
 
 	if cardRef, hasCard := player.HasCard(id); hasCard {
 		level = cardRef.GetPotentialLevel()
 		purchaseCount = cardRef.PurchaseCount
-		rarity = data.GetCard(cardRef.DataID).Rarity
 	}
 
 	baseCost := data.GetCardCost(rarity, level)

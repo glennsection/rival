@@ -372,19 +372,6 @@ func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *To
 	return
 }
 
-func (player *Player) AddRewards(context *util.Context, tome *Tome) (reward *Reward, err error) {
-	reward = tome.OpenTome(player.GetLevel())
-	player.PremiumCurrency += reward.PremiumCurrency
-	player.StandardCurrency += reward.StandardCurrency
-
-	for i, id := range reward.Cards {
-		player.AddCards(id, reward.NumRewarded[i])
-	}
-
-	err = player.Save(context)
-	return
-}
-
 func (player *Player) GetDrawCount() int {
 	return player.MatchCount - player.WinCount - player.LossCount
 }

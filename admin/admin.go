@@ -59,7 +59,7 @@ func initializeAdmin(context *util.Context) {
 		},
 		{
 			Name: "Leaderboard",
-			URL: "/admin/leaderboard",
+			URL: "/leaderboard",
 			Icon: "pe-7s-cup",
 		},
 		{

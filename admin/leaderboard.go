@@ -9,8 +9,8 @@ import (
 )
 
 func handleAdminLeaderboards() {
-	handleAdminTemplate("/admin/leaderboard", system.NoAuthentication, ViewLeaderboard, "leaderboard.tmpl.html")
-	handleAdminTemplate("/admin/refresh", system.TokenAuthentication, RefreshLeaderboard, "") // HACK
+	handleAdminTemplate("/leaderboard", system.NoAuthentication, ViewLeaderboard, "leaderboard.tmpl.html")
+	handleAdminTemplate("/admin/leaderboard/refresh", system.TokenAuthentication, RefreshLeaderboard, "")
 }
 
 func ViewLeaderboard(context *util.Context) {
@@ -64,8 +64,20 @@ func ViewLeaderboard(context *util.Context) {
 }
 
 func RefreshLeaderboard(context *util.Context) {
-	// HACK - inefficient
-	models.UpdateAllPlayersPlace(context)
+	// parse parameters
+	playerId := context.Params.GetId("playerId")
 
-	context.Redirect("/admin/leaderboard", 302)
+	if playerId.Valid() {
+		player, err := models.GetPlayerById(context, playerId)
+		util.Must(err)
+
+		player.UpdatePlace(context)
+
+		context.Redirect("/users/edit?userId=" + player.UserID.Hex(), 302)
+	} else {
+		// HACK - inefficient
+		models.UpdateAllPlayersPlace(context)
+
+		context.Redirect("/leaderboard", 302)
+	}
 }

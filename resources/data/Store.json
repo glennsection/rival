@@ -8,7 +8,8 @@
     "itemId": "",
     "quantity": "30",
     "currency": "Real",
-    "cost": "2.99"
+    "cost": "2.99",
+    "rewardId": "STORE_PREMIUM_1_REWARD"
   },
   {
     "id": "STORE_PREMIUM_2",
@@ -18,7 +19,8 @@
     "itemId": "",
     "quantity": "100",
     "currency": "Real",
-    "cost": "9.99"
+    "cost": "9.99",
+    "rewardId": "STORE_PREMIUM_2_REWARD"
   },
   {
     "id": "STORE_PREMIUM_3",
@@ -28,7 +30,8 @@
     "itemId": "",
     "quantity": "275",
     "currency": "Real",
-    "cost": "24.99"
+    "cost": "24.99",
+    "rewardId": "STORE_PREMIUM_3_REWARD"
   },
   {
     "id": "STORE_PREMIUM_4",
@@ -38,7 +41,8 @@
     "itemId": "",
     "quantity": "575",
     "currency": "Real",
-    "cost": "49.99"
+    "cost": "49.99",
+    "rewardId": "STORE_PREMIUM_4_REWARD"
   },
   {
     "id": "STORE_PREMIUM_5",
@@ -48,7 +52,8 @@
     "itemId": "",
     "quantity": "1225",
     "currency": "Real",
-    "cost": "99.99"
+    "cost": "99.99",
+    "rewardId": "STORE_PREMIUM_5_REWARD"
   },
   {
     "id": "STORE_STANDARD_1",
@@ -58,7 +63,8 @@
     "itemId": "",
     "quantity": "5000",
     "currency": "Premium",
-    "cost": "10"
+    "cost": "10",
+    "rewardId": "STORE_STANDARD_1_REWARD"
   },
   {
     "id": "STORE_STANDARD_2",
@@ -68,7 +74,8 @@
     "itemId": "",
     "quantity": "10000",
     "currency": "Premium",
-    "cost": "20"
+    "cost": "20",
+    "rewardId": "STORE_STANDARD_2_REWARD"
   },
   {
     "id": "STORE_STANDARD_3",
@@ -78,7 +85,8 @@
     "itemId": "",
     "quantity": "25000",
     "currency": "Premium",
-    "cost": "50"
+    "cost": "50",
+    "rewardId": "STORE_STANDARD_3_REWARD"
   },
   {
     "id": "STORE_STANDARD_4",
@@ -88,7 +96,8 @@
     "itemId": "",
     "quantity": "50000",
     "currency": "Premium",
-    "cost": "100"
+    "cost": "100",
+    "rewardId": "STORE_STANDARD_4_REWARD"
   },
   {
     "id": "STORE_STANDARD_5",
@@ -98,7 +107,8 @@
     "itemId": "",
     "quantity": "150000",
     "currency": "Premium",
-    "cost": "300"
+    "cost": "300",
+    "rewardId": "STORE_STANDARD_5_REWARD"
   },
   {
     "id": "STORE_TOME_1",
@@ -108,7 +118,8 @@
     "itemId": "TOME_COMMON",
     "quantity": "1",
     "currency": "Premium",
-    "cost": "36"
+    "cost": "36",
+    "rewardId": "STORE_TOME_1_REWARD"
   },
   {
     "id": "STORE_TOME_2",
@@ -118,7 +129,8 @@
     "itemId": "TOME_RARE",
     "quantity": "1",
     "currency": "Premium",
-    "cost": "60"
+    "cost": "60",
+    "rewardId": "STORE_TOME_2_REWARD"
   },
   {
     "id": "STORE_TOME_3",
@@ -128,7 +140,8 @@
     "itemId": "TOME_EPIC",
     "quantity": "1",
     "currency": "Premium",
-    "cost": "110"
+    "cost": "110",
+    "rewardId": "STORE_TOME_3_REWARD"
   }
 ]
 }
