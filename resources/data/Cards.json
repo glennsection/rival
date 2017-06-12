@@ -379,6 +379,27 @@
     "spawnVisualRadius": "1"
   },
   {
+    "databaseId": "18",
+    "id": "CARD_SPELL_SPIKES",
+    "portrait": "UI/Cards/Card_Art/Automaton_Driller",
+    "rarity": "COMMON",
+    "tier": "5",
+    "type": "SPELL",
+    "spawnLogicType": "ANYWHERE",
+    "units": "[SPELL_SPIKES]",
+    "numUnits": "1",
+    "manaCost": "3",
+    "leaderAbilityType": "ATTRIBUTE",
+    "dataFile": "GameData/Cards/SpikesCard",
+    "cooldown": "30",
+    "abilityStartPercent": "100",
+    "abilityCooldown": "0",
+    "awakenGamesNeeded": "10",
+    "awakenLeaderGamesNeeded": "2",
+    "spawnVisualEffect": "FX/Character/Prefabs/Summons/SummonIndicator",
+    "spawnVisualRadius": "3"
+  },
+  {
     "databaseId": "20",
     "id": "CARD_MANA_GENERATOR",
     "portrait": "UI/Cards/Card_Art/Mana_Generator",
