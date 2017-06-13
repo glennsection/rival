@@ -34,7 +34,7 @@ func (source CacheStreamSource) Has(name string) bool {
 
 func (source CacheStreamSource) Set(name string, value interface{}) {
 	var err error
-	if value == nil {
+	if IsNil(value) {
 		_, err = source.redis.Do("DEL", name)
 	} else {
 		_, err = source.redis.Do("SET", name, value)

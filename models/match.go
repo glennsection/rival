@@ -32,7 +32,6 @@ const (
 	MatchOpen
 	MatchPrivate
 	MatchActive
-	MatchCompleting
 	MatchComplete
 )
 
@@ -348,7 +347,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 			match.HostScore = matchResult.Host.Score
 			match.GuestScore = matchResult.Guest.Score
 		} else {
-			log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", matchResult.Outcome, outcome, matchResult.Host.Score, hostScore, matchResult.Guest.Score, guestScore)
+			//log.Printf("Match result reconciliation: %v:%v %d:%d %d:%d", matchResult.Outcome, outcome, matchResult.Host.Score, hostScore, matchResult.Guest.Score, guestScore)
 			
 			if matchResult.Outcome == MatchSurrender || (matchResult.Outcome == outcome && matchResult.Host.Score == hostScore && matchResult.Guest.Score == guestScore) {
 				// store results in match
@@ -538,8 +537,6 @@ func (match *Match) GetStateName() string {
 		return "Open"
 	case MatchActive:
 		return "Active"
-	case MatchCompleting:
-		return "Completing"
 	case MatchComplete:
 		return "Complete"
 	}
@@ -553,8 +550,6 @@ func parseStateName(name string) MatchState {
 		return MatchOpen
 	case "Active":
 		return MatchActive
-	case "Completing":
-		return MatchCompleting
 	case "Complete":
 		return MatchComplete
 	}
@@ -564,7 +559,7 @@ func (match *Match) GetOutcomeName() string {
 	switch match.State {
 	default:
 		return "-"
-	case MatchCompleting, MatchComplete:
+	case MatchComplete:
 		switch match.Outcome {
 		default:
 			return "Draw"
