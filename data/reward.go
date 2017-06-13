@@ -26,7 +26,7 @@ type RewardDataClient struct {
 	*RewardDataClientAlias
 }
 
-var rewards map[DataId]*RewardData
+var rewards map[DataId]RewardData
 
 type RewardDataParsed struct {
 	Rewards []RewardData
@@ -75,17 +75,18 @@ func LoadRewardData(raw []byte) {
 	container := &RewardDataParsed{}
 	util.Must(json.Unmarshal(raw, container))
 
-	rewards = map[DataId]*RewardData {}
+	rewards = map[DataId]RewardData {}
 	for _,reward := range container.Rewards {
 		id,err := mapDataName(reward.ID)
 		util.Must(err)
 
 		//insert into table
-		rewards[id] = &reward
+		rewards[id] = reward
 	}
 
 }
 
 func GetRewardData(id DataId) *RewardData {
-	return rewards[id]
+	reward := rewards[id]
+	return &reward
 }

@@ -10,7 +10,8 @@
     "healthLevelMultiplier": "0.1",
     "normalizedPowerLevel": "7",
     "tournamentLevel": "9",
-    "skillUnlocks": "[1,6,11]",
+    "maxLevel": "11",
+    "skillUnlocks": "[1,4, 7,11]",
     "craftingCost": "200",
     "craftingXp": "1",
     "craftingXpNeeded": "2"
@@ -25,7 +26,8 @@
     "healthLevelMultiplier": "0.1",
     "normalizedPowerLevel": "5",
     "tournamentLevel": "7",
-    "skillUnlocks": "[3,5,9]",
+    "maxLevel": "9",
+    "skillUnlocks": "[3,5,7,9]",
     "craftingCost": "400",
     "craftingXp": "1",
     "craftingXpNeeded": "4"
@@ -40,7 +42,8 @@
     "healthLevelMultiplier": "0.1",
     "normalizedPowerLevel": "3",
     "tournamentLevel": "5",
-    "skillUnlocks": "[2,4,7]",
+    "maxLevel": "7",
+    "skillUnlocks": "[2,4,5,7]",
     "craftingCost": "800",
     "craftingXp": "1",
     "craftingXpNeeded": "3"
@@ -55,7 +58,8 @@
     "healthLevelMultiplier": "0.1",
     "normalizedPowerLevel": "1",
     "tournamentLevel": "3",
-    "skillUnlocks": "[1,3,5]",
+    "maxLevel": "5",
+    "skillUnlocks": "[1,2,3,5]",
     "craftingCost": "1600",
     "craftingXp": "1",
     "craftingXpNeeded": "5"

@@ -68,8 +68,11 @@ func Purchase(context *util.Context) {
 	}
 
 	// add rewards
-	reward := models.GetReward(storeItem.RewardID, player.GetLevel())
-	player.AddRewards(reward, nil)
+	if storeItem.Category != data.StoreCategoryCards {
+		reward := models.GetReward(storeItem.RewardID, player.GetLevel())
+		player.AddRewards(reward, nil)
+		context.SetData("reward", reward)
+	}
 
 	// handle store item category
 	switch storeItem.Category {
@@ -96,6 +99,5 @@ func Purchase(context *util.Context) {
 													"currency":currencyType,
 													"receipt":"" }, 0)
 
-	context.SetData("reward", reward)
 	player.Save(context)
 }
