@@ -193,25 +193,26 @@ func ClearMatchResult(context *util.Context, roomID string) {
 	SetMatchResult(context, roomID, nil)
 }
 
-func ClearMatches(context *util.Context, player *Player) (err error) {
+func ClearMatches(context *util.Context, playerIDs []bson.ObjectId, states ...MatchState) (err error) {
 	// find and remove all invalid matches with player
 	_, err = context.DB.C(MatchCollectionName).RemoveAll(bson.M {
 		"$or": []bson.M {
-			bson.M { "id1": player.ID, },
-			bson.M { "id2": player.ID, },
+			bson.M { "id1": bson.M { "$in": playerIDs }, },
+			bson.M { "id2": bson.M { "$in": playerIDs }, },
 		},
 		"st": bson.M {
-			"$in": []interface{} {
-				MatchInvalid,
-				MatchOpen,
-			},
+			"$in": states,
 		},
  	})
  	return
 }
 
 func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson.ObjectId, matchType MatchType, roomID string) (match *Match, err error) {
-	// check for existing match (TODO - verify that no other pending matches exist for players, and no room exists with this ID)
+	// check for existing match (TODO - verify that no room exists with this ID)
+	err = ClearMatches(context, []bson.ObjectId { hostID, guestID }, MatchOpen, MatchActive)
+	if err != nil {
+		return
+	}
 
 	//log.Printf("StartPrivateMatch(%v, %v, %v, %v) => %v", hostID, guestID, matchType, roomID, match)
 
@@ -231,7 +232,13 @@ func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson
 }
 
 func FindPublicMatch(context *util.Context, playerID bson.ObjectId, matchType MatchType) (match *Match, err error) {
-	// find existing match (TODO - verify that no other pending matches exist for player)
+	// verify that no other pending matches exist for player
+	err = ClearMatches(context, []bson.ObjectId { playerID }, MatchOpen, MatchActive)
+	if err != nil {
+		return
+	}
+
+	// find existing match
 	err = context.DB.C(MatchCollectionName).Find(bson.M {
 		"id1": bson.M {
 			"$ne": playerID,

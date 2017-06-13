@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"gopkg.in/mgo.v2/bson"
+
 	"bloodtales/system"
 	"bloodtales/models"
 	"bloodtales/util"
@@ -17,7 +19,7 @@ func MatchClear(context *util.Context) {
 	player := GetPlayer(context)
 
 	// clear invalid matches
-	util.Must(models.ClearMatches(context, player))
+	util.Must(models.ClearMatches(context, []bson.ObjectId { player.ID }, models.MatchOpen))
 }
 
 func MatchFind(context *util.Context) {
