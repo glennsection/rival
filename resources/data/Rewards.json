@@ -189,8 +189,8 @@
     "cardAmounts": "[0,0,0,1]",
     "maxPremiumCurrency": "6",
     "minPremiumCurrency": "5",
-    "maxStandardCurrency": "190",
-    "minStandardCurrency": "300"
+    "maxStandardCurrency": "300",
+    "minStandardCurrency": "190"
   },
   {
     "id": "FREE_TOME_REWARD",
