@@ -37,6 +37,7 @@
 									<thead>
 										<th>{{ sortHeader $ "Name" "nm" }}</th>
 										<th>Player Tag</th>
+										<th>Credentials</th>
 										<th>Joined</th>
 										<th></th>
 									</thead>
@@ -45,6 +46,7 @@
 										<tr>
 											<td>{{ getUserName $ $user.ID }}</td>
 											<td>{{ $user.Tag }}</td>
+											<td>{{ $user.GetCredentialsString }}</td>
 											<td>{{ shortTime $user.CreatedTime }}</td>
 											<td>
 												<a href="/admin/users/edit?userId={{ $user.ID.Hex }}">Edit</a> |

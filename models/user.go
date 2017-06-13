@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 	"fmt"
+	"strings"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -170,4 +171,12 @@ func LoginUser(context *util.Context, username string, password string) (user *U
 		user = nil
 	}
 	return
+}
+
+func (user *User) GetCredentialsString() (string) {
+	credentialStrings := make([]string, len(user.Credentials))
+	for i, credential := range user.Credentials {
+		credentialStrings[i] = fmt.Sprintf("%s: %s", credential.Provider, credential.ID)
+	}
+	return strings.Join(credentialStrings, ", ")
 }

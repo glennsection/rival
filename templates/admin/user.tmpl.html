@@ -31,6 +31,22 @@
 									<form method="post">
 										<input type="hidden" name="userId" value="{{ $user.ID.Hex }}">
 										<div class="row">
+											<div class="col-md-9">
+												<div class="form-group">
+													<label>Display Name</label>
+													<input type="text" class="form-control" name="name" value="{{ getUserName $ $user.ID }}">
+												</div>
+											</div>
+											<div class="col-md-3">
+												<div class="form-group">
+													<label>Player Tag</label>
+													<input type="text" class="form-control" name="tag" value="{{ $user.Tag }}">
+												</div>
+											</div>
+										</div>
+
+
+										<div class="row">
 											<div class="col-md-3">
 												<div class="form-group">
 													<label>User ID</label>
@@ -47,16 +63,10 @@
 													{{ end }}
 												</div>
 											</div>
-											<div class="col-md-3">
+											<div class="col-md-6">
 												<div class="form-group">
-													<label>Display Name</label>
-													<input type="text" class="form-control" name="name" value="{{ getUserName $ $user.ID }}">
-												</div>
-											</div>
-											<div class="col-md-3">
-												<div class="form-group">
-													<label>Player Tag</label>
-													<input type="text" class="form-control" name="tag" value="{{ $user.Tag }}">
+													<label>Credentials</label>
+													<input type="text" class="form-control" disabled value="{{ $user.GetCredentialsString }}">
 												</div>
 											</div>
 										</div>

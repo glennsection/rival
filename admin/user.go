@@ -27,10 +27,22 @@ func ViewUsers(context *util.Context) {
 	if search != "" {
 		// build query
 		query = context.DB.C(models.UserCollectionName).Find(bson.M {
-			"nm": bson.M {
-				"$regex": bson.RegEx {
-					Pattern: fmt.Sprintf(".*%s.*", search),
-					Options: "i",
+			"$or": []bson.M {
+				bson.M {
+					"nm": bson.M {
+						"$regex": bson.RegEx {
+							Pattern: fmt.Sprintf(".*%s.*", search),
+							Options: "i",
+						},
+					},
+				},
+				bson.M {
+					"cds.id": bson.M {
+						"$regex": bson.RegEx {
+							Pattern: fmt.Sprintf(".*%s.*", search),
+							Options: "i",
+						},
+					},
 				},
 			},
 		})
