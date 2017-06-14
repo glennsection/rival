@@ -69,7 +69,7 @@ func Purchase(context *util.Context) {
 
 	// add rewards
 	if storeItem.Category != data.StoreCategoryCards {
-		reward := models.GetReward(storeItem.RewardID, player.GetLevel())
+		reward := player.GetReward(storeItem.RewardID)
 		player.AddRewards(reward, nil)
 		context.SetData("reward", reward)
 	}
@@ -86,7 +86,6 @@ func Purchase(context *util.Context) {
 	case data.StoreCategoryTomes:
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 		
-
 	case data.StoreCategoryCards:
 		player.HandleCardPurchase(storeItem)
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)

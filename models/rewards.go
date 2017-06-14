@@ -15,16 +15,9 @@ type Reward struct {
 	Cards 				[]data.DataId
 	NumRewarded			[]int 			
 	PremiumCurrency 	int 			
-	StandardCurrency 	int 			
-}
-
-//client model
-type RewardClient struct {
-	Tomes 				[]string		`json:tomes,omitempty`
-	Cards 				[]string		`json:cards,omitempty`
-	NumRewarded			[]int 			`json:numRewarded,omitempty` 			
-	PremiumCurrency 	int 			`json:PremiumCurrency,omitempty`		
-	StandardCurrency 	int 			`json:StandardCurrency,omitempty` 
+	StandardCurrency 	int 
+	OverflowAmounts 	[]int
+	OverflowCurrency 	int		
 }
 
 // custom marshalling
@@ -59,16 +52,22 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 		client["standardCurrency"] = reward.StandardCurrency
 	}
 
+	if reward.OverflowCurrency > 0 {
+		client["overflowAmounts"] = reward.OverflowAmounts
+		client["overflowCurrency"] = reward.OverflowCurrency
+	}
+
 	return json.Marshal(client) 
 }
 
-func GetReward(rewardId data.DataId, tier int) *Reward {
+func (player *Player)GetReward(rewardId data.DataId) *Reward {
 	rewardData := data.GetRewardData(rewardId)
 	reward := &Reward{}
 	
 	reward.getCurrencyRewards(rewardData)
-	reward.getCardRewards(rewardData, tier)
+	reward.getCardRewards(rewardData, player.GetLevel())
 	reward.getTomeRewards(rewardData)
+	reward.getOverflowAmounts(player)
 
 	return reward
 }
@@ -126,14 +125,41 @@ func (reward *Reward)getTomeRewards(rewardData *data.RewardData) {
 	reward.Tomes = rewardData.TomeIds
 }
 
+func (reward *Reward)getOverflowAmounts(player *Player) {
+	reward.OverflowAmounts = make([]int, len(reward.Cards))
+
+	for i,_ := range reward.OverflowAmounts {
+		overflow := reward.getOverflowForIndex(player, i)
+		reward.OverflowAmounts[i] = overflow
+		reward.OverflowCurrency += overflow * data.LegendaryCardCurrencyValue
+	}
+}
+
+//since legendary cards can't be used for crafting, any cards over their max obtainable amount should be converted
+//into standard currency. this function determines the amount of cards that overflow by index.
+func (reward *Reward)getOverflowForIndex(player *Player, index int) int {
+	id := reward.Cards[index]
+	rarity := data.GetCard(id).Rarity
+
+	if rarity == "LEGENDARY" {
+		maxCards := data.GetMaxCardCount(rarity)
+		if cardRef,hasCard := player.HasCard(id); hasCard && (cardRef.CardCount + reward.NumRewarded[index]) >= maxCards {
+			return cardRef.CardCount + reward.NumRewarded[index] - maxCards
+		} 
+	}
+
+	return 0
+}
+
 // player functions below
 
 func (player *Player) AddRewards(reward *Reward, context *util.Context) (err error) {
 	player.PremiumCurrency += reward.PremiumCurrency
-	player.StandardCurrency += reward.StandardCurrency
+	player.StandardCurrency += reward.StandardCurrency + reward.OverflowCurrency
 
 	for i, id := range reward.Cards {
-		player.AddCards(id, reward.NumRewarded[i])
+		overflow := reward.getOverflowForIndex(player, i) 
+		player.AddCards(id, (reward.NumRewarded[i] - overflow))
 	}
 
 	var tome *Tome

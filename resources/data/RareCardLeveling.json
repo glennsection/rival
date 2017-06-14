@@ -9,25 +9,25 @@
   {
     "level": "2",
     "cardsNeeded": "7",
-    "cost": "20",
+    "cost": "125",
     "xp": "200"
   },
   {
     "level": "3",
     "cardsNeeded": "10",
-    "cost": "60",
+    "cost": "350",
     "xp": "220"
   },
   {
     "level": "4",
     "cardsNeeded": "15",
-    "cost": "200",
+    "cost": "500",
     "xp": "240"
   },
   {
     "level": "5",
     "cardsNeeded": "30",
-    "cost": "425",
+    "cost": "700",
     "xp": "260"
   },
   {
@@ -50,21 +50,9 @@
   },
   {
     "level": "9",
-    "cardsNeeded": "180",
-    "cost": "5250",
-    "xp": "340"
-  },
-  {
-    "level": "10",
-    "cardsNeeded": "300",
-    "cost": "8000",
-    "xp": "360"
-  },
-  {
-    "level": "11",
     "cardsNeeded": "0",
     "cost": "0",
-    "xp": "380"
+    "xp": "340"
   }
 ]
 }

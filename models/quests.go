@@ -202,7 +202,7 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 	}
 
 	questData := data.GetQuestData(player.QuestSlots[index].QuestInstance.DataID)
-	reward := GetReward(questData.RewardID, player.GetLevel())
+	reward := player.GetReward(questData.RewardID)
 
 	player.QuestSlots[index].StartCooldown()
 

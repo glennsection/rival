@@ -8,7 +8,6 @@ import (
 
 type RarityData struct {
 	ID 		 					string 		`json:"id"`
-	MaxLevel 					int 		`json:"maxLevel,string"`
 	DamageLevelMultiplier		float64		`json:"damageLevelMultiplier,string"`
 	HealthLevelMultiplier 		float64 	`json:"healthLevelMultiplier,string"`
 	CraftingCost 				int 		`json:"craftingCost,string"`
@@ -37,10 +36,6 @@ func LoadRarityData(raw []byte) {
 		// insert into table
 		rarityData[id] = &container.Rarity[i]
 	}
-}
-
-func GetMaxLevel(rarity string) int {
-	return rarityData[ToDataId(rarity)].MaxLevel
 }
 
 func GetCraftingCost(rarity string) int {

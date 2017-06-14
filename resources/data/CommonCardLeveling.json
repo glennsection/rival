@@ -33,31 +33,31 @@
   {
     "level": "6",
     "cardsNeeded": "145",
-    "cost": "1000",
+    "cost": "600",
     "xp": "140"
   },
   {
     "level": "7",
     "cardsNeeded": "220",
-    "cost": "2200",
+    "cost": "800",
     "xp": "150"
   },
   {
     "level": "8",
     "cardsNeeded": "300",
-    "cost": "3800",
+    "cost": "1100",
     "xp": "160"
   },
   {
     "level": "9",
     "cardsNeeded": "400",
-    "cost": "5250",
+    "cost": "1800",
     "xp": "170"
   },
   {
     "level": "10",
     "cardsNeeded": "600",
-    "cost": "8000",
+    "cost": "2200",
     "xp": "180"
   },
   {
