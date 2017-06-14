@@ -141,8 +141,22 @@
             "winCount": 0,
             "leaderWinCount": 0
         },
-         {
+        {
             "cardId": "CARD_SPELL_SPIKES",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_FARMER",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_CREEP_ARCHER",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
