@@ -1,7 +1,6 @@
 { "Cards":
 [
   {
-    "databaseId": "0",
     "id": "CARD_ARMORED_SKELETON",
     "portrait": "UI/Cards/Card_Art/Armored_Skeleton",
     "rarity": "COMMON",
@@ -13,7 +12,7 @@
     "manaCost": "3",
     "leaderAbilityType": "ATTRIBUTE",
     "dataFile": "GameData/Cards/SkeletonArmorCard",
-    "cooldown": "30",
+    "cooldown": "18",
     "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -22,7 +21,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "1",
     "id": "CARD_MERC_CAPTAIN",
     "portrait": "UI/Cards/Card_Art/Merc_Captain",
     "rarity": "COMMON",
@@ -43,7 +41,6 @@
     "spawnVisualRadius": "2.5"
   },
   {
-    "databaseId": "2",
     "id": "CARD_MARKSMAN",
     "portrait": "UI/Cards/Card_Art/Marksman",
     "rarity": "RARE",
@@ -55,7 +52,7 @@
     "manaCost": "4",
     "leaderAbilityType": "ATTRIBUTE",
     "dataFile": "GameData/Cards/MarksmanCard",
-    "cooldown": "30",
+    "cooldown": "24",
     "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -64,7 +61,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "3",
     "id": "CARD_MERC_SOLDIERS",
     "portrait": "UI/Cards/Card_Art/Merc_Soldier",
     "rarity": "COMMON",
@@ -76,7 +72,7 @@
     "manaCost": "3",
     "leaderAbilityType": "ATTRIBUTE",
     "dataFile": "GameData/Cards/MercShooterCard",
-    "cooldown": "30",
+    "cooldown": "20",
     "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -85,7 +81,6 @@
     "spawnVisualRadius": ""
   },
   {
-    "databaseId": "4",
     "id": "CARD_GARGOYLE",
     "portrait": "UI/Cards/Card_Art/Gargoyle",
     "rarity": "LEGENDARY",
@@ -97,7 +92,7 @@
     "manaCost": "8",
     "leaderAbilityType": "SCRIPT",
     "dataFile": "GameData/Cards/GargoyleCard",
-    "cooldown": "50",
+    "cooldown": "40",
     "abilityStartPercent": "100",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -106,7 +101,6 @@
     "spawnVisualRadius": ""
   },
   {
-    "databaseId": "5",
     "id": "CARD_GOLEM",
     "portrait": "UI/Cards/Card_Art/Golem",
     "rarity": "EPIC",
@@ -118,7 +112,7 @@
     "manaCost": "6",
     "leaderAbilityType": "SCRIPT",
     "dataFile": "GameData/Cards/GolemCard",
-    "cooldown": "50",
+    "cooldown": "45",
     "abilityStartPercent": "100",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -127,7 +121,6 @@
     "spawnVisualRadius": ""
   },
   {
-    "databaseId": "6",
     "id": "CARD_LIGHTNING_SWORD",
     "portrait": "UI/Cards/Card_Art/Lightning",
     "rarity": "RARE",
@@ -148,7 +141,6 @@
     "spawnVisualRadius": "2.5"
   },
   {
-    "databaseId": "7",
     "id": "CARD_SKULL_SWARM",
     "portrait": "UI/Cards/Card_Art/Skull_Biter",
     "rarity": "COMMON",
@@ -160,7 +152,7 @@
     "manaCost": "3",
     "leaderAbilityType": "SKILL_LOGIC",
     "dataFile": "GameData/Cards/SkullCard",
-    "cooldown": "30",
+    "cooldown": "20",
     "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -169,7 +161,6 @@
     "spawnVisualRadius": ""
   },
   {
-    "databaseId": "8",
     "id": "CARD_VAMPIRE",
     "portrait": "UI/Cards/Card_Art/Vampire",
     "rarity": "LEGENDARY",
@@ -181,7 +172,7 @@
     "manaCost": "5",
     "leaderAbilityType": "SCRIPT",
     "dataFile": "GameData/Cards/VampireCard",
-    "cooldown": "40",
+    "cooldown": "35",
     "abilityStartPercent": "100",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -190,7 +181,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "9",
     "id": "CARD_SPELL_FROST_ORB",
     "portrait": "UI/Cards/Card_Art/Shere_Exploder",
     "rarity": "COMMON",
@@ -202,7 +192,7 @@
     "manaCost": "4",
     "leaderAbilityType": "ATTRIBUTE",
     "dataFile": "GameData/Cards/SpellFrostOrbCard",
-    "cooldown": "30",
+    "cooldown": "24",
     "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -211,7 +201,6 @@
     "spawnVisualRadius": "3"
   },
   {
-    "databaseId": "10",
     "id": "CARD_EARTH_ELEMENTAL",
     "portrait": "UI/Cards/Card_Art/Elemental_Earth",
     "rarity": "EPIC",
@@ -232,7 +221,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "11",
     "id": "CARD_BOMB_ZOMBIE",
     "portrait": "UI/Cards/Card_Art/Bomb_Zombie",
     "rarity": "RARE",
@@ -253,7 +241,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "12",
     "id": "CARD_WEREWOLF",
     "portrait": "UI/Cards/Card_Art/Werewolf",
     "rarity": "LEGENDARY",
@@ -274,7 +261,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "13",
     "id": "CARD_DARK_MAGE",
     "portrait": "UI/Cards/Card_Art/Dark_Mage",
     "rarity": "RARE",
@@ -286,7 +272,7 @@
     "manaCost": "4",
     "leaderAbilityType": "ATTRIBUTE",
     "dataFile": "GameData/Cards/DarkMageCard",
-    "cooldown": "30",
+    "cooldown": "24",
     "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -295,7 +281,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "14",
     "id": "CARD_FRANKENSTEIN",
     "portrait": "UI/Cards/Card_Art/frank",
     "rarity": "EPIC",
@@ -307,7 +292,7 @@
     "manaCost": "6",
     "leaderAbilityType": "SCRIPT",
     "dataFile": "GameData/Cards/FrankensteinCard",
-    "cooldown": "40",
+    "cooldown": "36",
     "abilityStartPercent": "100",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -316,7 +301,6 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "15",
     "id": "CARD_GREMLINS",
     "portrait": "UI/Cards/Card_Art/Gremlin",
     "rarity": "COMMON",
@@ -328,7 +312,7 @@
     "manaCost": "3",
     "leaderAbilityType": "SCRIPT",
     "dataFile": "GameData/Cards/GremlinCard",
-    "cooldown": "30",
+    "cooldown": "20",
     "abilityStartPercent": "100",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -337,7 +321,6 @@
     "spawnVisualRadius": ""
   },
   {
-    "databaseId": "16",
     "id": "CARD_HELLHOUND",
     "portrait": "UI/Cards/Card_Art/Hell_Hound",
     "rarity": "COMMON",
@@ -349,7 +332,7 @@
     "manaCost": "2",
     "leaderAbilityType": "SCRIPT",
     "dataFile": "GameData/Cards/HellHoundCard",
-    "cooldown": "30",
+    "cooldown": "18",
     "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
@@ -358,7 +341,6 @@
     "spawnVisualRadius": ""
   },
   {
-    "databaseId": "17",
     "id": "CARD_AUTOMATON",
     "portrait": "UI/Cards/Card_Art/Automaton",
     "rarity": "RARE",
@@ -379,9 +361,8 @@
     "spawnVisualRadius": "1"
   },
   {
-    "databaseId": "18",
     "id": "CARD_SPELL_SPIKES",
-    "portrait": "UI/Cards/Card_Art/Automaton_Driller",
+    "portrait": "UI/Cards/Card_Art/Spikes",
     "rarity": "COMMON",
     "tier": "5",
     "type": "SPELL",
@@ -391,16 +372,15 @@
     "manaCost": "3",
     "leaderAbilityType": "ATTRIBUTE",
     "dataFile": "GameData/Cards/SpikesCard",
-    "cooldown": "30",
+    "cooldown": "20",
     "abilityStartPercent": "100",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
     "awakenLeaderGamesNeeded": "2",
-    "spawnVisualEffect": "FX/Character/Prefabs/Summons/SummonIndicator",
-    "spawnVisualRadius": "3"
+    "spawnVisualEffect": "FX/Character/Prefabs/Summons/SquareIndicator",
+    "spawnVisualRadius": "2.5"
   },
   {
-    "databaseId": "20",
     "id": "CARD_MANA_GENERATOR",
     "portrait": "UI/Cards/Card_Art/Mana_Generator",
     "rarity": "EPIC",
@@ -412,8 +392,48 @@
     "manaCost": "6",
     "leaderAbilityType": "SCRIPT",
     "dataFile": "GameData/Cards/ManaGeneratorCard",
-    "cooldown": "30",
+    "cooldown": "20",
     "abilityStartPercent": "100",
+    "abilityCooldown": "0",
+    "awakenGamesNeeded": "10",
+    "awakenLeaderGamesNeeded": "2",
+    "spawnVisualEffect": "",
+    "spawnVisualRadius": ""
+  },
+  {
+    "id": "CARD_FARMER",
+    "portrait": "UI/Cards/Card_Art/Automaton",
+    "rarity": "COMMON",
+    "tier": "1",
+    "type": "TROOP",
+    "spawnLogicType": "DEfAULT",
+    "units": "[FARMER_A, FARMER_B]",
+    "numUnits": "1",
+    "manaCost": "1",
+    "leaderAbilityType": "SCRIPT",
+    "dataFile": "GameData/Cards/FarmerCard",
+    "cooldown": "18",
+    "abilityStartPercent": "100",
+    "abilityCooldown": "0",
+    "awakenGamesNeeded": "10",
+    "awakenLeaderGamesNeeded": "2",
+    "spawnVisualEffect": "",
+    "spawnVisualRadius": ""
+  },
+  {
+    "id": "CARD_CREEP_ARCHER",
+    "portrait": "UI/Cards/Card_Art/Creep_Archer",
+    "rarity": "RARE",
+    "tier": "3",
+    "type": "TROOP",
+    "spawnLogicType": "DEFAULT",
+    "units": "[CREEP_ARCHER]",
+    "numUnits": "1",
+    "manaCost": "4",
+    "leaderAbilityType": "SCRIPT",
+    "dataFile": "GameData/Cards/CreepArcherCard",
+    "cooldown": "20",
+    "abilityStartPercent": "0",
     "abilityCooldown": "0",
     "awakenGamesNeeded": "10",
     "awakenLeaderGamesNeeded": "2",
