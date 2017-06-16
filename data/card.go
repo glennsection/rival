@@ -148,5 +148,5 @@ func (data *CardData) GetPortraitSrc() string {
 }
 
 func GetCardProgressionData(rarity string, level int) CardProgressionData {
-	return cardLeveling[rarity][level - 1]
+	return cardLeveling[rarity][level]
 }
