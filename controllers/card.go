@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"time"
-	"math/rand"
 	"encoding/json"
 	
 	"gopkg.in/mgo.v2/bson"
@@ -118,29 +117,18 @@ func CraftCard(context *util.Context) {
 	numCards := cardsSupplied / cardsNeeded
 	player.StandardCurrency -= baseCost * numCards
 
-	accountLevel := player.GetLevel()
-	getCards := func(card *data.CardData) bool {
-		return card.Rarity == rarity && card.Tier <= accountLevel
-	}
-	cardSlice := data.GetCards(getCards)
+	reward := player.CreateCraftingReward(numCards, rarity)
+	player.AddRewards(reward, nil)
 
-	rand.Seed(time.Now().UnixNano())
-
-	newCards := make([]string, 0) // response for player
 	cardsGained := map[string]int{} // used for analytics
-	for numCards > 0 {
-		dataId := cardSlice[rand.Intn(len(cardSlice))]
-		dataName := data.ToDataName(dataId)
-
-		newCards = append(newCards, dataName)
-		player.AddCards(dataId, 1)
-		numCards--
-
-		if _,ok := cardsGained[dataName]; ok {
-			cardsGained[dataName]++
-		} else {
-			cardsGained[dataName] = 1
+	//range over the cards returned in the reward object so we can group together duplicates
+	for _,id := range reward.Cards {
+		name := data.ToDataName(id)
+		if _,ok := cardsGained[name]; ok {
+			cardsGained[name]++
+			continue
 		}
+		cardsGained[name] = 1
 	}
 
 	// analytics
@@ -160,5 +148,5 @@ func CraftCard(context *util.Context) {
 
 	player.Save(context)
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
-	context.SetData("cards", newCards)
+	context.SetData("reward", reward)
 }

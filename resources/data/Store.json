@@ -142,6 +142,17 @@
     "currency": "Premium",
     "cost": "110",
     "rewardId": "STORE_TOME_3_REWARD"
+  },
+  {
+    "id": "STORE_TOME_4",
+    "category": "Tomes",
+    "displayName": "Legendary",
+    "spritePath": "UI/Tomes/Sprites/tome_LEGENDARY",
+    "itemId": "TOME_LEGENDARY",
+    "quantity": "1",
+    "currency": "Premium",
+    "cost": "1",
+    "rewardId": "TOME_LEGENDARY_REWARD"
   }
 ]
 }
