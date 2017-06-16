@@ -216,13 +216,11 @@ func (player *Player) AssignRandomQuest(index int, questTypes ...data.QuestType)
 		questTypes = player.QuestSlots[index].SupportedTypes
 	}
 
-	/* we need to ensure there are no duplicate quests, so build a slice for each populated by complete or in-progress 
-		quests and use it in getQuestType to enforce the unique condition */
+	/* we need to ensure there are no duplicate quests, so build a slice of quests regardless of their current state 
+		and use it in getQuestType to enforce the unique condition */
 	currentQuests := make([]data.QuestData,0)
-	for i,questSlot := range player.QuestSlots {
-		if i != index && (questSlot.State == QuestState_InProgress || questSlot.State == QuestState_InProgress) {
-			currentQuests = append(currentQuests, data.GetQuestData(questSlot.QuestInstance.DataID))
-		}
+	for _,questSlot := range player.QuestSlots {
+		currentQuests = append(currentQuests, data.GetQuestData(questSlot.QuestInstance.DataID))
 	}
 
 	// condition for GetRandomQuestData; we only want unique quests of the type requested for the slot

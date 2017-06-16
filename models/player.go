@@ -61,6 +61,7 @@ type Player struct {
 	FreeTomeUnlockTime  int64           		`bson:"fu" json:"freeTomeUnlockTime"`
 
 	QuestSlots 			[]QuestSlot 			`bson:"qu" json:"quests"`
+	QuestClearTime 		int64 					`bson:"qc" json:"questClearTime"`
 
 	GuildID             bson.ObjectId   		`bson:"gd,omitempty" json:"-"`
 	GuildRole           GuildRole       		`bson:"gr,omitempty" json:"-"`
@@ -499,6 +500,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 	
 	if util.CheckMask(dirtyMask, PlayerDataMask_Quests) {
 		dataMap["quests"] = player.QuestSlots
+		dataMap["questClearTime"] = player.QuestClearTime
 	}
 	
 	if util.CheckMask(dirtyMask, PlayerDataMask_Friends) {
