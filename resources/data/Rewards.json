@@ -186,7 +186,7 @@
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[1,2,1,2]",
-    "cardAmounts": "[0,0,0,1]",
+    "cardAmounts": "[36,8,4,1]",
     "maxPremiumCurrency": "6",
     "minPremiumCurrency": "5",
     "maxStandardCurrency": "300",

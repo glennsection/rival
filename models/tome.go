@@ -157,10 +157,10 @@ func (tome *Tome) StartUnlocking() {
 	tome.UnlockTime = time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second)
 }
 
-func (tome *Tome) OpenTome(tier int) (reward *Reward) {
+func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
 	tomeData := data.GetTome(tome.DataID)
 
-	reward = GetReward(tomeData.RewardID, tier)
+	reward = player.GetReward(tomeData.RewardID)
 
 	*tome = GetEmptyTome()
 
@@ -196,7 +196,7 @@ func (player *Player) UpdateTomes(context *util.Context) error {
 }
 
 func (player *Player) AddTomeRewards(context *util.Context, tome *Tome) (reward *Reward, err error) {
-	reward = tome.OpenTome(player.GetLevel())
+	reward = player.OpenTome(tome)
 	err = player.AddRewards(reward, context)
 	return
 }
@@ -226,7 +226,7 @@ func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward,
 
 	player.FreeTomes--
 
-	tomeReward = GetReward(data.ToDataId("FREE_TOME_REWARD"), player.GetLevel())
+	tomeReward = player.GetReward(data.ToDataId("FREE_TOME_REWARD"))
 	err = player.AddRewards(tomeReward, context)
 
 	return 
@@ -239,7 +239,7 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 
 	player.ArenaPoints = 0;
 
-	tomeReward = GetReward(data.ToDataId("ARENA_TOME_REWARD"), player.GetLevel())
+	tomeReward = player.GetReward(data.ToDataId("ARENA_TOME_REWARD"))
 	err = player.AddRewards(tomeReward, context)
 
 	return 

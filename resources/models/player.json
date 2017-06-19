@@ -9,7 +9,7 @@
     "premiumCurrency": 100,
     "cards": [
         {
-            "cardId": "CARD_VAMPIRE",
+            "cardId": "CARD_MERC_CAPTAIN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -23,20 +23,6 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_MERC_CAPTAIN",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_MARKSMAN",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
             "cardId": "CARD_MERC_SOLDIERS",
             "level": 1,
             "cardCount": 0,
@@ -44,14 +30,14 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_GARGOYLE",
+            "cardId": "CARD_SPELL_FROST_ORB",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_GOLEM",
+            "cardId": "CARD_BOMB_ZOMBIE",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -72,6 +58,48 @@
             "leaderWinCount": 0
         },
         {
+            "cardId": "CARD_HELLHOUND",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_WILDLING_ARCHERS",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_VAMPIRE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MARKSMAN",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GARGOYLE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GOLEM",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
             "cardId": "CARD_EARTH_ELEMENTAL",
             "level": 1,
             "cardCount": 0,
@@ -80,20 +108,6 @@
         },
         {
             "cardId": "CARD_WEREWOLF",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_SPELL_FROST_ORB",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_BOMB_ZOMBIE",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -121,13 +135,6 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_HELLHOUND",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
             "cardId": "CARD_AUTOMATON",
             "level": 1,
             "cardCount": 0,
@@ -141,8 +148,43 @@
             "winCount": 0,
             "leaderWinCount": 0
         },
-         {
+        {
             "cardId": "CARD_SPELL_SPIKES",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_FARMER",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_CREEP_ARCHER",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_FARMER_HOUSE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_DWARVES",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MYSTIC",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -151,42 +193,42 @@
     ],
     "decks": [
         {
-            "leaderCardId": "CARD_VAMPIRE",
+            "leaderCardId": "CARD_MERC_CAPTAIN",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
-                "CARD_MERC_CAPTAIN",
-                "CARD_MARKSMAN",
                 "CARD_MERC_SOLDIERS",
-                "CARD_GARGOYLE",
-                "CARD_GOLEM",
+                "CARD_SPELL_FROST_ORB",
+                "CARD_BOMB_ZOMBIE",
                 "CARD_LIGHTNING_SWORD",
-                "CARD_SKULL_SWARM"
+                "CARD_SKULL_SWARM",
+                "CARD_HELLHOUND",
+                "CARD_WILDLING_ARCHERS"
             ]
         },
         {
-            "leaderCardId": "CARD_VAMPIRE",
+            "leaderCardId": "CARD_MERC_CAPTAIN",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
-                "CARD_MERC_CAPTAIN",
-                "CARD_MARKSMAN",
                 "CARD_MERC_SOLDIERS",
-                "CARD_GARGOYLE",
-                "CARD_GOLEM",
+                "CARD_SPELL_FROST_ORB",
+                "CARD_BOMB_ZOMBIE",
                 "CARD_LIGHTNING_SWORD",
-                "CARD_SKULL_SWARM"
+                "CARD_SKULL_SWARM",
+                "CARD_HELLHOUND",
+                "CARD_WILDLING_ARCHERS"
             ]
         },
         {
-            "leaderCardId": "CARD_VAMPIRE",
+            "leaderCardId": "CARD_MERC_CAPTAIN",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
-                "CARD_MERC_CAPTAIN",
-                "CARD_MARKSMAN",
                 "CARD_MERC_SOLDIERS",
-                "CARD_GARGOYLE",
-                "CARD_GOLEM",
+                "CARD_SPELL_FROST_ORB",
+                "CARD_BOMB_ZOMBIE",
                 "CARD_LIGHTNING_SWORD",
-                "CARD_SKULL_SWARM"
+                "CARD_SKULL_SWARM",
+                "CARD_HELLHOUND",
+                "CARD_WILDLING_ARCHERS"
             ]
         }
     ],

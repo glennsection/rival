@@ -8,6 +8,8 @@ import (
 	"bloodtales/util"
 )
 
+const LegendaryCardCurrencyValue = 500;
+
 type CardData struct {
 	// TODO ?->  ID int `json:"databaseId"`
 	Name                    string        `json:"id"`
@@ -97,6 +99,18 @@ func LoadCardProgression(rarity string, raw []byte) {
 	}
 }
 
+func GetMaxLevel(rarity string) int {
+	return len(cardLeveling[rarity])
+}
+
+func GetMaxCardCount(rarity string) int {
+	cardCount := 0
+	for _,data := range cardLeveling[rarity] {
+		cardCount += data.CardsNeeded
+	}
+	return cardCount
+}
+
 // get card by server ID
 func GetCard(id DataId) (card *CardData) {
 	return cards[id]
@@ -134,5 +148,8 @@ func (data *CardData) GetPortraitSrc() string {
 }
 
 func GetCardProgressionData(rarity string, level int) CardProgressionData {
-	return cardLeveling[rarity][level - 1]
+	if level > len(cardLeveling[rarity]) {
+		level = len(cardLeveling[rarity]) - 1
+	}
+	return cardLeveling[rarity][level]
 }

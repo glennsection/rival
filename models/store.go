@@ -90,12 +90,12 @@ func (player *Player) GetCardCost(id data.DataId) float64 {
 }
 
 func (player *Player) HandleCardPurchase(storeItem *data.StoreData) {
-		id := data.ToDataId(storeItem.Name)
+	id := data.ToDataId(storeItem.Name)
 
-		player.AddCards(id, storeItem.Quantity)
+	player.AddCards(id, storeItem.Quantity)
 
-		storeItem.Cost = player.GetCardCost(id)
-
-		cardRef,_ := player.HasCard(id)
-		cardRef.PurchaseCount++
+	cardRef,_ := player.HasCard(id)
+	cardRef.PurchaseCount++
+	
+	storeItem.Cost = player.GetCardCost(id)
 }

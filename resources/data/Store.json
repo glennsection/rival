@@ -1,61 +1,6 @@
 { "Store":
 [
   {
-    "id": "STORE_PREMIUM_1",
-    "category": "PremiumCurrency",
-    "displayName": "Pile",
-    "spritePath": "UI/Store/Item Icons/store_blood_pack_1",
-    "itemId": "",
-    "quantity": "30",
-    "currency": "Real",
-    "cost": "2.99",
-    "rewardId": "STORE_PREMIUM_1_REWARD"
-  },
-  {
-    "id": "STORE_PREMIUM_2",
-    "category": "PremiumCurrency",
-    "displayName": "Sack",
-    "spritePath": "UI/Store/Item Icons/store_blood_pack_2",
-    "itemId": "",
-    "quantity": "100",
-    "currency": "Real",
-    "cost": "9.99",
-    "rewardId": "STORE_PREMIUM_2_REWARD"
-  },
-  {
-    "id": "STORE_PREMIUM_3",
-    "category": "PremiumCurrency",
-    "displayName": "Chest",
-    "spritePath": "UI/Store/Item Icons/store_blood_pack_3",
-    "itemId": "",
-    "quantity": "275",
-    "currency": "Real",
-    "cost": "24.99",
-    "rewardId": "STORE_PREMIUM_3_REWARD"
-  },
-  {
-    "id": "STORE_PREMIUM_4",
-    "category": "PremiumCurrency",
-    "displayName": "Stash",
-    "spritePath": "UI/Store/Item Icons/store_blood_pack_4",
-    "itemId": "",
-    "quantity": "575",
-    "currency": "Real",
-    "cost": "49.99",
-    "rewardId": "STORE_PREMIUM_4_REWARD"
-  },
-  {
-    "id": "STORE_PREMIUM_5",
-    "category": "PremiumCurrency",
-    "displayName": "Throne",
-    "spritePath": "UI/Store/Item Icons/store_blood_pack_5",
-    "itemId": "",
-    "quantity": "1225",
-    "currency": "Real",
-    "cost": "99.99",
-    "rewardId": "STORE_PREMIUM_5_REWARD"
-  },
-  {
     "id": "STORE_STANDARD_1",
     "category": "StandardCurrency",
     "displayName": "Pile",
