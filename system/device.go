@@ -57,7 +57,7 @@ func authenticateDevice(context *util.Context, required bool) (err error) {
 	if user != nil {
 		SetUser(context, user)
 
-		err = appendAuthToken(context)
+		err = issueAuthToken(context)
 	} else if required {
 		err = errors.New("Unauthorized user")
 	}
