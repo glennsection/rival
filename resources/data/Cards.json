@@ -459,26 +459,6 @@
     "awakenLeaderGamesNeeded": "2",
     "spawnVisualEffect": "",
     "spawnVisualRadius": ""
-  },
-  {
-    "id": "CARD_GIANT",
-    "portrait": "UI/Cards/Card_Art/Giant",
-    "rarity": "EPIC",
-    "tier": "3",
-    "type": "TROOP",
-    "spawnLogicType": "DEFAULT",
-    "units": "[GIANT]",
-    "numUnits": "1",
-    "manaCost": "7",
-    "leaderAbilityType": "SCRIPT",
-    "dataFile": "GameData/Cards/GiantCard",
-    "cooldown": "35",
-    "abilityStartPercent": "100",
-    "abilityCooldown": "0",
-    "awakenGamesNeeded": "10",
-    "awakenLeaderGamesNeeded": "2",
-    "spawnVisualEffect": "",
-    "spawnVisualRadius": ""
   }
 ]
 }
