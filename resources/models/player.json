@@ -65,13 +65,6 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_WILDLING_ARCHERS",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
             "cardId": "CARD_VAMPIRE",
             "level": 1,
             "cardCount": 0,
@@ -202,7 +195,7 @@
                 "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
                 "CARD_HELLHOUND",
-                "CARD_WILDLING_ARCHERS"
+                "CARD_DWARVES"
             ]
         },
         {
@@ -215,7 +208,7 @@
                 "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
                 "CARD_HELLHOUND",
-                "CARD_WILDLING_ARCHERS"
+                "CARD_DWARVES"
             ]
         },
         {
@@ -228,7 +221,7 @@
                 "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
                 "CARD_HELLHOUND",
-                "CARD_WILDLING_ARCHERS"
+                "CARD_DWARVES"
             ]
         }
     ],
