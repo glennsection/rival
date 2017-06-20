@@ -34,11 +34,16 @@ func UserConnect(context *util.Context) {
 }
 
 func UserLogin(context *util.Context) {
-	// analytics tracking
-	InsertTracking(context, "login", nil, 0)
+	// parse parameters
+	refresh := context.Params.GetBool("refresh", false)
 
-	// respond with player data
-	FetchPlayer(context)
+	if !refresh {
+		// analytics tracking
+		InsertTracking(context, "login", nil, 0)
+
+		// respond with player data
+		FetchPlayer(context)
+	}
 }
 
 func UserLogout(context *util.Context) {

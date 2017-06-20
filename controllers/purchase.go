@@ -8,6 +8,7 @@ import (
 	"bloodtales/models"
 	"bloodtales/data"
 	"bloodtales/util"
+	"bloodtales/log"
 )
 
 func handlePurchase() {
@@ -85,6 +86,14 @@ func Purchase(context *util.Context) {
 
 	case data.StoreCategoryTomes:
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	
+		// analytics
+		tome := data.GetTome(data.ToDataId(storeItem.ItemID))
+		if tome != nil {
+			InsertTracking(context, "tomeOpened", bson.M { "rarity": tome.Rarity }, 0)
+		} else {
+			log.Errorf("Failed find data for purchased tome: %s", storeItem.ItemID)
+		}
 		
 	case data.StoreCategoryCards:
 		player.HandleCardPurchase(storeItem)

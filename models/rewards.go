@@ -60,7 +60,7 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 	return json.Marshal(client) 
 }
 
-func (player *Player)GetReward(rewardId data.DataId) *Reward {
+func (player *Player) GetReward(rewardId data.DataId) *Reward {
 	rewardData := data.GetRewardData(rewardId)
 	return player.CreateReward(rewardData, false)
 }
