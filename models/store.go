@@ -72,7 +72,6 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (
 	storeCard := data.StoreData {
 		Name: card.Name,
 		DisplayName: fmt.Sprintf("%s_NAME", card.Name),
-		Image: card.Portrait,
 		ItemID: card.Name,
 		Category: data.StoreCategoryCards,
 		Currency: data.CurrencyStandard,

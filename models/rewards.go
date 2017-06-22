@@ -65,6 +65,16 @@ func (player *Player) GetReward(rewardId data.DataId) *Reward {
 	return player.CreateReward(rewardData, false)
 }
 
+func (player *Player) GetRewards(rewardIds []data.DataId) []*Reward {
+	rewards := make([]*Reward, 0)
+
+	for _, id := range rewardIds {
+		rewards = append(rewards, player.GetReward(id))
+	}
+
+	return rewards
+}
+
 func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward {
 	var rarities []int
 	var numRewarded []int

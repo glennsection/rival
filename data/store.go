@@ -1,10 +1,8 @@
 package data
 
 import (
-	"fmt"
 	"time"
 	"strconv"
-	"strings"
 	"encoding/json"
 
 	"bloodtales/util"
@@ -37,11 +35,12 @@ type StoreData struct {
 	Name                    string
 	DisplayName 			string
 	Description 			string
-	Image                   string
+	SpritePaths             string // no need to convert this to an array since we have no use for it on the server
+	SpriteTexts 			string // see above
 
 	ItemID                  string
 	Category                StoreCategory
-	RewardID 				DataId
+	RewardIDs 				[]DataId
 
 	Currency                CurrencyType
 	Cost                    float64
@@ -58,21 +57,20 @@ type StoreDataClient struct {
 	Name                    string        `json:"id"`
 	DisplayName 			string 		  `json:"displayName"`
 	Description 			string 		  `json:"description"`
-	Image                   string        `json:"spritePath"`
+	SpritePaths             string        `json:"spritePaths"`
+	SpriteTexts 			string 		  `json:"spriteTexts`
 
 	ItemID                  string        `json:"itemId"`
 	Category                string        `json:"category"`
-	RewardID				string 		  `json:"rewardId"`
+	RewardIDs				string 	  	  `json:"rewardIds"`
 
 	Currency                string        `json:"currency"`
 	Cost                    float64       `json:"cost,string"`
 
 	Availability 			string 		  `json:"availability"`
-	IsOneTimeOffer 			bool 		  `json:"isOneTimeOffer"`
+	IsOneTimeOffer 			bool 		  `json:"isOneTimeOffer,string"`
 	AvailableDate 			string 		  `json:"availableDate"`
 	ExpirationDate 			string 		  `json:"expirationDate"`
-
-	*StoreDataClientAlias
 }
 
 type CardPurchaseCost struct {
@@ -104,24 +102,30 @@ type CardPurchaseCostsParsed struct {
 // custom unmarshalling
 func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 	// create client model
-	client := &StoreDataClient {
-		StoreDataClientAlias: (*StoreDataClientAlias)(storeItem),
-	}
+	client := &StoreDataClient {} //alias doesn't work for some reason
 
 	// unmarshal to client model
 	if err := json.Unmarshal(raw, &client); err != nil {
 		return err
 	}
 
-	//alias doesn't work for some reason
 	storeItem.Name = client.Name
 	storeItem.DisplayName = client.DisplayName
 	storeItem.Description = client.Description
-	storeItem.Image = client.Image
+	storeItem.SpritePaths = client.SpritePaths
+	storeItem.SpriteTexts = client.SpriteTexts
 	storeItem.ItemID = client.ItemID
-	storeItem.RewardID = ToDataId(client.RewardID)
 	storeItem.Cost = client.Cost
 	storeItem.IsOneTimeOffer = client.IsOneTimeOffer
+
+	// server reward ids
+	storeItem.RewardIDs = make([]DataId, 0)
+
+	clientRewards := util.StringToStringArray(client.RewardIDs)
+	for _,id := range clientRewards {
+		storeItem.RewardIDs = append(storeItem.RewardIDs, ToDataId(id))
+	}
+
 
 	// server category
 	switch client.Category {
@@ -180,12 +184,19 @@ func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
 		Name: storeItem.Name,
 		DisplayName: storeItem.DisplayName,
 		Description: storeItem.Description,
-		Image: storeItem.Image,
+		SpritePaths: storeItem.SpritePaths,
+		SpriteTexts: storeItem.SpriteTexts,
 		ItemID: storeItem.ItemID,
 		Cost: storeItem.Cost,
-		RewardID: ToDataName(storeItem.RewardID),
 		IsOneTimeOffer: storeItem.IsOneTimeOffer,
 	}
+
+	// client reward ids
+	clientRewards := make([]string, 0)
+	for _,id := range storeItem.RewardIDs {
+		clientRewards = append(clientRewards, ToDataName(id))
+	}
+	client.RewardIDs = util.StringArrayToString(clientRewards)
 
 	// client category
 	switch storeItem.Category {
@@ -297,13 +308,4 @@ func GetCardCost(rarity string, level int) int {
 	}
 
 	return cardPurchaseCosts[rarity][level]
-}
-
-func (store *StoreData) GetImageSrc() string {
-	src := store.Image
-	idx := strings.LastIndex(src, "/")
-	if idx >= 0 {
-		src = src[idx + 1:]
-	}
-	return fmt.Sprintf("/static/img/stores/%v.png", src) // FIXME
 }

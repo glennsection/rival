@@ -70,9 +70,12 @@ func Purchase(context *util.Context) {
 
 	// add rewards
 	if storeItem.Category != data.StoreCategoryCards {
-		reward := player.GetReward(storeItem.RewardID)
-		player.AddRewards(reward, nil)
-		context.SetData("reward", reward)
+		rewards := player.GetRewards(storeItem.RewardIDs)
+
+		for _, reward := range rewards {
+			player.AddRewards(reward, nil)
+		}
+		context.SetData("rewards", rewards)
 	}
 
 	// handle store item category

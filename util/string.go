@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"encoding/json"
@@ -61,3 +62,41 @@ func StringToIntArray(s string) ([]int) {
 
 	return arr
 }
+
+func StringArrayToString(arr []string) (string) {
+	str := "["
+
+	length := len(arr)
+
+	for i,element := range arr {
+		var format string
+		if i != length - 1 {
+			format = "%s%s,"
+		} else {
+			format = "%s%s]"
+		}
+
+		str = fmt.Sprintf(format, str, element)
+	}
+
+	return str
+}
+
+func IntArrayToString(arr []int) (string) {
+	str := "["
+
+	length := len(arr)
+
+	for i,element := range arr {
+		var format string
+		if i != length - 1 {
+			format = "%s%d,"
+		} else {
+			format = "%s%d]"
+		}
+
+		str = fmt.Sprintf(format, str, element)
+	}
+
+	return str
+} 
