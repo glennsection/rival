@@ -2,13 +2,14 @@ package data
 
 import (
 	"fmt"
+	"time"
+	"strconv"
 	"strings"
 	"encoding/json"
 
 	"bloodtales/util"
 )
 
-// currency type
 type CurrencyType int
 const (
 	CurrencyReal CurrencyType = iota
@@ -16,7 +17,6 @@ const (
 	CurrencyStandard
 )
 
-// store category
 type StoreCategory int
 const (
 	StoreCategoryPremiumCurrency StoreCategory = iota
@@ -26,31 +26,51 @@ const (
 	StoreCategorySpecialOffers
 )
 
+type AvailabilityType int
+const (
+	Availability_Permanent AvailabilityType = iota
+	Availability_Limited
+)
+
 // server data
 type StoreData struct {
-	Name                    string        `json:"id"`
-	Category                StoreCategory `json:"category"`
-	DisplayName 			string 		  `json:"displayName"`
-	Image                   string        `json:"spritePath"`
-	ItemID                  string        `json:"itemId"`
-	Quantity                int           `json:"quantity,string"`
-	Currency                CurrencyType  `json:"currency"`
-	Cost                    float64       `json:"cost,string"`
+	Name                    string
+	DisplayName 			string
+	Description 			string
+	Image                   string
+
+	ItemID                  string
+	Category                StoreCategory
 	RewardID 				DataId
+
+	Currency                CurrencyType
+	Cost                    float64
+
+	Availability 			AvailabilityType
+	IsOneTimeOffer 			bool
+	AvailableDate 			int64
+	ExpirationDate 			int64
 }
 
 // client data
 type StoreDataClientAlias StoreData
 type StoreDataClient struct {
 	Name                    string        `json:"id"`
-	Category                string        `json:"category"`
 	DisplayName 			string 		  `json:"displayName"`
+	Description 			string 		  `json:"description"`
 	Image                   string        `json:"spritePath"`
+
 	ItemID                  string        `json:"itemId"`
-	Quantity                int           `json:"quantity,string"`
+	Category                string        `json:"category"`
+	RewardID				string 		  `json:"rewardId"`
+
 	Currency                string        `json:"currency"`
 	Cost                    float64       `json:"cost,string"`
-	RewardID				string 		  `json:"rewardId"`
+
+	Availability 			string 		  `json:"availability"`
+	IsOneTimeOffer 			bool 		  `json:"isOneTimeOffer"`
+	AvailableDate 			string 		  `json:"availableDate"`
+	ExpirationDate 			string 		  `json:"expirationDate"`
 
 	*StoreDataClientAlias
 }
@@ -96,11 +116,12 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 	//alias doesn't work for some reason
 	storeItem.Name = client.Name
 	storeItem.DisplayName = client.DisplayName
+	storeItem.Description = client.Description
 	storeItem.Image = client.Image
 	storeItem.ItemID = client.ItemID
-	storeItem.Quantity = client.Quantity
-	storeItem.Cost = client.Cost
 	storeItem.RewardID = ToDataId(client.RewardID)
+	storeItem.Cost = client.Cost
+	storeItem.IsOneTimeOffer = client.IsOneTimeOffer
 
 	// server category
 	switch client.Category {
@@ -126,6 +147,30 @@ func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
 		storeItem.Currency = CurrencyStandard
 	}
 
+	// server availability
+	switch client.Availability {
+	case "Limited":
+		storeItem.Availability = Availability_Limited
+	default:
+		storeItem.Availability = Availability_Permanent
+	}
+
+	if num, err := strconv.ParseInt(client.AvailableDate, 10, 64); err == nil {
+		storeItem.AvailableDate = num
+	} else {
+		if date, err := time.Parse("2006-01-02", client.AvailableDate); err == nil {
+			storeItem.AvailableDate = util.TimeToTicks(date)
+		}
+	}
+
+	if num, err := strconv.ParseInt(client.ExpirationDate, 10, 64); err == nil {
+		storeItem.ExpirationDate = num
+	} else {
+		if date, err := time.Parse("2006-01-02", client.ExpirationDate); err == nil {
+			storeItem.ExpirationDate = util.TimeToTicks(date)
+		}
+	}
+
 	return nil
 }
 
@@ -134,14 +179,15 @@ func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
 	client := &StoreDataClient {
 		Name: storeItem.Name,
 		DisplayName: storeItem.DisplayName,
+		Description: storeItem.Description,
 		Image: storeItem.Image,
 		ItemID: storeItem.ItemID,
-		Quantity: storeItem.Quantity,
 		Cost: storeItem.Cost,
 		RewardID: ToDataName(storeItem.RewardID),
+		IsOneTimeOffer: storeItem.IsOneTimeOffer,
 	}
 
-	//client category
+	// client category
 	switch storeItem.Category {
 	case StoreCategoryPremiumCurrency:
 		client.Category = "PremiumCurrency"
@@ -163,6 +209,22 @@ func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
 		client.Currency = "Premium"
 	default:
 		client.Currency = "Standard"
+	}
+
+	// client availability
+	switch storeItem.Availability {
+	case Availability_Limited:
+		client.Availability = "Limited"
+	default:
+		client.Availability = "Permanent"
+	}
+
+	if storeItem.AvailableDate > 0 {
+		client.AvailableDate = strconv.FormatInt(storeItem.AvailableDate - util.TimeToTicks(time.Now().UTC()), 10)
+	}
+
+	if storeItem.ExpirationDate > 0 {
+		client.ExpirationDate = strconv.FormatInt(storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC()), 10)
 	}
 
 	return json.Marshal(client)
@@ -207,9 +269,12 @@ func GetStoreItem(id DataId) (store *StoreData) {
 
 func GetStoreItems() []StoreData {
 	items := make([]StoreData, 0)
+	currentTime := util.TimeToTicks(time.Now().UTC())
 
 	for _, value := range storeItems {
-		items = append(items, *value) 
+		if value.Availability == Availability_Permanent || value.AvailableDate < currentTime && currentTime < value.ExpirationDate {
+			items = append(items, *value)
+		}
 	}
 
 	return items

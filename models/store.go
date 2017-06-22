@@ -13,10 +13,11 @@ import (
 func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	// seed random with current utc date + unique identifer
 	year, month, day := time.Now().UTC().Date() 
-	date := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
+	currentDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
+	tomorrow := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, 1))
 
 	// ensure our card purchase counts are up to date
-	if player.PurchaseResetTime < date {
+	if player.PurchaseResetTime < currentDate {
 		player.PurchaseResetTime = util.TimeToTicks(time.Now())
 		
 		for i,_ := range player.Cards {
@@ -35,17 +36,20 @@ func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	for _,cardType := range cardTypes {
 		_,storeCard := player.GetStoreCard(cardType, storeCards)
 
-		storeCards = append(storeCards, storeCard)
+		if storeCard != nil {
+			storeCard.ExpirationDate = tomorrow
+			storeCards = append(storeCards, *storeCard)
+		}
 	}
 
 	return storeCards
 }
 
-func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (data.DataId, data.StoreData) {
+func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (*data.DataId, *data.StoreData) {
 	// get cards of the desired rarity
 	getCard := func(card *data.CardData) bool {
 		for _,item := range storeCards { // ensure no duplicates
-			if item.Name == card.Name {
+			if item.Name == card.Name || card.Tier > player.GetLevel() {
 				return false
 			}
 		}
@@ -53,6 +57,10 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (
 		return card.Rarity == rarity // ensure rarity is correct
 	}
 	cardIds := data.GetCards(getCard)
+
+	if len(cardIds) == 0 {
+		return nil, nil
+	}
 
 	// sort these cards to ensure we get the same cards for the generated index every time
 	sort.Sort(data.DataIdCollection(cardIds))
@@ -65,14 +73,15 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (
 		Name: card.Name,
 		DisplayName: fmt.Sprintf("%s_NAME", card.Name),
 		Image: card.Portrait,
-		Category: data.StoreCategoryCards,
 		ItemID: card.Name,
-		Quantity: 1,
+		Category: data.StoreCategoryCards,
 		Currency: data.CurrencyStandard,
 		Cost: player.GetCardCost(cardId),
+		Availability: data.Availability_Limited,
+		IsOneTimeOffer: false,
 	}
 
-	return cardId, storeCard
+	return &cardId, &storeCard
 }
 
 func (player *Player) GetCardCost(id data.DataId) float64 {
@@ -92,7 +101,7 @@ func (player *Player) GetCardCost(id data.DataId) float64 {
 func (player *Player) HandleCardPurchase(storeItem *data.StoreData) {
 	id := data.ToDataId(storeItem.Name)
 
-	player.AddCards(id, storeItem.Quantity)
+	player.AddCards(id, 1)
 
 	cardRef,_ := player.HasCard(id)
 	cardRef.PurchaseCount++
