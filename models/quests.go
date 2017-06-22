@@ -41,8 +41,8 @@ type Quest struct {
 func (slot *QuestSlot) MarshalJSON() ([]byte, error) {
 	// create client model
 	client := &QuestSlotClient{
-		UnlockTime: slot.UnlockTime,
-		ExpireTime: slot.ExpireTime,
+		UnlockTime: slot.UnlockTime - util.TimeToTicks(time.Now().UTC()),
+		ExpireTime: slot.ExpireTime - util.TimeToTicks(time.Now().UTC()),
 	}
 
 	// client quest 

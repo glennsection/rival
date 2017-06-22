@@ -224,7 +224,7 @@ func (player *Player) AddRewards(reward *Reward, context *util.Context) (err err
 		if tome != nil {
 			player.Tomes[index].DataID = id
 			player.Tomes[index].State = TomeLocked
-			player.Tomes[index].UnlockTime = util.TicksToTime(0)
+			player.Tomes[index].UnlockTime = 0
 		}
 	}
 

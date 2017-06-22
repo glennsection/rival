@@ -366,7 +366,7 @@ func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *To
 		if roll <= accum {
 			(*tome).DataID = id
 			(*tome).State = TomeLocked
-			(*tome).UnlockTime = util.TicksToTime(0)
+			(*tome).UnlockTime = 0
 			break
 		}
 	}
