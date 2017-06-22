@@ -82,7 +82,7 @@ func authenticateToken(context *util.Context, required bool) (err error) {
 	return
 }
 
-func issueAuthToken(context *util.Context) (err error) {
+func IssueAuthToken(context *util.Context) (err error) {
 	user := GetUser(context)
 	if user == nil {
 		err = errors.New("No User set for context to apply auth token")

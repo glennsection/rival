@@ -9,6 +9,7 @@ import (
 func handleUser() {
 	handleGameAPI("/connect", system.NoAuthentication, UserConnect)
 	handleGameAPI("/login", system.DeviceAuthentication, UserLogin)
+	handleGameAPI("/reauth", system.TokenAuthentication, UserReauth)
 	handleGameAPI("/logout", system.TokenAuthentication, UserLogout)
 }
 
@@ -34,16 +35,16 @@ func UserConnect(context *util.Context) {
 }
 
 func UserLogin(context *util.Context) {
-	// parse parameters
-	refresh := context.Params.GetBool("refresh", false)
+	// analytics tracking
+	InsertTracking(context, "login", nil, 0)
 
-	if !refresh {
-		// analytics tracking
-		InsertTracking(context, "login", nil, 0)
+	// respond with player data
+	FetchPlayer(context)
+}
 
-		// respond with player data
-		FetchPlayer(context)
-	}
+func UserReauth(context *util.Context) {
+	// issue new auth token
+	system.IssueAuthToken(context)
 }
 
 func UserLogout(context *util.Context) {
