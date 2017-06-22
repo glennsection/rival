@@ -58,6 +58,10 @@ func (player *Player) GetStoreCard(rarity string, storeCards []data.StoreData) (
 	}
 	cardIds := data.GetCards(getCard)
 
+	if len(cardIds) == 0 {
+		return nil, nil
+	}
+
 	// sort these cards to ensure we get the same cards for the generated index every time
 	sort.Sort(data.DataIdCollection(cardIds))
 
