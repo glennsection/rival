@@ -31,7 +31,12 @@ func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 
 	// get individual card offers
 	storeCards := make([]data.StoreData, 0)
-	cardTypes := [...]string{"COMMON","COMMON","RARE","EPIC"}
+	var cardTypes []string
+	if player.GetRankTier() == 6 {
+		cardTypes = []string{"COMMON","COMMON","RARE","EPIC","LEGENDARY"}
+	} else {
+		cardTypes = []string{"COMMON","COMMON","RARE","EPIC"}
+	}
 
 	for _,cardType := range cardTypes {
 		_,storeCard := player.GetStoreCard(cardType, storeCards)
