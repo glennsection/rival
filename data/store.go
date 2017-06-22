@@ -269,9 +269,12 @@ func GetStoreItem(id DataId) (store *StoreData) {
 
 func GetStoreItems() []StoreData {
 	items := make([]StoreData, 0)
+	currentTime := util.TimeToTicks(time.Now().UTC())
 
 	for _, value := range storeItems {
-		items = append(items, *value) 
+		if value.Availability == Availability_Permanent || value.AvailableDate < currentTime && currentTime < value.ExpirationDate {
+			items = append(items, *value)
+		}
 	}
 
 	return items
