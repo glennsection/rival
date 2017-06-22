@@ -539,26 +539,6 @@
     "awakenLeaderGamesNeeded": "2",
     "spawnVisualEffect": "FX/Character/Prefabs/Summons/SummonIndicator",
     "spawnVisualRadius": "1"
-  },
-  {
-    "id": "#CARD_WILDLING_ARCHERS",
-    "portrait": "UI/Cards/Card_Art/Wildling_Archer",
-    "rarity": "COMMON",
-    "tier": "1",
-    "type": "TROOP",
-    "spawnLogicType": "DEFAULT",
-    "units": "[WILDLING_ARCHER]",
-    "numUnits": "2",
-    "manaCost": "2",
-    "leaderAbilityType": "SCRIPT",
-    "dataFile": "GameData/Cards/WildlingArchersCard",
-    "cooldown": "20",
-    "abilityStartPercent": "100",
-    "abilityCooldown": "0",
-    "awakenGamesNeeded": "10",
-    "awakenLeaderGamesNeeded": "2",
-    "spawnVisualEffect": "",
-    "spawnVisualRadius": ""
   }
 ]
 }
