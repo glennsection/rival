@@ -22,7 +22,7 @@ const (
 type Tome struct {
 	DataID         data.DataId   `bson:"id" json:"tomeId"`
 	State          TomeState     `bson:"st" json:"state"`
-	UnlockTime     time.Time     `bson:"tu" json:"unlockTime"`
+	UnlockTime     int64     	`bson:"tu" json:"unlockTime"`
 }
 
 // client model
@@ -41,7 +41,7 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 	client := &TomeClient {
 		DataID: data.ToDataName(tome.DataID),
 		State: "Locked",
-		UnlockTime: util.TimeToTicks(tome.UnlockTime),
+		UnlockTime: tome.UnlockTime - util.TimeToTicks(time.Now().UTC()),
 		TomeClientAlias: (*TomeClientAlias)(tome),
 	}
 
@@ -85,7 +85,7 @@ func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	}
 
 	// server unlock time
-	tome.UnlockTime = util.TicksToTime(client.UnlockTime)
+	tome.UnlockTime = client.UnlockTime
 
 	return nil
 }
@@ -124,7 +124,7 @@ func (tome *Tome) GetUnlockRemaining() string {
 	case TomeLocked:
 		return (time.Second * time.Duration(tome.GetData().TimeToUnlock)).String()
 	case TomeUnlocking:
-		return time.Until(tome.UnlockTime).String()
+		return time.Until(util.TicksToTime(tome.UnlockTime)).String()
 	}
 	return "-"
 }
@@ -137,7 +137,7 @@ func (tome *Tome) GetUnlockCost() int {
 	}
 
 	timeNow := util.TimeToTicks(time.Now())
-	unlockTime := util.TimeToTicks(tome.UnlockTime) - timeNow
+	unlockTime := tome.UnlockTime - timeNow
 	totalUnlockTime := util.TimeToTicks(time.Now().Add(time.Second * time.Duration(tomeData.TimeToUnlock))) - timeNow
 
 	return int(math.Ceil(float64(tomeData.GemsToUnlock) * float64(unlockTime / totalUnlockTime)))
@@ -147,14 +147,14 @@ func GetEmptyTome() (tome Tome) {
 	tome = Tome{
 		DataID: data.ToDataId(""),
 		State: TomeEmpty,
-		UnlockTime: util.TicksToTime(0),
+		UnlockTime: 0,
 	}
 	return
 }
 
 func (tome *Tome) StartUnlocking() {
 	tome.State = TomeUnlocking
-	tome.UnlockTime = time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second)
+	tome.UnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second))
 }
 
 func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
@@ -168,7 +168,7 @@ func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
 }
 
 func (tome *Tome) UpdateTome() {
-	if tome.State == TomeUnlocking && time.Now().After(tome.UnlockTime) {
+	if tome.State == TomeUnlocking && time.Now().After(util.TicksToTime(tome.UnlockTime)) {
 		tome.State = TomeUnlocked
 	} 
 }

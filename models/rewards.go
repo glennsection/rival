@@ -65,6 +65,16 @@ func (player *Player) GetReward(rewardId data.DataId) *Reward {
 	return player.CreateReward(rewardData, false)
 }
 
+func (player *Player) GetRewards(rewardIds []data.DataId) []*Reward {
+	rewards := make([]*Reward, 0)
+
+	for _, id := range rewardIds {
+		rewards = append(rewards, player.GetReward(id))
+	}
+
+	return rewards
+}
+
 func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward {
 	var rarities []int
 	var numRewarded []int
@@ -214,7 +224,7 @@ func (player *Player) AddRewards(reward *Reward, context *util.Context) (err err
 		if tome != nil {
 			player.Tomes[index].DataID = id
 			player.Tomes[index].State = TomeLocked
-			player.Tomes[index].UnlockTime = util.TicksToTime(0)
+			player.Tomes[index].UnlockTime = 0
 		}
 	}
 
