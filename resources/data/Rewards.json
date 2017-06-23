@@ -285,8 +285,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "5000",
-    "minStandardCurrency": "5000"
+    "maxStandardCurrency": "1000",
+    "minStandardCurrency": "1000"
   },
   {
     "id": "STORE_STANDARD_2_REWARD",
@@ -297,8 +297,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "10000",
-    "minStandardCurrency": "10000"
+    "maxStandardCurrency": "2000",
+    "minStandardCurrency": "2000"
   },
   {
     "id": "STORE_STANDARD_3_REWARD",
@@ -309,8 +309,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "25000",
-    "minStandardCurrency": "25000"
+    "maxStandardCurrency": "5000",
+    "minStandardCurrency": "5000"
   },
   {
     "id": "STORE_STANDARD_4_REWARD",
@@ -321,8 +321,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "50000",
-    "minStandardCurrency": "50000"
+    "maxStandardCurrency": "10000",
+    "minStandardCurrency": "10000"
   },
   {
     "id": "STORE_STANDARD_5_REWARD",
@@ -333,8 +333,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "150000",
-    "minStandardCurrency": "150000"
+    "maxStandardCurrency": "30000",
+    "minStandardCurrency": "30000"
   },
   {
     "id": "STORE_TOME_1_REWARD",

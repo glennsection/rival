@@ -16,36 +16,48 @@ func (player *Player) GetStoreCards(context *util.Context) []data.StoreData {
 	currentDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
 	tomorrow := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, 1))
 
+	storeCards := make([]data.StoreData, 0)
+
 	// ensure our card purchase counts are up to date
 	if player.PurchaseResetTime < currentDate {
 		player.PurchaseResetTime = util.TimeToTicks(time.Now())
+		player.SpecialOffers = map[string]data.StoreData {}
 		
 		for i,_ := range player.Cards {
 			player.Cards[i].PurchaseCount = 0
 		}
 
+		rand.Seed(player.PurchaseResetTime)
+
+		// get individual card offers
+		var cardTypes []string
+		if player.GetRankTier() == 6 {
+			cardTypes = []string{"COMMON","COMMON","RARE","EPIC","LEGENDARY"}
+		} else {
+			cardTypes = []string{"COMMON","COMMON","RARE","EPIC"}
+		}
+
+		for _,cardType := range cardTypes {
+			_,storeCard := player.GetStoreCard(cardType, storeCards)
+
+			if storeCard != nil {
+				storeCard.ExpirationDate = tomorrow
+				player.SpecialOffers[storeCard.Name] = *storeCard
+				storeCards = append(storeCards, *storeCard)
+			}
+		}
+
 		player.Save(context)
 	}
 
-	rand.Seed(player.PurchaseResetTime)
-
-	// get individual card offers
-	storeCards := make([]data.StoreData, 0)
-	var cardTypes []string
-	if player.GetRankTier() == 6 {
-		cardTypes = []string{"COMMON","COMMON","RARE","EPIC","LEGENDARY"}
-	} else {
-		cardTypes = []string{"COMMON","COMMON","RARE","EPIC"}
-	}
-
-	for _,cardType := range cardTypes {
-		_,storeCard := player.GetStoreCard(cardType, storeCards)
-
-		if storeCard != nil {
-			storeCard.ExpirationDate = tomorrow
-			storeCards = append(storeCards, *storeCard)
+	if len(storeCards) == 0 { //entering this block means the users card selection has not been reset in this call
+		for _, specialOffer := range player.SpecialOffers {
+			if specialOffer.Category == data.StoreCategoryCards {
+				storeCards = append(storeCards, specialOffer)
+			}
 		}
 	}
+	
 
 	return storeCards
 }
