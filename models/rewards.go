@@ -131,7 +131,7 @@ func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData) {
 		reward.StandardCurrency = rewardData.MinStandardCurrency + rand.Intn(rewardData.MaxStandardCurrency - rewardData.MinStandardCurrency + 1)
 	}
 }
-
+/*
 func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, allowDuplicates bool) {
 	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
 	reward.Cards = make([]data.DataId, 0)
@@ -164,6 +164,71 @@ func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, allow
 
 			reward.Cards = append(reward.Cards, card)
 			reward.NumRewarded = append(reward.NumRewarded, rewardData.CardAmounts[i])
+		}
+	}
+}*/
+
+func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, allowDuplicates bool) {
+	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
+	reward.Cards = make([]data.DataId, 0)
+	reward.NumRewarded = make([]int, 0)
+
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	for i := 0; i < len(rewardData.CardRarities); i++ {
+
+		totalCards := rewardData.CardAmounts[i]
+		cardInstances := rewardData.CardRarities[i]
+
+		if totalCards == 0 || cardInstances == 0 {
+			continue;
+		}
+
+
+		getCards := func(card *data.CardData) bool {
+			return card.Rarity == rarities[i] && card.Tier <= tier
+		}
+
+		cardSlice := data.GetCards(getCards)
+
+		cardCountFloor := totalCards / (cardInstances * 2)
+		if cardCountFloor == 0 {
+			cardCountFloor = 1
+		}
+
+		for j := 0; j < cardInstances; j++ {
+			if len(cardSlice) == 0 {
+				break
+			}
+
+			index := rand.Intn(len(cardSlice))
+
+			card := cardSlice[index]
+
+			if !allowDuplicates {
+				if index != (len(cardSlice) - 1) {
+					cardSlice[index] = cardSlice[len(cardSlice) - 1]
+				} 
+				cardSlice = cardSlice[:len(cardSlice) - 1]
+			}
+
+			var cardsRewarded int
+			if j == cardInstances - 1 {
+				cardsRewarded = totalCards
+			} else {
+				randMax := totalCards - (cardCountFloor * (cardInstances - j))
+
+				if randMax > 0 {
+					cardsRewarded = rand.Intn(randMax) + cardCountFloor
+				} else {
+					cardsRewarded = cardCountFloor
+				}
+
+				totalCards -= cardsRewarded
+			}
+
+			reward.Cards = append(reward.Cards, card)
+			reward.NumRewarded = append(reward.NumRewarded, cardsRewarded)
 		}
 	}
 }
