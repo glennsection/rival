@@ -3,6 +3,7 @@ package controllers
 import (
 	"bloodtales/config"
 	"bloodtales/system"
+	"bloodtales/models"
 	"bloodtales/util"
 )
 
@@ -35,6 +36,25 @@ func UserConnect(context *util.Context) {
 }
 
 func UserLogin(context *util.Context) {
+	// parse parameters
+	reset := context.Params.GetBool("reset", false)
+
+	// reset player data, if requested
+	if reset {
+		player, err := models.GetPlayerByUser(context, context.UserID)
+		if player == nil {
+			// create new player for user
+			player, err = models.CreatePlayer(context.UserID)
+			util.Must(err)
+
+			util.Must(player.Save(context))
+		} else {
+			util.Must(err)
+
+			util.Must(player.Reset(context))
+		}
+	}
+
 	// analytics tracking
 	InsertTracking(context, "login", nil, 0)
 
