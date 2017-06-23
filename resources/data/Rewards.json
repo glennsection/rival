@@ -2,7 +2,7 @@
 [
   {
     "id": "SOFT_CURRENCY_QUEST_REWARD",
-    "icon": "UI/Store/Item Icons/store_coins_pack_1",
+    "icon": "UI/Store/ItemIcons/store_coins_pack_1",
     "rewardType": "StandardCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -14,7 +14,7 @@
   },
   {
     "id": "PREMIUM_CURRENCY_QUEST_REWARD",
-    "icon": "UI/Store/Item Icons/store_blood_pack_1",
+    "icon": "UI/Store/ItemIcons/store_blood_pack_1",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -26,7 +26,7 @@
   },
   {
     "id": "PREMIUM_CURRENCY_QUEST_REWARD_WEEKLY",
-    "icon": "UI/Store/Item Icons/store_blood_pack_2",
+    "icon": "UI/Store/ItemIcons/store_blood_pack_2",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
