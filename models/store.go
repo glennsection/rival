@@ -122,5 +122,9 @@ func (player *Player) HandleCardPurchase(storeItem *data.StoreData) {
 	cardRef,_ := player.HasCard(id)
 	cardRef.PurchaseCount++
 	
+	if offer, exists := player.SpecialOffers[storeItem.Name]; exists {
+		offer.Cost = player.GetCardCost(id)
+	}
+
 	storeItem.Cost = player.GetCardCost(id)
 }
