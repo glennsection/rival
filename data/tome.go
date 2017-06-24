@@ -111,9 +111,9 @@ func GetTome(id DataId) (tome *TomeData) {
 
 // get the next tome the player has earned for winning a match
 func GetNextVictoryTomeID(winCount int) DataId {
-	fmt.Println(fmt.Sprintf("WIN COUNT: %d, TOME ID: %s", winCount, ToDataName(tomeOrder[(winCount - 1) % len(tomeOrder)])))
+	fmt.Println(fmt.Sprintf("WIN COUNT: %d, TOME ID: %s", winCount, ToDataName(tomeOrder[(winCount) % len(tomeOrder)])))
 
-	return tomeOrder[(winCount - 1) % len(tomeOrder)]
+	return tomeOrder[(winCount) % len(tomeOrder)]
 }
 
 func (tome *TomeData) GetImageSrc() string {
