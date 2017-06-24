@@ -163,13 +163,6 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_CREEP_ARCHER",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
             "cardId": "CARD_FARMER_HOUSE",
             "level": 1,
             "cardCount": 0,
