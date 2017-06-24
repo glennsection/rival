@@ -161,6 +161,13 @@ func (cache *Cache) RemoveScore(group string, id string) {
 	}
 }
 
+func (cache *Cache) ClearScores(group string) {
+	_, err := cache.redis.Do("DEL", group)
+	if err != nil {
+		log.Errorf("Redis error: %v", err)
+	}
+}
+
 func (cache *Cache) GetRank(group string, id string) int {
 	result, err := redis.Int(cache.redis.Do("ZRANK", group, id))
 	if err != nil {
