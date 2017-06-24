@@ -25,6 +25,7 @@ func init() {
 	loadDataFile("EpicCardLeveling", LoadEpicCardProgression)
 	loadDataFile("LegendaryCardLeveling", LoadLegendaryCardProgression)
 	loadDataFile("Tomes", LoadTomes)
+	loadDataFile("TomeOrder", LoadTomeOrder)
 	loadDataFile("PvPRanking", LoadRanks)
 	loadDataFile("Store", LoadStore)
 	loadDataFile("CardPurchaseCosts", LoadCardPurchaseCosts)

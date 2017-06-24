@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 	"fmt"
-	"math/rand"
 	"encoding/json"
 	"io/ioutil"
 	
@@ -348,28 +347,11 @@ func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *To
 		return
 	}
 
-	//next sort our TomeData by chance
-	compare := func(leftOperand *data.TomeData, rightOperand *data.TomeData) bool {
-		return leftOperand.Chance > rightOperand.Chance
-	}
-	tomes := data.GetTomeIdsSorted(compare)
+	(*tome).DataID = data.GetNextVictoryTomeID(player.WinCount)
+	(*tome).State = TomeLocked
+	(*tome).UnlockTime = 0
 
-	//now roll for a tome
-	rand.Seed(time.Now().UTC().UnixNano())
-	roll := rand.Float64() * 100
-
-	var accum float64
-	for _, id := range tomes {
-		tomeData := data.GetTome(id)
-		accum += tomeData.Chance
-		if roll <= accum {
-			(*tome).DataID = id
-			(*tome).State = TomeLocked
-			(*tome).UnlockTime = 0
-			break
-		}
-	}
-	return
+	return index, tome
 }
 
 func (player *Player) GetDrawCount() int {
