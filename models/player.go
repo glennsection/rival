@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 	"fmt"
-	"math/rand"
 	"encoding/json"
 	"io/ioutil"
 	
@@ -36,57 +35,58 @@ const (
 )
 
 type Player struct {
-	ID                  bson.ObjectId   		`bson:"_id,omitempty" json:"-"`
-	UserID              bson.ObjectId   		`bson:"us" json:"-"`
-	LastTime            time.Time       		`bson:"tz" json:"-"`
-	Name                string          		`bson:"-" json:"name"`
-	Tag                 string          		`bson:"-" json:"tag"`
-	XP                  int             		`bson:"xp" json:"xp"`
-	RankPoints          int             		`bson:"rk" json:"rankPoints"`
-	Rating              int             		`bson:"rt" json:"rating"`
+	ID                  bson.ObjectId				`bson:"_id,omitempty" json:"-"`
+	UserID              bson.ObjectId   			`bson:"us" json:"-"`
+	LastTime            time.Time       			`bson:"tz" json:"-"`
+	Name                string          			`bson:"-" json:"name"`
+	Tag                 string          			`bson:"-" json:"tag"`
+	XP                  int             			`bson:"xp" json:"xp"`
+	RankPoints          int             			`bson:"rk" json:"rankPoints"`
+	Rating              int             			`bson:"rt" json:"rating"`
 
-	WinCount            int             		`bson:"wc" json:"winCount"`
-	LossCount           int             		`bson:"lc" json:"lossCount"`
-	MatchCount          int             		`bson:"mc" json:"matchCount"`
+	WinCount            int             			`bson:"wc" json:"winCount"`
+	LossCount           int             			`bson:"lc" json:"lossCount"`
+	MatchCount          int             			`bson:"mc" json:"matchCount"`
 
-	StandardCurrency    int             		`bson:"cs" json:"standardCurrency"`
-	PremiumCurrency     int             		`bson:"cp" json:"premiumCurrency"`
-	Cards               []Card          		`bson:"cd" json:"cards"`
-	UncollectedCards    []Card          		`bson:"uc" json:"uncollectedCards"`
-	Decks               []Deck          		`bson:"ds" json:"decks"`
-	CurrentDeck         int             		`bson:"dc" json:"currentDeck"`
-	Tomes               []Tome          		`bson:"tm" json:"tomes"`
-	ArenaPoints         int             		`bson:"ap" json:"arenaPoints"`
-	FreeTomes           int             		`bson:"ft" json:"freeTomes"`
-	FreeTomeUnlockTime  int64           		`bson:"fu" json:"freeTomeUnlockTime"`
+	StandardCurrency    int             			`bson:"cs" json:"standardCurrency"`
+	PremiumCurrency     int             			`bson:"cp" json:"premiumCurrency"`
+	Cards               []Card          			`bson:"cd" json:"cards"`
+	UncollectedCards    []Card          			`bson:"uc" json:"uncollectedCards"`
+	Decks               []Deck          			`bson:"ds" json:"decks"`
+	CurrentDeck         int             			`bson:"dc" json:"currentDeck"`
+	Tomes               []Tome          			`bson:"tm" json:"tomes"`
+	ArenaPoints         int             			`bson:"ap" json:"arenaPoints"`
+	FreeTomes           int             			`bson:"ft" json:"freeTomes"`
+	FreeTomeUnlockTime  int64           			`bson:"fu" json:"freeTomeUnlockTime"`
 
-	QuestSlots 			[]QuestSlot 			`bson:"qu" json:"quests"`
-	QuestClearTime 		int64 					`bson:"qc" json:"questClearTime"`
+	QuestSlots 			[]QuestSlot 				`bson:"qu" json:"quests"`
+	QuestClearTime 		int64 						`bson:"qc" json:"questClearTime"`
 
-	GuildID             bson.ObjectId   		`bson:"gd,omitempty" json:"-"`
-	GuildRole           GuildRole       		`bson:"gr,omitempty" json:"-"`
+	GuildID             bson.ObjectId   			`bson:"gd,omitempty" json:"-"`
+	GuildRole           GuildRole       			`bson:"gr,omitempty" json:"-"`
 
-	DirtyMask           util.Bits      			`bson:"-" json:"-"`
+	DirtyMask           util.Bits      				`bson:"-" json:"-"`
 
-	PurchaseResetTime 	int64 		    		`bson:"pr" json:"-"`
+	PurchaseResetTime 	int64 		    			`bson:"pr" json:"-"`
+	SpecialOffers 		map[string]data.StoreData	`bson:"so"`
 }
 
 // client model
 type PlayerClient struct {
-	Name                string          		`json:"name"`
-	Tag                 string          		`json:"tag"`
-	XP                  int             		`json:"xp"`
-	RankPoints          int             		`json:"rankPoints"`
-	Rating              int             		`json:"rating"`
+	Name                string          			`json:"name"`
+	Tag                 string          			`json:"tag"`
+	XP                  int             			`json:"xp"`
+	RankPoints          int             			`json:"rankPoints"`
+	Rating              int             			`json:"rating"`
 
-	WinCount            int             		`json:"winCount"`
-	LossCount           int             		`json:"lossCount"`
-	MatchCount          int             		`json:"matchCount"`
+	WinCount            int             			`json:"winCount"`
+	LossCount           int             			`json:"lossCount"`
+	MatchCount          int             			`json:"matchCount"`
 
-	GuildRole           GuildRole       		`json:"guildRole"`
+	GuildRole           GuildRole       			`json:"guildRole"`
 
-	Online              bool            		`json:"online"`
-	LastOnline          int64           		`json:"lastOnline"`
+	Online              bool            			`json:"online"`
+	LastOnline          int64           			`json:"lastOnline"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
@@ -347,28 +347,11 @@ func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *To
 		return
 	}
 
-	//next sort our TomeData by chance
-	compare := func(leftOperand *data.TomeData, rightOperand *data.TomeData) bool {
-		return leftOperand.Chance > rightOperand.Chance
-	}
-	tomes := data.GetTomeIdsSorted(compare)
+	(*tome).DataID = data.GetNextVictoryTomeID(player.WinCount)
+	(*tome).State = TomeLocked
+	(*tome).UnlockTime = 0
 
-	//now roll for a tome
-	rand.Seed(time.Now().UTC().UnixNano())
-	roll := rand.Float64() * 100
-
-	var accum float64
-	for _, id := range tomes {
-		tomeData := data.GetTome(id)
-		accum += tomeData.Chance
-		if roll <= accum {
-			(*tome).DataID = id
-			(*tome).State = TomeLocked
-			(*tome).UnlockTime = 0
-			break
-		}
-	}
-	return
+	return index, tome
 }
 
 func (player *Player) GetDrawCount() int {

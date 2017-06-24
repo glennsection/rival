@@ -27,8 +27,14 @@ type TomeDataClient struct {
 	*TomeDataClientAlias
 }
 
+type TomeOrderClient struct {
+	ID 						string 		  `json:"id"`
+}
+
 // data map
 var tomes map[DataId]*TomeData
+
+var tomeOrder []DataId
 
 // implement Data interface
 func (data *TomeData) GetDataName() string {
@@ -38,6 +44,10 @@ func (data *TomeData) GetDataName() string {
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type TomesParsed struct {
 	Tomes []TomeData
+}
+
+type TomeOrderParsed struct {
+	TomeOrder []TomeOrderClient
 }
 
 // custom unmarshalling
@@ -78,35 +88,32 @@ func LoadTomes(raw []byte) {
 	}
 }
 
+func LoadTomeOrder(raw []byte) {
+	// parse
+	container := &TomeOrderParsed {}
+	util.Must(json.Unmarshal(raw, container))
+
+	// enter into system data
+	tomeOrder = make([]DataId, len(container.TomeOrder))
+	for i, tome := range container.TomeOrder {
+		//convert to data id
+		id := ToDataId(tome.ID)
+
+		// set val in slice
+		tomeOrder[i] = id
+	}
+}
+
 // get tome by server ID
 func GetTome(id DataId) (tome *TomeData) {
 	return tomes[id]
 }
 
-func GetTomeIdsSorted(compare func(*TomeData, *TomeData) bool) (tomeIds []DataId){
-	tomeIds = make([]DataId, 0)
+// get the next tome the player has earned for winning a match
+func GetNextVictoryTomeID(winCount int) DataId {
+	fmt.Println(fmt.Sprintf("WIN COUNT: %d, TOME ID: %s", winCount, ToDataName(tomeOrder[(winCount - 1) % len(tomeOrder)])))
 
-	for id, tomeData := range tomes {
-		if len(tomeIds) == 0 {
-			tomeIds = append(tomeIds, id)
-		} else {
-			for i, dataId := range tomeIds {
-
-				if compare(tomeData, tomes[dataId]) {
-					tomeIds = append(tomeIds, id)
-					copy(tomeIds[i+1:], tomeIds[i:])
-					tomeIds[i] = id
-					break
-				}
-
-				if i == (len(tomeIds) - 1) {
-					tomeIds = append(tomeIds, id)
-				} 
-			}
-		}
-	}
-
-	return 
+	return tomeOrder[(winCount - 1) % len(tomeOrder)]
 }
 
 func (tome *TomeData) GetImageSrc() string {
