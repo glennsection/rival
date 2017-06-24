@@ -413,7 +413,7 @@ func (player *Player) UpdatePlace(context *util.Context) {
 	matches := player.MatchCount
 	if matches > 0 {
 		// calculate placement score
-		winsFactor := player.WinCount * 1000000 / matches
+		winsFactor := (player.WinCount - player.LossCount) * 1000000 //   / matches
 		matchesFactor := matches * 1000
 		pointsFactor := player.ArenaPoints
 
@@ -424,6 +424,9 @@ func (player *Player) UpdatePlace(context *util.Context) {
 
 // HACK - inefficient
 func UpdateAllPlayersPlace(context *util.Context) {
+	// clear all previous places
+	context.Cache.ClearScores("Leaderboard")
+
 	var players []*Player
 	context.DB.C(PlayerCollectionName).Find(nil).All(&players)
 

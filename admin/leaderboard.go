@@ -45,7 +45,6 @@ func ViewLeaderboard(context *util.Context) {
 		}
 	}
 
-
 	// paginate players query
 	// pagination, err := context.Paginate(context.DB.C(models.PlayerCollectionName).Find(nil).Sort("lb"), DefaultPageSize)
 	// if err != nil {
