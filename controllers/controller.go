@@ -20,6 +20,7 @@ func HandleGame() {
 	handleGuild()
 	handleChat()
 	handleTracking()
+	handleDebug()
 }
 
 func handleGameAPI(pattern string, authType system.AuthenticationType, handler func(*util.Context)) {

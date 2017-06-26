@@ -274,22 +274,13 @@ func (player *Player) AddRewards(reward *Reward, context *util.Context) (err err
 		player.AddCards(id, (reward.NumRewarded[i] - overflow))
 	}
 
-	var tome *Tome
 	for _, id := range reward.Tomes {
 		//if the player has an open tome slot, add this tome
-		tome = nil
-		var index int
-		for i, tomeSlot := range player.Tomes {
-			if tomeSlot.State == TomeEmpty {
-				index = i
-				tome = &player.Tomes[i]
-				break
-			}
-		}
+		_, tome := player.GetEmptyTomeSlot()
 		if tome != nil {
-			player.Tomes[index].DataID = id
-			player.Tomes[index].State = TomeLocked
-			player.Tomes[index].UnlockTime = 0
+			tome.DataID = id
+			tome.State = TomeLocked
+			tome.UnlockTime = 0
 		}
 	}
 

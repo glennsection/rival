@@ -105,8 +105,12 @@ func LoadTomeOrder(raw []byte) {
 }
 
 // get tome by server ID
-func GetTome(id DataId) (tome *TomeData) {
-	return tomes[id]
+func GetTome(id DataId) (*TomeData) {
+	if tome, valid := tomes[id]; valid {
+		return tome
+	}
+
+	return nil
 }
 
 // get the next tome the player has earned for winning a match
