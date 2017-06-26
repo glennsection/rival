@@ -325,6 +325,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		return
 	}
 	isWinner := (outcome == MatchWin)
+	isLoser := (outcome == MatchLoss)
 
 	// look for cached match result
 	matchResult, foundResult := GetMatchResultByMatchId(context, roomID)
@@ -421,7 +422,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		if isWinner {
 			matchReward.TomeIndex, matchReward.Tome = player.AddVictoryTome(context)
 			player.WinCount += 1
-		} else {
+		} else if (isLoser) {
 			player.LossCount += 1
 		}
 		player.RankPoints += playerResults.RankPoints
