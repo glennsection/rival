@@ -105,15 +105,19 @@ func LoadTomeOrder(raw []byte) {
 }
 
 // get tome by server ID
-func GetTome(id DataId) (tome *TomeData) {
-	return tomes[id]
+func GetTome(id DataId) (*TomeData) {
+	if tome, valid := tomes[id]; valid {
+		return tome
+	}
+
+	return nil
 }
 
 // get the next tome the player has earned for winning a match
 func GetNextVictoryTomeID(winCount int) DataId {
-	fmt.Println(fmt.Sprintf("WIN COUNT: %d, TOME ID: %s", winCount, ToDataName(tomeOrder[(winCount - 1) % len(tomeOrder)])))
+	fmt.Println(fmt.Sprintf("WIN COUNT: %d, TOME ID: %s", winCount, ToDataName(tomeOrder[(winCount) % len(tomeOrder)])))
 
-	return tomeOrder[(winCount - 1) % len(tomeOrder)]
+	return tomeOrder[(winCount) % len(tomeOrder)]
 }
 
 func (tome *TomeData) GetImageSrc() string {

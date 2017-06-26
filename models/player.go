@@ -333,23 +333,13 @@ func (player *Player) GetLevel() int {
 }
 
 func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *Tome) {
-	//first check to see if the player has an available tome slot, else return
-	tome = nil
-	index = -1
-	for i, tomeSlot := range player.Tomes {
-		if tomeSlot.State == TomeEmpty {
-			index = i
-			tome = &player.Tomes[i]
-			break
-		}
-	}
-	if tome == nil {
-		return
-	}
+	index, tome = player.GetEmptyTomeSlot()
 
-	(*tome).DataID = data.GetNextVictoryTomeID(player.WinCount)
-	(*tome).State = TomeLocked
-	(*tome).UnlockTime = 0
+	if tome != nil {
+		tome.DataID = data.GetNextVictoryTomeID(player.WinCount)
+		tome.State = TomeLocked
+		tome.UnlockTime = 0
+	}
 
 	return index, tome
 }

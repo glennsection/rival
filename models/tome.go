@@ -152,6 +152,21 @@ func GetEmptyTome() (tome Tome) {
 	return
 }
 
+func (player *Player) GetEmptyTomeSlot() (index int, tome *Tome) {
+	tome = nil
+	index = -1
+
+	for i, tomeSlot := range player.Tomes {
+		if tomeSlot.State == TomeEmpty {
+			tome = &player.Tomes[i]
+			index = i
+			break
+		}
+	}
+
+	return
+}
+
 func (tome *Tome) StartUnlocking() {
 	tome.State = TomeUnlocking
 	tome.UnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second))
