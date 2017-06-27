@@ -27,7 +27,7 @@ func authenticate(context *util.Context, authType AuthenticationType) (err error
 		return
 
 	case DeviceAuthentication:
-		err = authenticateDevice(context, true)
+		err = authenticateCredentials(context, true)
 
 	case PasswordAuthentication:
 		err = authenticatePassword(context, true)
@@ -40,7 +40,7 @@ func authenticate(context *util.Context, authType AuthenticationType) (err error
 		if err == nil {
 			err = authenticateToken(context, false)
 			if err == nil {
-				err = authenticateDevice(context, true)
+				err = authenticateCredentials(context, true)
 			}
 		}
 	}

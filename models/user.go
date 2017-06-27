@@ -20,6 +20,13 @@ type Credential struct {
 	ID           string        `bson:"id" json:"id"`
 }
 
+// user device data
+type Device struct {
+	ID           string        `bson:"id" json:"id"`
+	Credentials  []Credential  `bson:"cds,omitempty" json:"-"`
+}
+
+// user data
 type User struct {
 	ID           bson.ObjectId `bson:"_id,omitempty" json:"-"`
 	Admin        bool          `bson:"ad" json:"-"`
@@ -28,7 +35,9 @@ type User struct {
 	Email        string        `bson:"em,omitempty" json:"-"`
 	CreatedTime  time.Time     `bson:"t0" json:"created"`
 
-	Credentials  []Credential  `bson:"cds" json:"-"`
+	Credentials  []Credential  `bson:"cds,omitempty" json:"-"`
+	Devices      []Device      `bson:"dvs" json"-"`
+
 	Tag          string        `bson:"tag" json:"tag"`
 	Name         string        `bson:"nm" json"name"`
 }
@@ -48,6 +57,15 @@ func ensureIndexUser(database *mgo.Database) {
 	// Credentials index
 	util.Must(c.EnsureIndex(mgo.Index {
 		Key:        []string { "cds.pv", "cds.id" },
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}))
+
+	// Devices index
+	util.Must(c.EnsureIndex(mgo.Index {
+		Key:        []string { "dvs.id" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
@@ -74,8 +92,8 @@ func (user *User) HashPassword(password string) {
 	user.Password = hash
 }
 
-func InsertUserWithCredentials(context *util.Context, credentials []Credential) (user *User, err error) {
-	// TODO check for existing user?  - prevented by database
+func InsertUserWithDevice(context *util.Context, uuid string, credentials []Credential) (user *User, err error) {
+	// TODO check for existing user?  - prevented by database?
 
 	// generate unique user tag
 	tag := util.GenerateTag()
@@ -84,6 +102,9 @@ func InsertUserWithCredentials(context *util.Context, credentials []Credential) 
 	user = &User {
 		ID: bson.NewObjectId(),
 		Credentials: credentials,
+		Devices: []Device {
+			Device { ID: uuid },
+		},
 		Tag: tag,
 		CreatedTime: time.Now(),
 	}
@@ -115,6 +136,11 @@ func InsertUserWithUsernameAndDatabase(database *mgo.Database, username string, 
 
 func GetUserById(context *util.Context, id bson.ObjectId) (user *User, err error) {
 	err = context.DB.C(UserCollectionName).Find(bson.M { "_id": id } ).One(&user)
+	return
+}
+
+func GetUserByDevice(context *util.Context, uuid string) (user *User, err error) {
+	err = context.DB.C(UserCollectionName).Find(bson.M { "dvs.id": uuid } ).One(&user)
 	return
 }
 
@@ -171,6 +197,30 @@ func LoginUser(context *util.Context, username string, password string) (user *U
 		user = nil
 	}
 	return
+}
+
+func (user *User) AppendCredentials(context *util.Context, credentials []Credential) error {
+	appended := false
+
+	for _, credential := range credentials {
+		found := false
+
+		for _, previousCredential := range user.Credentials {
+			if previousCredential.Provider == credential.Provider && previousCredential.ID == credential.ID {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			user.Credentials = append(user.Credentials, credential)
+		}
+	}
+
+	if appended {
+		return user.Save(context)
+	}
+	return nil
 }
 
 func (user *User) GetCredentialsString() (string) {
