@@ -78,11 +78,11 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_SPELL_FROST_ORB",
-                "CARD_BOMB_ZOMBIE",
+                "CARD_FARMER",
+                "CARD_MARKSMAN",
                 "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
+                "CARD_FARMER_HOUSE",
                 "CARD_DWARVES"
             ]
         },
@@ -91,11 +91,11 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_SPELL_FROST_ORB",
-                "CARD_BOMB_ZOMBIE",
+                "CARD_FARMER",
+                "CARD_MARKSMAN",
                 "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
+                "CARD_FARMER_HOUSE",
                 "CARD_DWARVES"
             ]
         },
@@ -104,11 +104,11 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_SPELL_FROST_ORB",
-                "CARD_BOMB_ZOMBIE",
+                "CARD_FARMER",
+                "CARD_MARKSMAN",
                 "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
+                "CARD_FARMER_HOUSE",
                 "CARD_DWARVES"
             ]
         }
