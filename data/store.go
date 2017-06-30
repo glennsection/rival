@@ -156,6 +156,8 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	} else {
 		if date, err := time.Parse("2006-01-02", client.AvailableDate); err == nil {
 			storeItemData.AvailableDate = util.TimeToTicks(date)
+		} else {
+			storeItemData.AvailableDate = 0
 		}
 	}
 
@@ -165,6 +167,8 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	} else {
 		if date, err := time.Parse("2006-01-02", client.ExpirationDate); err == nil {
 			storeItemData.ExpirationDate = util.TimeToTicks(date)
+		} else {
+			storeItemData.ExpirationDate = 0
 		}
 	}
 
@@ -249,7 +253,7 @@ func StoreCategoryToString(val StoreCategory) (string, error) {
 	case StoreCategoryStandardCurrency:
 		return "StandardCurrency", nil
 	case StoreCategorySpecialOffers:
-		return "SpecialOffer", nil
+		return "SpecialOffers", nil
 	}
 	
 	return "", errors.New("Invalid value passed as StoreCategory")
@@ -265,7 +269,7 @@ func StringToStoreCategory(val string) (StoreCategory, error) {
 		return StoreCategoryCards, nil
 	case "StandardCurrency":
 		return StoreCategoryStandardCurrency, nil
-	case "SpecialOffer":
+	case "SpecialOffers":
 		return StoreCategorySpecialOffers, nil
 	}
 

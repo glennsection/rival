@@ -187,8 +187,8 @@ func (player *Player) generateStoreItem(storeItemData *data.StoreItemData) (*Sto
 			expirationDate = customExpDate
 		} else {
 			// generate a date and store it
-			year, month, day := time.Now().UTC().AddDate(0, 0, storeItemData.Duration).Date()
-			expirationDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
+			year, month, day := time.Now().UTC().Date() 
+			expirationDate = util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, storeItemData.Duration))
 
 			if storeItemData.ExpirationDate > 0 && storeItemData.ExpirationDate < expirationDate {
 				expirationDate = storeItemData.ExpirationDate
