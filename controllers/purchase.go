@@ -17,25 +17,25 @@ func handlePurchase() {
 
 func Purchase(context *util.Context) {
 	// parse parameters
-	itemId := context.Params.GetRequiredString("itemId")
+	id := context.Params.GetRequiredString("id")
 
 	// get player
 	player := GetPlayer(context)
 
-	// get store item
-	storeItem := data.GetStoreItem(data.ToDataId(itemId))
-	if storeItem == nil {
-		// item is not a default store item so check to see if it is a card for sale
-		cards := player.GetStoreCards(context)
-		for _, card := range cards {
-			if itemId == card.Name {
-				storeItem = &card
-				break
-			}
-		}
+	// get current offers
+	currentOffers := player.GetCurrentStoreOffers(context)
 
-		if storeItem == nil {
-			context.Fail("Invalid store purchase")
+
+	storeItem, valid := currentOffers[id]
+	if !valid {
+		context.Fail("Invalid store purchase")
+		return
+	}
+
+	// check if this is a one time purchase item
+	if storeItem.IsOneTimeOffer {
+		if _, hasEntry := player.Store.Purchases[storeItem.Name]; hasEntry {
+			context.Fail("Item is a one-time offer. Cannot purchase again.")
 			return
 		}
 	}
@@ -99,10 +99,12 @@ func Purchase(context *util.Context) {
 		}
 		
 	case data.StoreCategoryCards:
-		player.HandleCardPurchase(storeItem)
+		player.HandleCardPurchase(&storeItem)
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 		context.SetData("storeItem", storeItem) //include the updated store item
 	}
+
+	player.RecordPurchase(storeItem.Name)
 
 	InsertTracking(context, "purchase", bson.M { "time": util.TimeToTicks(time.Now().UTC()),
 													"productId":storeItem.Name,

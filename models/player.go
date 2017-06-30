@@ -67,8 +67,7 @@ type Player struct {
 
 	DirtyMask           util.Bits      				`bson:"-" json:"-"`
 
-	PurchaseResetTime 	int64 		    			`bson:"pr" json:"-"`
-	SpecialOffers 		map[string]data.StoreData	`bson:"so"`
+	Store 			 	StoreHistory		 		`bson:"sh"`
 }
 
 // client model
@@ -124,8 +123,11 @@ func (player *Player) loadDefaults() (err error) {
 		return
 	}
 
-	//assign starting quests
+	// assign starting quests
 	player.SetupQuestDefaults()
+
+	// setup store data
+	player.InitStore()
 
 	err = json.Unmarshal(file, player)
 	return

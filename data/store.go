@@ -1,7 +1,9 @@
 package data
 
 import (
+	"fmt"
 	"time"
+	"errors"
 	"strconv"
 	"encoding/json"
 
@@ -31,12 +33,10 @@ const (
 )
 
 // server data
-type StoreData struct {
+type StoreItemData struct {
 	Name                    string
 	DisplayName 			string
 	Description 			string
-	SpritePaths             string // no need to convert this to an array since we have no use for it on the server
-	SpriteTexts 			string // see above
 
 	ItemID                  string
 	Category                StoreCategory
@@ -46,19 +46,19 @@ type StoreData struct {
 	Cost                    float64
 
 	Availability 			AvailabilityType
+	League 					int
 	IsOneTimeOffer 			bool
 	AvailableDate 			int64
 	ExpirationDate 			int64
+	Duration 				int
 }
 
 // client data
-type StoreDataClientAlias StoreData
-type StoreDataClient struct {
+type StoreItemDataClientAlias StoreItemData
+type StoreItemDataClient struct {
 	Name                    string        `json:"id"`
 	DisplayName 			string 		  `json:"displayName"`
 	Description 			string 		  `json:"description"`
-	SpritePaths             string        `json:"spritePaths"`
-	SpriteTexts 			string 		  `json:"spriteTexts`
 
 	ItemID                  string        `json:"itemId"`
 	Category                string        `json:"category"`
@@ -68,9 +68,11 @@ type StoreDataClient struct {
 	Cost                    float64       `json:"cost,string"`
 
 	Availability 			string 		  `json:"availability"`
+	League 					string 		  `json:"league"`
 	IsOneTimeOffer 			bool 		  `json:"isOneTimeOffer,string"`
 	AvailableDate 			string 		  `json:"availableDate"`
 	ExpirationDate 			string 		  `json:"expirationDate"`
+	Duration 				string 		  `json:"duration"`
 }
 
 type CardPurchaseCost struct {
@@ -79,20 +81,19 @@ type CardPurchaseCost struct {
 }
 
 // store item data map
-var storeItems map[DataId]*StoreData
-//var specialOffers map[DataId]*SpecialOffer
+var storeItems map[DataId]*StoreItemData
 
 // card purchasing data map
 var cardPurchaseCosts map[string][]int
 
 // implement Data interface
-func (data *StoreData) GetDataName() string {
+func (data *StoreItemData) GetDataName() string {
 	return data.Name
 }
 
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type StoreParsed struct {
-	Store []StoreData
+	Store []StoreItemData
 }
 
 type CardPurchaseCostsParsed struct {
@@ -100,145 +101,81 @@ type CardPurchaseCostsParsed struct {
 }
 
 // custom unmarshalling
-func (storeItem *StoreData) UnmarshalJSON(raw []byte) error {
+func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	// create client model
-	client := &StoreDataClient {} //alias doesn't work for some reason
+	client := &StoreItemDataClient {} //alias doesn't work for some reason
 
 	// unmarshal to client model
 	if err := json.Unmarshal(raw, &client); err != nil {
 		return err
 	}
 
-	storeItem.Name = client.Name
-	storeItem.DisplayName = client.DisplayName
-	storeItem.Description = client.Description
-	storeItem.SpritePaths = client.SpritePaths
-	storeItem.SpriteTexts = client.SpriteTexts
-	storeItem.ItemID = client.ItemID
-	storeItem.Cost = client.Cost
-	storeItem.IsOneTimeOffer = client.IsOneTimeOffer
+	storeItemData.Name = client.Name
+	storeItemData.DisplayName = client.DisplayName
+	storeItemData.Description = client.Description
+	storeItemData.ItemID = client.ItemID
+	storeItemData.Cost = client.Cost
+	storeItemData.IsOneTimeOffer = client.IsOneTimeOffer
 
 	// server reward ids
-	storeItem.RewardIDs = make([]DataId, 0)
+	storeItemData.RewardIDs = make([]DataId, 0)
 
 	clientRewards := util.StringToStringArray(client.RewardIDs)
 	for _,id := range clientRewards {
-		storeItem.RewardIDs = append(storeItem.RewardIDs, ToDataId(id))
+		storeItemData.RewardIDs = append(storeItemData.RewardIDs, ToDataId(id))
 	}
 
+	var err error
+	err = nil
 
 	// server category
-	switch client.Category {
-	case "PremiumCurrency":
-		storeItem.Category = StoreCategoryPremiumCurrency
-	case "Tomes":
-		storeItem.Category = StoreCategoryTomes
-	case "Cards":
-		storeItem.Category = StoreCategoryCards
-	case "StandardCurrency":
-		storeItem.Category = StoreCategoryStandardCurrency
-	default:
-		storeItem.Category = StoreCategorySpecialOffers
-	}
+	if storeItemData.Category, err = StringToStoreCategory(client.Category); err != nil {
+		panic(err)
+	} 
 
 	// server currency
-	switch client.Currency {
-	case "Real":
-		storeItem.Currency = CurrencyReal
-	case "Premium":
-		storeItem.Currency = CurrencyPremium
-	default:
-		storeItem.Currency = CurrencyStandard
+	if storeItemData.Currency, err = StringToCurrencyType(client.Currency); err != nil {
+		panic(err)
 	}
-
+	
 	// server availability
-	switch client.Availability {
-	case "Limited":
-		storeItem.Availability = Availability_Limited
-	default:
-		storeItem.Availability = Availability_Permanent
+	if storeItemData.Availability, err = StringToAvailabilityType(client.Availability); err != nil {
+		panic(err)
 	}
 
+	// server League
+	if num, err := strconv.ParseInt(client.League, 10, 32); err == nil {
+		storeItemData.League = int(num)
+	} else {
+		storeItemData.League = 0
+	}
+
+	// server AvailableDate
 	if num, err := strconv.ParseInt(client.AvailableDate, 10, 64); err == nil {
-		storeItem.AvailableDate = num
+		storeItemData.AvailableDate = num
 	} else {
 		if date, err := time.Parse("2006-01-02", client.AvailableDate); err == nil {
-			storeItem.AvailableDate = util.TimeToTicks(date)
+			storeItemData.AvailableDate = util.TimeToTicks(date)
 		}
 	}
 
+	// server ExpirationDate
 	if num, err := strconv.ParseInt(client.ExpirationDate, 10, 64); err == nil {
-		storeItem.ExpirationDate = num
+		storeItemData.ExpirationDate = num
 	} else {
 		if date, err := time.Parse("2006-01-02", client.ExpirationDate); err == nil {
-			storeItem.ExpirationDate = util.TimeToTicks(date)
+			storeItemData.ExpirationDate = util.TimeToTicks(date)
 		}
+	}
+
+	// server Duration
+	if num, err := strconv.ParseInt(client.Duration, 10, 32); err == nil {
+		storeItemData.Duration = int(num)
+	} else {
+		storeItemData.Duration = 0
 	}
 
 	return nil
-}
-
-// custom marshalling
-func (storeItem *StoreData) MarshalJSON() ([]byte, error) {
-	client := &StoreDataClient {
-		Name: storeItem.Name,
-		DisplayName: storeItem.DisplayName,
-		Description: storeItem.Description,
-		SpritePaths: storeItem.SpritePaths,
-		SpriteTexts: storeItem.SpriteTexts,
-		ItemID: storeItem.ItemID,
-		Cost: storeItem.Cost,
-		IsOneTimeOffer: storeItem.IsOneTimeOffer,
-	}
-
-	// client reward ids
-	clientRewards := make([]string, 0)
-	for _,id := range storeItem.RewardIDs {
-		clientRewards = append(clientRewards, ToDataName(id))
-	}
-	client.RewardIDs = util.StringArrayToString(clientRewards)
-
-	// client category
-	switch storeItem.Category {
-	case StoreCategoryPremiumCurrency:
-		client.Category = "PremiumCurrency"
-	case StoreCategoryTomes:
-		client.Category = "Tomes"
-	case StoreCategoryCards:
-		client.Category = "Cards"
-	case StoreCategoryStandardCurrency:
-		client.Category = "StandardCurrency"
-	default:
-		client.Category = "SpecialOffers"
-	}
-
-	// client currency
-	switch storeItem.Currency {
-	case CurrencyReal:
-		client.Currency = "Real"
-	case CurrencyPremium:
-		client.Currency = "Premium"
-	default:
-		client.Currency = "Standard"
-	}
-
-	// client availability
-	switch storeItem.Availability {
-	case Availability_Limited:
-		client.Availability = "Limited"
-	default:
-		client.Availability = "Permanent"
-	}
-
-	if storeItem.AvailableDate > 0 {
-		client.AvailableDate = strconv.FormatInt(storeItem.AvailableDate - util.TimeToTicks(time.Now().UTC()), 10)
-	}
-
-	if storeItem.ExpirationDate > 0 {
-		client.ExpirationDate = strconv.FormatInt(storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC()), 10)
-	}
-
-	return json.Marshal(client)
 }
 
 // data processor
@@ -248,7 +185,7 @@ func LoadStore(raw []byte) {
 	util.Must(json.Unmarshal(raw, container))
 
 	// enter into system data
-	storeItems = map[DataId]*StoreData {}
+	storeItems = map[DataId]*StoreItemData {}
 	for i, storeItem := range container.Store {
 		name := storeItem.GetDataName()
 
@@ -274,21 +211,12 @@ func LoadCardPurchaseCosts(raw []byte) {
 }
 
 // get store item by server ID
-func GetStoreItem(id DataId) (store *StoreData) {
+func GetStoreItemData(id DataId) (store *StoreItemData) {
 	return storeItems[id]
 }
 
-func GetStoreItems() []StoreData {
-	items := make([]StoreData, 0)
-	currentTime := util.TimeToTicks(time.Now().UTC())
-
-	for _, value := range storeItems {
-		if value.Availability == Availability_Permanent || value.AvailableDate < currentTime && currentTime < value.ExpirationDate {
-			items = append(items, *value)
-		}
-	}
-
-	return items
+func GetStoreItemDataCollection() (map[DataId]*StoreItemData) {
+	return storeItems
 }
 
 // cards can't be purchased past a certain level specific to each rarity. this function
@@ -308,4 +236,86 @@ func GetCardCost(rarity string, level int) int {
 	}
 
 	return cardPurchaseCosts[rarity][level]
+}
+
+func StoreCategoryToString(val StoreCategory) (string, error) {
+	switch val {
+	case StoreCategoryPremiumCurrency:
+		return "PremiumCurrency", nil
+	case StoreCategoryTomes:
+		return "Tomes", nil
+	case StoreCategoryCards:
+		return "Cards", nil
+	case StoreCategoryStandardCurrency:
+		return "StandardCurrency", nil
+	case StoreCategorySpecialOffers:
+		return "SpecialOffer", nil
+	}
+	
+	return "", errors.New("Invalid value passed as StoreCategory")
+}
+
+func StringToStoreCategory(val string) (StoreCategory, error) {
+	switch val {
+	case "PremiumCurrency":
+		return StoreCategoryPremiumCurrency, nil
+	case "Tomes":
+		return StoreCategoryTomes, nil
+	case "Cards":
+		return StoreCategoryCards, nil
+	case "StandardCurrency":
+		return StoreCategoryStandardCurrency, nil
+	case "SpecialOffer":
+		return StoreCategorySpecialOffers, nil
+	}
+
+	return StoreCategorySpecialOffers, errors.New(fmt.Sprintf("Cannot convert %s to StoreCategory", val))
+}
+
+func CurrencyTypeToString(val CurrencyType) (string, error) {
+	switch val {
+	case CurrencyReal:
+		return "Real", nil
+	case CurrencyPremium:
+		return "Premium", nil
+	case CurrencyStandard:
+		return "Standard", nil
+	}
+
+	return "", errors.New("Invalid value passed as CurrencyType")
+}
+
+func StringToCurrencyType(val string) (CurrencyType, error) {
+	switch val {
+	case "Real":
+		return CurrencyReal, nil
+	case "Premium":
+		return CurrencyPremium, nil
+	case "Standard":
+		return CurrencyStandard, nil
+	}
+
+	return CurrencyStandard, errors.New(fmt.Sprintf("Cannot convert %s to CurrencyType", val))
+}
+
+func AvailabilityTypeToString(val AvailabilityType) (string, error) {
+	switch val {
+	case Availability_Limited:
+		return "Limited", nil
+	case Availability_Permanent:
+		return "Permanent", nil
+	}
+
+	return "", errors.New("Invalid value passed as AvailabilityType")
+}
+
+func StringToAvailabilityType(val string) (AvailabilityType, error) {
+	switch val {
+	case "Limited":
+		return Availability_Limited, nil
+	case "Permanent":
+		return Availability_Permanent, nil
+	}
+
+	return Availability_Permanent, errors.New(fmt.Sprintf("Cannot convert %s to AvailabilityType", val))
 }

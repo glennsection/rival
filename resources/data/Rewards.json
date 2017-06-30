@@ -3,6 +3,7 @@
   {
     "id": "SOFT_CURRENCY_QUEST_REWARD",
     "icon": "UI/Store/ItemIcons/store_coins_pack_1",
+    "displayText": "",
     "rewardType": "StandardCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -15,6 +16,7 @@
   {
     "id": "PREMIUM_CURRENCY_QUEST_REWARD",
     "icon": "UI/Store/ItemIcons/store_blood_pack_1",
+    "displayText": "",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -27,6 +29,7 @@
   {
     "id": "PREMIUM_CURRENCY_QUEST_REWARD_WEEKLY",
     "icon": "UI/Store/ItemIcons/store_blood_pack_2",
+    "displayText": "",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -39,6 +42,7 @@
   {
     "id": "TOME_QUEST_REWARD_COMMON",
     "icon": "UI/Tomes/Sprites/tome_COMMON",
+    "displayText": "",
     "rewardType": "Tome",
     "tomes": "[TOME_COMMON]",
     "cardRarities": "",
@@ -51,6 +55,7 @@
   {
     "id": "TOME_QUEST_REWARD_RARE",
     "icon": "UI/Tomes/Sprites/tome_RARE",
+    "displayText": "",
     "rewardType": "Tome",
     "tomes": "[TOME_RARE]",
     "cardRarities": "",
@@ -63,6 +68,7 @@
   {
     "id": "TOME_QUEST_REWARD_EPIC",
     "icon": "UI/Tomes/Sprites/tome_EPIC",
+    "displayText": "",
     "rewardType": "Tome",
     "tomes": "[TOME_EPIC]",
     "cardRarities": "",
@@ -75,6 +81,7 @@
   {
     "id": "TOME_QUEST_REWARD_LEGENDARY",
     "icon": "UI/Tomes/Sprites/tome_LEGENDARY",
+    "displayText": "",
     "rewardType": "Tome",
     "tomes": "[TOME_LEGENDARY]",
     "cardRarities": "",
@@ -87,6 +94,7 @@
   {
     "id": "TOME_QUEST_REWARD_EXAMPLE",
     "icon": "UI/Tomes/Sprites/tome_LEGENDARY",
+    "displayText": "",
     "rewardType": "Tome",
     "tomes": "[TOME_LEGENDARY,TOME_LEGENDARY,TOME_LEGENDARY]",
     "cardRarities": "",
@@ -99,6 +107,7 @@
   {
     "id": "CARD_QUEST_REWARD_COMMON",
     "icon": "UI/Cards/Cardbacks/cardback_common",
+    "displayText": "",
     "rewardType": "Card",
     "tomes": "",
     "cardRarities": "[1,0,0,0]",
@@ -111,6 +120,7 @@
   {
     "id": "CARD_QUEST_REWARD_RARE",
     "icon": "UI/Cards/Cardbacks/cardback_rare",
+    "displayText": "",
     "rewardType": "Card",
     "tomes": "",
     "cardRarities": "[0,1,0,0]",
@@ -123,6 +133,7 @@
   {
     "id": "CARD_QUEST_REWARD_EPIC",
     "icon": "UI/Cards/Cardbacks/cardback_epic",
+    "displayText": "",
     "rewardType": "Card",
     "tomes": "",
     "cardRarities": "[0,0,1,0]",
@@ -135,6 +146,7 @@
   {
     "id": "CARD_QUEST_REWARD_LEGENDARY",
     "icon": "UI/Cards/Cardbacks/cardback_legendary",
+    "displayText": "",
     "rewardType": "Card",
     "tomes": "",
     "cardRarities": "[0,0,0,1]",
@@ -147,6 +159,7 @@
   {
     "id": "TOME_COMMON_REWARD",
     "icon": "",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -159,6 +172,7 @@
   {
     "id": "TOME_RARE_REWARD",
     "icon": "",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,0,0]",
@@ -171,6 +185,7 @@
   {
     "id": "TOME_EPIC_REWARD",
     "icon": "",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,1,0]",
@@ -183,6 +198,7 @@
   {
     "id": "TOME_LEGENDARY_REWARD",
     "icon": "",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[1,2,1,2]",
@@ -195,6 +211,7 @@
   {
     "id": "FREE_TOME_REWARD",
     "icon": "",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -207,6 +224,7 @@
   {
     "id": "ARENA_TOME_REWARD",
     "icon": "",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,0,0]",
@@ -218,7 +236,8 @@
   },
   {
     "id": "STORE_PREMIUM_1_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_blood_pack_1]",
+    "icon": "UI/Store/ItemIcons/store_blood_pack_1",
+    "displayText": "",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -230,7 +249,8 @@
   },
   {
     "id": "STORE_PREMIUM_2_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_blood_pack_2]",
+    "icon": "UI/Store/ItemIcons/store_blood_pack_2",
+    "displayText": "",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -242,7 +262,8 @@
   },
   {
     "id": "STORE_PREMIUM_3_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_blood_pack_3]",
+    "icon": "UI/Store/ItemIcons/store_blood_pack_3",
+    "displayText": "",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -254,7 +275,8 @@
   },
   {
     "id": "STORE_PREMIUM_4_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_blood_pack_4]",
+    "icon": "UI/Store/ItemIcons/store_blood_pack_4",
+    "displayText": "",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -266,7 +288,8 @@
   },
   {
     "id": "STORE_PREMIUM_5_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_blood_pack_5]",
+    "icon": "UI/Store/ItemIcons/store_blood_pack_5",
+    "displayText": "",
     "rewardType": "PremiumCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -278,7 +301,8 @@
   },
   {
     "id": "STORE_STANDARD_1_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_coins_pack_1]",
+    "icon": "UI/Store/ItemIcons/store_coins_pack_1",
+    "displayText": "",
     "rewardType": "StandardCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -290,7 +314,8 @@
   },
   {
     "id": "STORE_STANDARD_2_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_coins_pack_2]",
+    "icon": "UI/Store/ItemIcons/store_coins_pack_2",
+    "displayText": "",
     "rewardType": "StandardCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -302,7 +327,8 @@
   },
   {
     "id": "STORE_STANDARD_3_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_coins_pack_3]",
+    "icon": "UI/Store/ItemIcons/store_coins_pack_3",
+    "displayText": "",
     "rewardType": "StandardCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -314,7 +340,8 @@
   },
   {
     "id": "STORE_STANDARD_4_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_coins_pack_4]",
+    "icon": "UI/Store/ItemIcons/store_coins_pack_4",
+    "displayText": "",
     "rewardType": "StandardCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -326,7 +353,8 @@
   },
   {
     "id": "STORE_STANDARD_5_REWARD",
-    "icon": "[UI/Store/ItemIcons/store_coins_pack_5]",
+    "icon": "UI/Store/ItemIcons/store_coins_pack_5",
+    "displayText": "",
     "rewardType": "StandardCurrency",
     "tomes": "",
     "cardRarities": "",
@@ -338,7 +366,8 @@
   },
   {
     "id": "STORE_TOME_1_REWARD",
-    "icon": "[UI/Tomes/Sprites/tome_COMMON]",
+    "icon": "UI/Tomes/Sprites/tome_COMMON",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -350,7 +379,8 @@
   },
   {
     "id": "STORE_TOME_2_REWARD",
-    "icon": "[UI/Tomes/Sprites/tome_UNCOMMON]",
+    "icon": "UI/Tomes/Sprites/tome_UNCOMMON",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,0,0]",
@@ -362,7 +392,8 @@
   },
   {
     "id": "STORE_TOME_3_REWARD",
-    "icon": "[UI/Tomes/Sprites/tome_RARE]",
+    "icon": "UI/Tomes/Sprites/tome_RARE",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,1,0]",
@@ -375,6 +406,7 @@
   {
     "id": "TOME_FREE_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[2,1,0,0]",
@@ -387,6 +419,7 @@
   {
     "id": "TOME_BATTLE_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,0,0]",
@@ -399,6 +432,7 @@
   {
     "id": "TOME_VICTORY_01_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -411,6 +445,7 @@
   {
     "id": "TOME_VICTORY_02_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,0,0]",
@@ -423,6 +458,7 @@
   {
     "id": "TOME_SHOP_01_REWARD",
     "icon": "UI/Tomes/Sprites/tome_CROSS",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,1,0]",
@@ -435,6 +471,7 @@
   {
     "id": "TOME_SHOP_02_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[1,2,1,2]",
@@ -447,6 +484,7 @@
   {
     "id": "TOME_SHOP_03_REWARD",
     "icon": "UI/Tomes/Sprites/tome_GOLD",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,2,1,1]",
@@ -459,6 +497,7 @@
   {
     "id": "TOME_SPECIAL_01_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -471,6 +510,7 @@
   {
     "id": "TOME_SPECIAL_02_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -483,6 +523,7 @@
   {
     "id": "TOME_SPECIAL_03_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -495,6 +536,7 @@
   {
     "id": "TOME_SPECIAL_04_REWARD",
     "icon": "UI/Tomes/Sprites/tome_BLOODSTONE",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
@@ -507,6 +549,7 @@
   {
     "id": "TOME_QUEST_01_REWARD",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
+    "displayText": "",
     "rewardType": "TomeReward",
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
