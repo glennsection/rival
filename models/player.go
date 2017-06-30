@@ -388,7 +388,7 @@ func (player *Player) UpdatePlace(context *util.Context) {
 	matches := player.MatchCount
 	if matches > 0 {
 		// calculate placement score
-		winsFactor := (player.WinCount - player.LossCount) * 1000000 //   / matches
+		winsFactor := (player.WinCount - player.LossCount) * 1000000 // / matches
 		matchesFactor := matches * 1000
 		pointsFactor := player.ArenaPoints
 
