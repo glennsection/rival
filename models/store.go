@@ -101,23 +101,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) map[string]St
 
 	save := false
 
-	//store items will update once per day only, but we should still iterate through each item
-	//to prune any one-time purchases that have been made since the current offers were
-	//generated
-	if currentDate < player.Store.LastUpdate && len(player.Store.CurrentOffers) > 0 {
-
-		for id, currentOffer := range player.Store.CurrentOffers {
-
-			if currentOffer.IsOneTimeOffer {
-
-				if _, hasEntry := player.Store.Purchases[currentOffer.Name]; hasEntry {
-					// the player has purchased this offer, so remove it from the slice
-					delete(player.Store.CurrentOffers, id)
-					save = true
-				}
-			}
-		}
-	} else {
+	if currentDate > player.Store.LastUpdate || len(player.Store.CurrentOffers) == 0 {
 		player.Store.LastUpdate = currentDate
 		player.Store.CurrentOffers = map[string]StoreItem {}
 		player.getStoreCards()
@@ -156,7 +140,6 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 
 	  	if (storeItemData.AvailableDate > 0 && storeItemData.AvailableDate > currentDate) || 
 	       (storeItemData.ExpirationDate > 0 && currentDate > storeItemData.ExpirationDate) {
-		  	fmt.Println(fmt.Sprintf("Item %s is not available at this time", storeItemData.Name))
 			return false
 		}
 	}
@@ -164,7 +147,6 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 	if storeItemData.IsOneTimeOffer {
 		// first check to see if the user has ever purchased this item before
 		if _, hasEntry := player.Store.Purchases[storeItemData.Name]; hasEntry {
-			fmt.Println(fmt.Sprintf("Item %s has already been purchased", storeItemData.Name))
 			return false
 		}
 
@@ -173,7 +155,6 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 			// first check if we've already generated a date
 			if customExpDate, hasDate := player.Store.CustomExpirationDates[storeItemData.Name]; hasDate {
 				if currentDate > customExpDate {
-					fmt.Println(fmt.Sprintf("Item %s is not available at this time (custom)", storeItemData.Name))
 					return false
 				}
 			}

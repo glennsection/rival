@@ -27,11 +27,11 @@ func init() {
 	loadDataFile("Tomes", LoadTomes)
 	loadDataFile("TomeOrder", LoadTomeOrder)
 	loadDataFile("PvPRanking", LoadRanks)
+	loadDataFile("Rewards", LoadRewardData)
 	loadDataFile("Store", LoadStore)
 	loadDataFile("CardPurchaseCosts", LoadCardPurchaseCosts)
 	loadDataFile("Rarity", LoadRarityData)
 	loadDataFile("QuestTypes", LoadQuestData)
-	loadDataFile("Rewards", LoadRewardData)
 	// ------------------------------------------
 
 	// template funcs
