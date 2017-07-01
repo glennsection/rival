@@ -1,9 +1,9 @@
 package controllers
 
 import ( 
-	"bloodtales/data"
 	"bloodtales/system"
 	"bloodtales/util"
+	"bloodtales/models"
 )
 
 func handleStore() {
@@ -13,17 +13,15 @@ func handleStore() {
 func GetStoreOffers(context *util.Context) {
 	player := GetPlayer(context)
 	offers := map[string]interface{}{}
-	storeItems := data.GetStoreItems()
 
-	// Get Banner
+	currentOffers := player.GetCurrentStoreOffers(context)
 
-	// Get Special Offers
-
-	// Get Cards
-	cards := player.GetStoreCards(context)
-	for _, card := range cards {
-		storeItems = append(storeItems, card);
+	//since wyrmtale can't deserialize a dictionary, we need to convert our map into an array
+	storeItems := make([]models.StoreItem, 0)
+	for _, storeItem := range currentOffers {
+		storeItems = append(storeItems, storeItem)
 	}
+
 	offers["storeItems"] = storeItems
 
 	context.Data = offers
