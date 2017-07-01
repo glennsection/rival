@@ -242,8 +242,8 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "30",
-    "minPremiumCurrency": "30",
+    "maxPremiumCurrency": "190",
+    "minPremiumCurrency": "190",
     "maxStandardCurrency": "0",
     "minStandardCurrency": "0"
   },
@@ -255,8 +255,8 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "100",
-    "minPremiumCurrency": "100",
+    "maxPremiumCurrency": "500",
+    "minPremiumCurrency": "500",
     "maxStandardCurrency": "0",
     "minStandardCurrency": "0"
   },
@@ -268,8 +268,8 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "275",
-    "minPremiumCurrency": "275",
+    "maxPremiumCurrency": "1050",
+    "minPremiumCurrency": "1050",
     "maxStandardCurrency": "0",
     "minStandardCurrency": "0"
   },
@@ -281,8 +281,8 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "575",
-    "minPremiumCurrency": "575",
+    "maxPremiumCurrency": "2750",
+    "minPremiumCurrency": "2750",
     "maxStandardCurrency": "0",
     "minStandardCurrency": "0"
   },
@@ -294,8 +294,8 @@
     "tomes": "",
     "cardRarities": "",
     "cardAmounts": "",
-    "maxPremiumCurrency": "1225",
-    "minPremiumCurrency": "1225",
+    "maxPremiumCurrency": "12000",
+    "minPremiumCurrency": "12000",
     "maxStandardCurrency": "0",
     "minStandardCurrency": "0"
   },
@@ -322,8 +322,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "2000",
-    "minStandardCurrency": "2000"
+    "maxStandardCurrency": "5000",
+    "minStandardCurrency": "5000"
   },
   {
     "id": "STORE_STANDARD_3_REWARD",
@@ -335,8 +335,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "5000",
-    "minStandardCurrency": "5000"
+    "maxStandardCurrency": "10000",
+    "minStandardCurrency": "10000"
   },
   {
     "id": "STORE_STANDARD_4_REWARD",
@@ -348,8 +348,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "10000",
-    "minStandardCurrency": "10000"
+    "maxStandardCurrency": "25000",
+    "minStandardCurrency": "25000"
   },
   {
     "id": "STORE_STANDARD_5_REWARD",
@@ -361,8 +361,8 @@
     "cardAmounts": "",
     "maxPremiumCurrency": "0",
     "minPremiumCurrency": "0",
-    "maxStandardCurrency": "30000",
-    "minStandardCurrency": "30000"
+    "maxStandardCurrency": "100000",
+    "minStandardCurrency": "100000"
   },
   {
     "id": "STORE_TOME_1_REWARD",
@@ -437,8 +437,8 @@
     "tomes": "",
     "cardRarities": "[3,1,0,0]",
     "cardAmounts": "[15,2,0,0]",
-    "maxPremiumCurrency": "3",
-    "minPremiumCurrency": "2",
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
     "maxStandardCurrency": "70",
     "minStandardCurrency": "35"
   },
@@ -450,8 +450,8 @@
     "tomes": "",
     "cardRarities": "[3,2,0,0]",
     "cardAmounts": "[30,6,0,0]",
-    "maxPremiumCurrency": "4",
-    "minPremiumCurrency": "3",
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
     "maxStandardCurrency": "120",
     "minStandardCurrency": "55"
   },
@@ -463,8 +463,8 @@
     "tomes": "",
     "cardRarities": "[3,2,1,0]",
     "cardAmounts": "[75,12,2,1]",
-    "maxPremiumCurrency": "5",
-    "minPremiumCurrency": "4",
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
     "maxStandardCurrency": "210",
     "minStandardCurrency": "100"
   },
@@ -476,8 +476,8 @@
     "tomes": "",
     "cardRarities": "[1,2,1,2]",
     "cardAmounts": "[36,16,4,2]",
-    "maxPremiumCurrency": "6",
-    "minPremiumCurrency": "5",
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
     "maxStandardCurrency": "300",
     "minStandardCurrency": "190"
   },
@@ -489,8 +489,8 @@
     "tomes": "",
     "cardRarities": "[3,2,1,1]",
     "cardAmounts": "[75,20,6,3]",
-    "maxPremiumCurrency": "7",
-    "minPremiumCurrency": "6",
+    "maxPremiumCurrency": "0",
+    "minPremiumCurrency": "0",
     "maxStandardCurrency": "450",
     "minStandardCurrency": "250"
   },
