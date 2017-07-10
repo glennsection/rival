@@ -42,6 +42,8 @@ func Purchase(context *util.Context) {
 
 	// check store item currency cost and store the string converted currency type for tracking
 	var currencyType string
+	purchasePrice := storeItem.Cost // need to cache this for analytics, since some store items change price after purchase
+
 	switch storeItem.Currency {
 
 	case data.CurrencyReal:
@@ -108,7 +110,7 @@ func Purchase(context *util.Context) {
 
 	InsertTracking(context, "purchase", bson.M { "time": util.TimeToTicks(time.Now().UTC()),
 													"productId":storeItem.Name,
-													"price":storeItem.Cost,
+													"price":purchasePrice,
 													"currency":currencyType,
 													"receipt":"" }, 0)
 
