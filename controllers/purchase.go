@@ -103,7 +103,7 @@ func Purchase(context *util.Context) {
 	case data.StoreCategoryCards:
 		player.HandleCardPurchase(&storeItem)
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
-		context.SetData("storeItem", storeItem) //include the updated store item
+		context.SetData("storeItem", &storeItem) //include the updated store item
 	}
 
 	player.RecordPurchase(storeItem.Name)
