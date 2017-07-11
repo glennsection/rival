@@ -82,19 +82,19 @@ func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward 
 	switch(rarity) {
 	case "COMMON":
 		rarities = []int{numCards,0,0,0}
-		numRewarded = []int{1,0,0,0}
+		numRewarded = []int{numCards,0,0,0}
 
 	case "RARE":
 		rarities = []int{0,numCards,0,0}
-		numRewarded = []int{0,1,0,0}
+		numRewarded = []int{0,numCards,0,0}
 
 	case "EPIC":
 		rarities = []int{0,0,numCards,0}
-		numRewarded = []int{0,0,1,0}
+		numRewarded = []int{0,0,numCards,0}
 
 	case "LEGENDARY":
 		rarities = []int{0,0,0,numCards}
-		numRewarded = []int{0,0,0,1}
+		numRewarded = []int{0,0,0,numCards}
 	}
 
 	rewardData := &data.RewardData {
