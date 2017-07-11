@@ -10,6 +10,7 @@ import(
 func handleDebug() {
 	handleGameAPI("/debug/addTome", system.TokenAuthentication, DebugAddTome)
 	handleGameAPI("/debug/addVictoryTome", system.TokenAuthentication, DebugAddNextVictoryTome)
+	handleGameAPI("/debug/addCards", system.TokenAuthentication, DebugAddCards)
 }
 
 func DebugAddTome(context *util.Context) {
@@ -55,4 +56,37 @@ func DebugAddNextVictoryTome(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Tomes)
 	player.Save(context)
+}
+
+func DebugAddCards(context *util.Context) {
+	cardId := context.Params.GetRequiredString("cardId")
+	count := context.Params.GetRequiredInt("count")
+
+	cardDataId := data.ToDataId(cardId)
+	if !isValidCardId(cardDataId) {
+		context.Fail("Invalid Id")
+		return
+	}
+
+	if count <= 0 {
+		context.Fail("Invalid card count\nCount must be non-zero and positive")
+	}
+
+	player := GetPlayer(context)
+	player.AddCards(cardDataId, count)
+
+	player.SetDirty(models.PlayerDataMask_Cards)
+	player.Save(context)
+}
+
+func isValidCardId(cardDataId data.DataId) bool {
+	cardIds := data.GetCards(func(card *data.CardData) bool { return true })
+
+	for _, id := range cardIds {
+		if id == cardDataId {
+			return true
+		}
+	}
+
+	return false
 }
