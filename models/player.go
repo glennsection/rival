@@ -123,13 +123,13 @@ func (player *Player) loadDefaults() (err error) {
 		return
 	}
 
-	// assign starting quests
-	player.SetupQuestDefaults()
-
 	// setup store data
 	player.InitStore()
 
 	err = json.Unmarshal(file, player)
+
+	// assign starting quests (must happen after default cards are assigned - quests use player's card list)
+	player.SetupQuestDefaults()
 	return
 }
 

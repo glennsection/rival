@@ -86,7 +86,7 @@ func (slot *QuestSlot) StartCooldown() {
 	slot.State = QuestState_Cooldown
 
 	// first check if this is the weekly quest slot. if it is, we want it immediately available for a new quest
-	if slot.SupportedTypes == []data.QuestType{data.QuestType_Weekly} { 
+	if len(slot.SupportedTypes) == 1 && slot.SupportedTypes[0] == data.QuestType_Weekly { 
 		slot.UnlockTime = slot.ExpireTime
 	} else { //otherwise, we want this slot to unlock only after its cooldown has expired
 		expireTime := util.TicksToTime(slot.ExpireTime)
@@ -281,7 +281,7 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 			var cardId string
 			if questData.Objectives["useRandomCard"].(bool) {
 				rand.Seed(time.Now().UnixNano())
-				cardId = data.ToDataName(player.Cards[ rand.Intn(len(player.Cards))].DataID)
+				cardId = data.ToDataName(player.Cards[rand.Intn(len(player.Cards))].DataID)
 			} else {
 				cardId = questData.Objectives["cardId"].(string)
 			}
@@ -301,7 +301,7 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 		currentDate := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
 		expirationDate := currentDate
 
-		for expirationDate != currentDate && expirationDate.Weekday() != time.Monday {
+		for expirationDate == currentDate || expirationDate.Weekday() != time.Monday {
 			expirationDate = expirationDate.AddDate(0, 0, 1)
 		}
 
