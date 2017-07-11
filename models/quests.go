@@ -2,8 +2,8 @@ package models
 
 import (
 	"time"
+	"math/rand"
 	"encoding/json"
-	//"fmt"
 	
 	"bloodtales/data"
 	"bloodtales/util"
@@ -84,7 +84,14 @@ func (quest *Quest) MarshalJSON() ([]byte, error) {
 
 func (slot *QuestSlot) StartCooldown() {
 	slot.State = QuestState_Cooldown
-	slot.UnlockTime = util.TimeToTicks(time.Now().UTC().Add(data.QuestSlotCooldownTime * time.Minute))
+
+	// first check if this is the weekly quest slot. if it is, we want it immediately available for a new quest
+	if slot.SupportedTypes == []data.QuestType{data.QuestType_Weekly} { 
+		slot.UnlockTime = slot.ExpireTime
+	} else { //otherwise, we want this slot to unlock only after its cooldown has expired
+		expireTime := util.TicksToTime(slot.ExpireTime)
+		slot.UnlockTime = util.TimeToTicks(expireTime.Add(data.QuestSlotCooldownTime * time.Minute))
+	}
 }
 
 
@@ -273,8 +280,8 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 
 			var cardId string
 			if questData.Objectives["useRandomCard"].(bool) {
-				cardDataId,_ := data.GetRandomCard()
-				cardId = data.ToDataName(cardDataId)
+				rand.Seed(time.Now().UnixNano())
+				cardId = data.ToDataName(player.Cards[ rand.Intn(len(player.Cards))].DataID)
 			} else {
 				cardId = questData.Objectives["cardId"].(string)
 			}
@@ -290,7 +297,15 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 		player.QuestSlots[index].ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillDailyQuestExpires * time.Minute))
 
 	case data.QuestType_Weekly:
-		player.QuestSlots[index].ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillWeeklyQuestExpires * time.Minute))
+		year, month, day := time.Now().UTC().Date()
+		currentDate := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+		expirationDate := currentDate
+
+		for expirationDate != currentDate && expirationDate.Weekday() != time.Monday {
+			expirationDate = expirationDate.AddDate(0, 0, 1)
+		}
+
+		player.QuestSlots[index].ExpireTime = util.TimeToTicks(expirationDate)
 
 	default: //events
 		// TODO need to identify the event and assign its expiration time to this quest slot
@@ -318,6 +333,12 @@ func (player *Player) UpdateQuests(context *util.Context, logicTypes ...data.Que
 			// check to see if the quest has expired
 			if currentTime > player.QuestSlots[i].ExpireTime {
 				player.QuestSlots[i].StartCooldown()
+
+				// check to see if the quest has already passed the amount of time necessary to unlock
+				if currentTime > player.QuestSlots[i].UnlockTime {
+					player.QuestSlots[i].State = QuestState_Ready
+					player.AssignRandomQuest(i)
+				}
 				continue
 			}
 
