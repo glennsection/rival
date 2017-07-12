@@ -61,8 +61,15 @@ func OpenTome(context *util.Context) {
 	// analytics
 	InsertTracking(context, "tomeOpened", bson.M { "rarity": player.Tomes[index].GetData().Rarity }, 0)
 
-	reward, err := player.AddTomeRewards(context, &player.Tomes[index]) 
-	util.Must(err)
+	var reward *models.Reward
+	var err error
+
+	if data.ToDataName(player.Tomes[index].DataID) == "TOME_TUTORIAL" {
+		reward = player.OpenTutorialTome(context, &player.Tomes[index])
+	} else {
+		reward, err = player.AddTomeRewards(context, &player.Tomes[index]) 
+		util.Must(err)
+	}
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
@@ -88,8 +95,15 @@ func RushTome(context *util.Context) {
 
 	player.PremiumCurrency -= cost
 
-	reward, err := player.AddTomeRewards(context, &player.Tomes[index]) 
-	util.Must(err)
+	var reward *models.Reward
+	var err error
+
+	if data.ToDataName(player.Tomes[index].DataID) == "TOME_TUTORIAL" {
+		reward = player.OpenTutorialTome(context, &player.Tomes[index])
+	} else {
+		reward, err = player.AddTomeRewards(context, &player.Tomes[index]) 
+		util.Must(err)
+	}
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)

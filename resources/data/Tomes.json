@@ -159,6 +159,16 @@
     "rewardId": "TOME_QUEST_01_REWARD",
     "timeToUnlock": "0",
     "gemsToUnlock": "0"
+  },
+  {
+    "id": "TOME_TUTORIAL",
+    "rarity": "COMMON",
+    "prefab": "UI/Tomes/Common/Common",
+    "icon": "UI/Tomes/Sprites/tome_COMMON",
+    "chance": "0",
+    "rewardId": "TOME_COMMON_REWARD",
+    "timeToUnlock": "180",
+    "gemsToUnlock": "18"
   }
 ]
 }

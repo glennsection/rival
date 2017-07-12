@@ -22,6 +22,7 @@ func HandleGame() {
 	handleReplay()
 	handleTracking()
 	handleDebug()
+	handleTutorial()
 }
 
 func handleGameAPI(pattern string, authType system.AuthenticationType, handler func(*util.Context)) {
