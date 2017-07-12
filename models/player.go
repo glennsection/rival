@@ -44,8 +44,6 @@ type Player struct {
 	RankPoints          int             			`bson:"rk" json:"rankPoints"`
 	Rating              int             			`bson:"rt" json:"rating"`
 
-	TutorialProgress	util.Bits					`bson:"ts"`
-
 	WinCount            int             			`bson:"wc" json:"winCount"`
 	LossCount           int             			`bson:"lc" json:"lossCount"`
 	MatchCount          int             			`bson:"mc" json:"matchCount"`
@@ -132,9 +130,7 @@ func (player *Player) loadDefaults() (err error) {
 
 	// assign starting quests (must happen after default cards are assigned - quests use player's card list)
 	player.SetupQuestDefaults()
-
-	// reset temp tutorial tracker
-	player.TutorialProgress = Tutorial_NewPlayer
+	
 	return
 }
 
