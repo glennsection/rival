@@ -222,7 +222,7 @@
     "isOneTimeOffer": "true",
     "availableDate": "",
     "expirationDate": "",
-    "duration": "2"
+    "duration": ""
   },
   {
     "id": "Platinum_League_Offer",
@@ -238,7 +238,7 @@
     "isOneTimeOffer": "true",
     "availableDate": "",
     "expirationDate": "",
-    "duration": "2"
+    "duration": ""
   },
   {
     "id": "Champions_League_Offer",
@@ -254,7 +254,7 @@
     "isOneTimeOffer": "true",
     "availableDate": "",
     "expirationDate": "",
-    "duration": "2"
+    "duration": ""
   },
   {
     "id": "Legendary_League_Offer",
@@ -270,7 +270,7 @@
     "isOneTimeOffer": "true",
     "availableDate": "",
     "expirationDate": "",
-    "duration": "2"
+    "duration": ""
   }
 ]
 }

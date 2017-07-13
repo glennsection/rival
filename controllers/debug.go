@@ -1,6 +1,8 @@
 package controllers 
 
 import(
+	"time"
+
 	"bloodtales/system"
 	"bloodtales/util"
 	"bloodtales/data"
@@ -11,6 +13,11 @@ func handleDebug() {
 	handleGameAPI("/debug/addTome", system.TokenAuthentication, DebugAddTome)
 	handleGameAPI("/debug/addVictoryTome", system.TokenAuthentication, DebugAddNextVictoryTome)
 	handleGameAPI("/debug/addCards", system.TokenAuthentication, DebugAddCards)
+	handleGameAPI("/debug/addPremiumCurrency", system.TokenAuthentication, DebugAddPremiumCurrency)
+	handleGameAPI("/debug/addStandardCurrency", system.TokenAuthentication, DebugAddStandardCurrency)
+	handleGameAPI("/debug/setRank", system.TokenAuthentication, DebugSetRank)
+	handleGameAPI("/debug/refreshStore", system.TokenAuthentication, DebugRefreshStore)
+	handleGameAPI("/debug/clearStoreHistory", system.TokenAuthentication, DebugClearStoreHistory)
 }
 
 func DebugAddTome(context *util.Context) {
@@ -70,6 +77,7 @@ func DebugAddCards(context *util.Context) {
 
 	if count <= 0 {
 		context.Fail("Invalid card count\nCount must be non-zero and positive")
+		return
 	}
 
 	player := GetPlayer(context)
@@ -89,4 +97,69 @@ func isValidCardId(cardDataId data.DataId) bool {
 	}
 
 	return false
+}
+
+func DebugAddPremiumCurrency(context *util.Context) {
+	amount := context.Params.GetRequiredInt("amount")
+
+	if amount <= 0 {
+		context.Fail("Invalid amount\nAmount must be non-zero and positive")
+		return
+	}
+
+	player := GetPlayer(context)
+
+	player.PremiumCurrency += amount
+
+	player.Save(context)
+	player.SetDirty(models.PlayerDataMask_Currency)
+}
+
+func DebugAddStandardCurrency(context *util.Context) {
+	amount := context.Params.GetRequiredInt("amount")
+
+	if amount <= 0 {
+		context.Fail("Invalid amount\nAmount must be non-zero and positive")
+		return
+	}
+
+	player := GetPlayer(context)
+	
+	player.StandardCurrency += amount
+
+	player.Save(context)
+	player.SetDirty(models.PlayerDataMask_Currency)
+}
+
+func DebugSetRank(context *util.Context) {
+	stars := context.Params.GetRequiredInt("stars")
+
+	if stars <= 0 {
+		context.Fail("Invalid amount\nAmount must be non-zero and positive")
+		return
+	}
+
+	player := GetPlayer(context)
+
+	player.RankPoints = stars
+
+	player.Save(context)
+	player.SetDirty(models.PlayerDataMask_Stars)
+}
+
+func DebugRefreshStore(context *util.Context) {
+	player := GetPlayer(context)
+
+	player.Store.LastUpdate = 0
+
+	player.Save(context)
+}
+
+func DebugClearStoreHistory(context *util.Context) {
+	player := GetPlayer(context)
+
+	player.Store.Purchases = map[string][]time.Time {}
+	player.Store.CustomExpirationDates = map[string]int64 {}
+
+	player.Save(context)
 }
