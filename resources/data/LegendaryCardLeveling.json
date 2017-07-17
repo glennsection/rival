@@ -2,26 +2,26 @@
 [
   {
     "level": "1",
-    "cardsNeeded": "0",
+    "cardsNeeded": "1",
     "cost": "0",
     "xp": "0"
   },
   {
     "level": "2",
     "cardsNeeded": "6",
-    "cost": "3800",
+    "cost": "2500",
     "xp": "440"
   },
   {
     "level": "3",
     "cardsNeeded": "10",
-    "cost": "5250",
+    "cost": "10000",
     "xp": "480"
   },
   {
     "level": "4",
     "cardsNeeded": "15",
-    "cost": "8000",
+    "cost": "40000",
     "xp": "520"
   },
   {
