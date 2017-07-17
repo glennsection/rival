@@ -175,13 +175,6 @@
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_MYSTIC",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
         }
     ],
     "decks": [
