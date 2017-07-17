@@ -59,7 +59,7 @@ func OpenTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "rarity": player.Tomes[index].GetData().Rarity }, 0)
+	InsertTracking(context, "tomeOpened", bson.M { "tomeId": data.ToDataName(player.Tomes[index].DataID) }, 0)
 
 	reward, err := player.AddTomeRewards(context, &player.Tomes[index]) 
 	util.Must(err)
@@ -86,7 +86,7 @@ func RushTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "rarity": player.Tomes[index].GetData().Rarity }, 0)
+	InsertTracking(context, "tomeOpened", bson.M { "tomeId": data.ToDataName(player.Tomes[index].DataID) }, 0)
 
 	player.PremiumCurrency -= cost
 
@@ -110,7 +110,7 @@ func ClaimFreeTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "rarity": "Free" }, 0)
+	InsertTracking(context, "tomeOpened", bson.M { "tomeId": "Free" }, 0)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
@@ -129,7 +129,7 @@ func ClaimArenaTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "rarity": "Arena" }, 0)
+	InsertTracking(context, "tomeOpened", bson.M { "tomeId": "Arena" }, 0)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
