@@ -136,15 +136,18 @@ func CraftCard(context *util.Context) {
 	
 	for cardId, num := range consumableCards {
 		InsertTracking(context, "cardConsumed", bson.M { "time":currentTime,
-															"cardId":cardId,
-															"count":num }, 0)
+														 "cardId":cardId,
+														 "count":num }, 0)
 	}
 
 	for cardId, num := range cardsGained {
 		InsertTracking(context, "cardCrafted", bson.M { "time":currentTime,
-															"cardId":cardId,
-															"count":num }, 0)		
+														"cardId":cardId,
+														"count":num,
+														"goldSpent":(baseCost * num) }, 0)		
 	} 
+
+	TrackRewards(context, reward)
 
 	player.Save(context)
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)

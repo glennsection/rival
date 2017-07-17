@@ -66,6 +66,8 @@ func OpenTome(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
+
+	TrackRewards(context, reward)
 }
 
 func RushTome(context *util.Context) {
@@ -93,6 +95,8 @@ func RushTome(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
+
+	TrackRewards(context, reward)
 }
 
 func ClaimFreeTome(context *util.Context) {
@@ -110,6 +114,8 @@ func ClaimFreeTome(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
+
+	TrackRewards(context, reward)
 }
 
 func ClaimArenaTome(context *util.Context) {
@@ -127,6 +133,8 @@ func ClaimArenaTome(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
+
+	TrackRewards(context, reward)
 }
 
 func ValidateTomeRequest(context *util.Context) (index int, player *models.Player, success bool) {

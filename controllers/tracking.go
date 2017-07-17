@@ -8,6 +8,7 @@ import (
 
 	"bloodtales/util"
 	"bloodtales/system"
+	"bloodtales/data"
 	"bloodtales/models"
 )
 
@@ -50,4 +51,36 @@ func InsertTracking(context *util.Context, event string, data bson.M, expireAfte
 	// insert tracking
 	util.Must(tracking.Insert(context))
 	return
+}
+
+func TrackRewards(context *util.Context, reward *models.Reward) {
+	currentTime := util.TimeToTicks(time.Now().UTC())
+
+	for _, id := range reward.Tomes {
+		InsertTracking(context, "gainItem", bson.M { "time":currentTime,
+													 "itemId":data.ToDataName(id),
+													 "type":"Tome",
+													 "count":1 }, 0)
+	}
+
+	for i, id := range reward.Tomes {
+		InsertTracking(context, "gainItem", bson.M { "time":currentTime,
+													 "itemId":data.ToDataName(id),
+													 "type":"Card",
+													 "count":reward.NumRewarded[i] }, 0)
+	}
+
+	if reward.StandardCurrency > 0 || reward.OverflowCurrency > 0 {
+		InsertTracking(context, "gainItem", bson.M { "time":currentTime,
+													 "itemId":"",
+													 "type":"Standard",
+													 "count":reward.StandardCurrency + reward.OverflowCurrency }, 0)
+	}
+
+	if reward.PremiumCurrency > 0 {
+		InsertTracking(context, "gainItem", bson.M { "time":currentTime,
+													 "itemId":"",
+													 "type":"Premium",
+													 "count":reward.PremiumCurrency }, 0)
+	}
 }

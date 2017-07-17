@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
+
 	"bloodtales/system"
 	"bloodtales/util"
 	"bloodtales/data"
@@ -24,6 +26,8 @@ func CompleteQuest(context *util.Context) {
 
 	player.UpdateQuests(context)
 
+	questId := player.QuestSlots[index].QuestInstance.DataID //cache for analytics
+
 	reward, success, err := player.CollectQuest(index, context)
 	if !success {
 		player.SetDirty(models.PlayerDataMask_Quests)
@@ -36,6 +40,14 @@ func CompleteQuest(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Quests, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_XP)
 	context.SetData("reward", reward)
+
+	currentTime := util.TimeToTicks(time.Now().UTC())
+
+	InsertTracking(context, "questComplete", bson.M { "time":currentTime,
+													  "questId":data.ToDataName(questId),
+													  "rewardId":data.ToDataName(data.GetQuestData(questId).RewardID) }, 0)
+
+	TrackRewards(context, reward)	
 }
 
 func ClearQuest(context *util.Context) {
