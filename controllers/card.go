@@ -62,7 +62,9 @@ func UpgradeCard(context *util.Context) {
 	card.Level += 1
 
 	// analytics
-	InsertTracking(context, "cardLevelUp", bson.M { "cardId": data.ToDataName(card.DataID), "level": card.Level }, 0)
+	InsertTracking(context, "cardLevelUp", bson.M { "cardId": data.ToDataName(card.DataID), 
+													"level": card.Level,
+													"price": levelData.Cost }, 0)
 
 	player.SetDirty(models.PlayerDataMask_Cards, models.PlayerDataMask_Currency, models.PlayerDataMask_XP)
 	player.Save(context)
