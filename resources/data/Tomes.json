@@ -7,7 +7,7 @@
     "icon": "UI/Tomes/Sprites/tome_COMMON",
     "chance": "0",
     "rewardId": "TOME_COMMON_REWARD",
-    "timeToUnlock": "1800",
+    "timeToUnlock": "180",
     "gemsToUnlock": "18"
   },
   {
@@ -17,7 +17,7 @@
     "icon": "UI/Tomes/Sprites/tome_UNCOMMON",
     "chance": "0",
     "rewardId": "TOME_RARE_REWARD",
-    "timeToUnlock": "3600",
+    "timeToUnlock": "240",
     "gemsToUnlock": "30"
   },
   {
@@ -67,7 +67,7 @@
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "chance": "60",
     "rewardId": "TOME_VICTORY_01_REWARD",
-    "timeToUnlock": "1800",
+    "timeToUnlock": "240",
     "gemsToUnlock": "18"
   },
   {
@@ -77,7 +77,7 @@
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "chance": "34",
     "rewardId": "TOME_VICTORY_02_REWARD",
-    "timeToUnlock": "3600",
+    "timeToUnlock": "300",
     "gemsToUnlock": "30"
   },
   {
@@ -87,7 +87,7 @@
     "icon": "UI/Tomes/Sprites/tome_CROSS",
     "chance": "3",
     "rewardId": "TOME_SHOP_01_REWARD",
-    "timeToUnlock": "1800",
+    "timeToUnlock": "360",
     "gemsToUnlock": "55"
   },
   {
@@ -97,7 +97,7 @@
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "chance": "2",
     "rewardId": "TOME_SHOP_02_REWARD",
-    "timeToUnlock": "3600",
+    "timeToUnlock": "720",
     "gemsToUnlock": "70"
   },
   {
@@ -107,7 +107,7 @@
     "icon": "UI/Tomes/Sprites/tome_GOLD",
     "chance": "1",
     "rewardId": "TOME_SHOP_03_REWARD",
-    "timeToUnlock": "7200",
+    "timeToUnlock": "1440",
     "gemsToUnlock": "80"
   },
   {
