@@ -63,7 +63,7 @@ func TrackRewards(context *util.Context, reward *models.Reward) {
 													 "count":1 }, 0)
 	}
 
-	for i, id := range reward.Tomes {
+	for i, id := range reward.Cards {
 		InsertTracking(context, "gainItem", bson.M { "time":currentTime,
 													 "itemId":data.ToDataName(id),
 													 "type":"Card",
