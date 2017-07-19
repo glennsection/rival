@@ -25,7 +25,7 @@ func UnlockTome(context *util.Context) {
 	}
 
 	// check to see if any tomes are unlocking
-	busy := false;
+	busy := false
 	for i := 0; i < len(player.Tomes); i++ {
 		if player.Tomes[i].State == models.TomeUnlocking {
 			busy = true
@@ -59,9 +59,10 @@ func OpenTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "tomeId": data.ToDataName(player.Tomes[index].DataID) }, 0)
+	InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(player.Tomes[index].DataID),
+		"gemsSpent": 0}, 0)
 
-	reward, err := player.AddTomeRewards(context, &player.Tomes[index]) 
+	reward, err := player.AddTomeRewards(context, &player.Tomes[index])
 	util.Must(err)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
@@ -86,11 +87,12 @@ func RushTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "tomeId": data.ToDataName(player.Tomes[index].DataID) }, 0)
+	InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(player.Tomes[index].DataID),
+		"gemsSpent": cost}, 0)
 
 	player.PremiumCurrency -= cost
 
-	reward, err := player.AddTomeRewards(context, &player.Tomes[index]) 
+	reward, err := player.AddTomeRewards(context, &player.Tomes[index])
 	util.Must(err)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
@@ -110,7 +112,8 @@ func ClaimFreeTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "tomeId": "Free" }, 0)
+	InsertTracking(context, "tomeOpened", bson.M{"tomeId": "Free",
+		"gemsSpent": 0}, 0)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
@@ -129,7 +132,8 @@ func ClaimArenaTome(context *util.Context) {
 	}
 
 	// analytics
-	InsertTracking(context, "tomeOpened", bson.M { "tomeId": "Arena" }, 0)
+	InsertTracking(context, "tomeOpened", bson.M{"tomeId": "Arena",
+		"gemsSpent": 0}, 0)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	context.SetData("reward", reward)
@@ -148,7 +152,7 @@ func ValidateTomeRequest(context *util.Context) (index int, player *models.Playe
 	// make sure the tome exists
 	if index >= len(player.Tomes) || index < 0 || player.Tomes[index].State == models.TomeEmpty {
 		context.Fail("Tome does not exist")
-		return 
+		return
 	}
 
 	success = true
