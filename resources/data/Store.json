@@ -1,6 +1,71 @@
 { "Store":
 [
   {
+    "id": "STORE_PREMIUM_1",
+    "itemId": "",
+    "category": "PremiumCurrency",
+    "rewardIds": "[STORE_PREMIUM_1_REWARD]",
+    "currency": "Real",
+    "cost": "1.99",
+    "league": "",
+    "isOneTimeOffer": "false",
+    "availableDate": "",
+    "expirationDate": "",
+    "duration": ""
+  },
+  {
+    "id": "STORE_PREMIUM_2",
+    "itemId": "",
+    "category": "PremiumCurrency",
+    "rewardIds": "[STORE_PREMIUM_2_REWARD]",
+    "currency": "Real",
+    "cost": "4.99",
+    "league": "",
+    "isOneTimeOffer": "false",
+    "availableDate": "",
+    "expirationDate": "",
+    "duration": ""
+  },
+  {
+    "id": "STORE_PREMIUM_3",
+    "itemId": "",
+    "category": "PremiumCurrency",
+    "rewardIds": "[STORE_PREMIUM_3_REWARD]",
+    "currency": "Real",
+    "cost": "9.99",
+    "league": "",
+    "isOneTimeOffer": "false",
+    "availableDate": "",
+    "expirationDate": "",
+    "duration": ""
+  },
+  {
+    "id": "STORE_PREMIUM_4",
+    "itemId": "",
+    "category": "PremiumCurrency",
+    "rewardIds": "[STORE_PREMIUM_4_REWARD]",
+    "currency": "Real",
+    "cost": "24.99",
+    "league": "",
+    "isOneTimeOffer": "false",
+    "availableDate": "",
+    "expirationDate": "",
+    "duration": ""
+  },
+  {
+    "id": "STORE_PREMIUM_5",
+    "itemId": "",
+    "category": "PremiumCurrency",
+    "rewardIds": "[STORE_PREMIUM_5_REWARD]",
+    "currency": "Real",
+    "cost": "99.99",
+    "league": "",
+    "isOneTimeOffer": "false",
+    "availableDate": "",
+    "expirationDate": "",
+    "duration": ""
+  },
+  {
     "id": "STORE_STANDARD_1",
     "itemId": "",
     "category": "StandardCurrency",
