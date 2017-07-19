@@ -1,51 +1,10 @@
 { "Tomes":
 [
   {
-    "id": "TOME_COMMON",
-    "rarity": "COMMON",
-    "prefab": "UI/Tomes/Common/Common",
-    "icon": "UI/Tomes/Sprites/tome_COMMON",
-    "chance": "0",
-    "rewardId": "TOME_COMMON_REWARD",
-    "timeToUnlock": "180",
-    "gemsToUnlock": "18"
-  },
-  {
-    "id": "TOME_RARE",
-    "rarity": "RARE",
-    "prefab": "UI/Tomes/Uncommon/Uncommon",
-    "icon": "UI/Tomes/Sprites/tome_UNCOMMON",
-    "chance": "0",
-    "rewardId": "TOME_RARE_REWARD",
-    "timeToUnlock": "240",
-    "gemsToUnlock": "30"
-  },
-  {
-    "id": "TOME_EPIC",
-    "rarity": "EPIC",
-    "prefab": "UI/Tomes/Rare/Rare",
-    "icon": "UI/Tomes/Sprites/tome_CROSS",
-    "chance": "0",
-    "rewardId": "TOME_EPIC_REWARD",
-    "timeToUnlock": "300",
-    "gemsToUnlock": "55"
-  },
-  {
-    "id": "TOME_LEGENDARY",
-    "rarity": "LEGENDARY",
-    "prefab": "UI/Tomes/Legendary/Legendary",
-    "icon": "UI/Tomes/Sprites/tome_LEGENDARY",
-    "chance": "0",
-    "rewardId": "TOME_LEGENDARY_REWARD",
-    "timeToUnlock": "360",
-    "gemsToUnlock": "78"
-  },
-  {
     "id": "TOME_FREE",
     "rarity": "COMMON",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "0",
     "rewardId": "TOME_FREE_REWARD",
     "timeToUnlock": "0",
     "gemsToUnlock": "0"
@@ -55,7 +14,6 @@
     "rarity": "RARE",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "0",
     "rewardId": "TOME_BATTLE_REWARD",
     "timeToUnlock": "0",
     "gemsToUnlock": "0"
@@ -65,7 +23,6 @@
     "rarity": "EPIC",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "60",
     "rewardId": "TOME_VICTORY_01_REWARD",
     "timeToUnlock": "240",
     "gemsToUnlock": "18"
@@ -75,7 +32,6 @@
     "rarity": "LEGENDARY",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "34",
     "rewardId": "TOME_VICTORY_02_REWARD",
     "timeToUnlock": "300",
     "gemsToUnlock": "30"
@@ -85,7 +41,6 @@
     "rarity": "COMMON",
     "prefab": "UI/Tomes/Cross/Cross",
     "icon": "UI/Tomes/Sprites/tome_CROSS",
-    "chance": "3",
     "rewardId": "TOME_SHOP_01_REWARD",
     "timeToUnlock": "360",
     "gemsToUnlock": "55"
@@ -95,7 +50,6 @@
     "rarity": "RARE",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "2",
     "rewardId": "TOME_SHOP_02_REWARD",
     "timeToUnlock": "720",
     "gemsToUnlock": "70"
@@ -105,7 +59,6 @@
     "rarity": "EPIC",
     "prefab": "UI/Tomes/Gold/Gold",
     "icon": "UI/Tomes/Sprites/tome_GOLD",
-    "chance": "1",
     "rewardId": "TOME_SHOP_03_REWARD",
     "timeToUnlock": "1440",
     "gemsToUnlock": "80"
@@ -115,7 +68,6 @@
     "rarity": "LEGENDARY",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "0",
     "rewardId": "TOME_SPECIAL_01_REWARD",
     "timeToUnlock": "2880",
     "gemsToUnlock": "250"
@@ -125,7 +77,6 @@
     "rarity": "COMMON",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "0",
     "rewardId": "TOME_SPECIAL_01_REWARD",
     "timeToUnlock": "5760",
     "gemsToUnlock": "250"
@@ -135,7 +86,6 @@
     "rarity": "RARE",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "0",
     "rewardId": "TOME_SPECIAL_01_REWARD",
     "timeToUnlock": "11520",
     "gemsToUnlock": "250"
@@ -145,7 +95,6 @@
     "rarity": "EPIC",
     "prefab": "UI/Tomes/Bloodstone/Bloodstone",
     "icon": "UI/Tomes/Sprites/tome_BLOODSTONE",
-    "chance": "0",
     "rewardId": "TOME_SPECIAL_01_REWARD",
     "timeToUnlock": "23040",
     "gemsToUnlock": "500"
@@ -155,20 +104,9 @@
     "rarity": "LEGENDARY",
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
-    "chance": "0",
     "rewardId": "TOME_QUEST_01_REWARD",
     "timeToUnlock": "0",
     "gemsToUnlock": "0"
-  },
-  {
-    "id": "TOME_TUTORIAL",
-    "rarity": "COMMON",
-    "prefab": "UI/Tomes/Common/Common",
-    "icon": "UI/Tomes/Sprites/tome_COMMON",
-    "chance": "0",
-    "rewardId": "TOME_COMMON_REWARD",
-    "timeToUnlock": "180",
-    "gemsToUnlock": "18"
   }
 ]
 }

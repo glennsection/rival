@@ -26,17 +26,9 @@ const (
 	StoreCategorySpecialOffers
 )
 
-type AvailabilityType int
-const (
-	Availability_Permanent AvailabilityType = iota
-	Availability_Limited
-)
-
 // server data
 type StoreItemData struct {
 	Name                    string
-	DisplayName 			string
-	Description 			string
 
 	ItemID                  string
 	Category                StoreCategory
@@ -45,7 +37,6 @@ type StoreItemData struct {
 	Currency                CurrencyType
 	Cost                    float64
 
-	Availability 			AvailabilityType
 	League 					int
 	IsOneTimeOffer 			bool
 	AvailableDate 			int64
@@ -57,8 +48,6 @@ type StoreItemData struct {
 type StoreItemDataClientAlias StoreItemData
 type StoreItemDataClient struct {
 	Name                    string        `json:"id"`
-	DisplayName 			string 		  `json:"displayName"`
-	Description 			string 		  `json:"description"`
 
 	ItemID                  string        `json:"itemId"`
 	Category                string        `json:"category"`
@@ -67,7 +56,6 @@ type StoreItemDataClient struct {
 	Currency                string        `json:"currency"`
 	Cost                    float64       `json:"cost,string"`
 
-	Availability 			string 		  `json:"availability"`
 	League 					string 		  `json:"league"`
 	IsOneTimeOffer 			bool 		  `json:"isOneTimeOffer,string"`
 	AvailableDate 			string 		  `json:"availableDate"`
@@ -111,8 +99,6 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	}
 
 	storeItemData.Name = client.Name
-	storeItemData.DisplayName = client.DisplayName
-	storeItemData.Description = client.Description
 	storeItemData.ItemID = client.ItemID
 	storeItemData.Cost = client.Cost
 	storeItemData.IsOneTimeOffer = client.IsOneTimeOffer
@@ -135,11 +121,6 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 
 	// server currency
 	if storeItemData.Currency, err = StringToCurrencyType(client.Currency); err != nil {
-		panic(err)
-	}
-	
-	// server availability
-	if storeItemData.Availability, err = StringToAvailabilityType(client.Availability); err != nil {
 		panic(err)
 	}
 
@@ -300,26 +281,4 @@ func StringToCurrencyType(val string) (CurrencyType, error) {
 	}
 
 	return CurrencyStandard, errors.New(fmt.Sprintf("Cannot convert %s to CurrencyType", val))
-}
-
-func AvailabilityTypeToString(val AvailabilityType) (string, error) {
-	switch val {
-	case Availability_Limited:
-		return "Limited", nil
-	case Availability_Permanent:
-		return "Permanent", nil
-	}
-
-	return "", errors.New("Invalid value passed as AvailabilityType")
-}
-
-func StringToAvailabilityType(val string) (AvailabilityType, error) {
-	switch val {
-	case "Limited":
-		return Availability_Limited, nil
-	case "Permanent":
-		return Availability_Permanent, nil
-	}
-
-	return Availability_Permanent, errors.New(fmt.Sprintf("Cannot convert %s to AvailabilityType", val))
 }

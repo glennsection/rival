@@ -77,7 +77,7 @@ func RushTome(context *util.Context) {
 		return
 	}
 
-	cost := data.GetTome(player.Tomes[index].DataID).GemsToUnlock
+	cost := player.Tomes[index].GetUnlockCost()
 
 	// check to see if the player has enough premium currency
 	if cost > player.PremiumCurrency {
