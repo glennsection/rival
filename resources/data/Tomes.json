@@ -24,7 +24,7 @@
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "rewardId": "TOME_VICTORY_01_REWARD",
-    "timeToUnlock": "240",
+    "timeToUnlock": "1800",
     "gemsToUnlock": "18"
   },
   {
@@ -33,7 +33,7 @@
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "rewardId": "TOME_VICTORY_02_REWARD",
-    "timeToUnlock": "300",
+    "timeToUnlock": "3600",
     "gemsToUnlock": "30"
   },
   {
@@ -42,7 +42,7 @@
     "prefab": "UI/Tomes/Cross/Cross",
     "icon": "UI/Tomes/Sprites/tome_CROSS",
     "rewardId": "TOME_SHOP_01_REWARD",
-    "timeToUnlock": "360",
+    "timeToUnlock": "7200",
     "gemsToUnlock": "55"
   },
   {
@@ -51,7 +51,7 @@
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "rewardId": "TOME_SHOP_02_REWARD",
-    "timeToUnlock": "720",
+    "timeToUnlock": "14400",
     "gemsToUnlock": "70"
   },
   {
@@ -60,7 +60,7 @@
     "prefab": "UI/Tomes/Gold/Gold",
     "icon": "UI/Tomes/Sprites/tome_GOLD",
     "rewardId": "TOME_SHOP_03_REWARD",
-    "timeToUnlock": "1440",
+    "timeToUnlock": "28800",
     "gemsToUnlock": "80"
   },
   {
@@ -69,7 +69,7 @@
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "rewardId": "TOME_SPECIAL_01_REWARD",
-    "timeToUnlock": "2880",
+    "timeToUnlock": "14400",
     "gemsToUnlock": "250"
   },
   {
@@ -78,7 +78,7 @@
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "rewardId": "TOME_SPECIAL_01_REWARD",
-    "timeToUnlock": "5760",
+    "timeToUnlock": "28800",
     "gemsToUnlock": "250"
   },
   {
@@ -87,7 +87,7 @@
     "prefab": "UI/Tomes/Leather/Leather",
     "icon": "UI/Tomes/Sprites/tome_LEATHER",
     "rewardId": "TOME_SPECIAL_01_REWARD",
-    "timeToUnlock": "11520",
+    "timeToUnlock": "57600",
     "gemsToUnlock": "250"
   },
   {
@@ -96,7 +96,7 @@
     "prefab": "UI/Tomes/Bloodstone/Bloodstone",
     "icon": "UI/Tomes/Sprites/tome_BLOODSTONE",
     "rewardId": "TOME_SPECIAL_01_REWARD",
-    "timeToUnlock": "23040",
+    "timeToUnlock": "115200",
     "gemsToUnlock": "500"
   },
   {
