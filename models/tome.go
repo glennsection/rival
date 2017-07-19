@@ -136,11 +136,8 @@ func (tome *Tome) GetUnlockCost() int {
 		return tomeData.GemsToUnlock
 	}
 
-	timeNow := util.TimeToTicks(time.Now())
-	unlockTime := tome.UnlockTime - timeNow
-	totalUnlockTime := util.TimeToTicks(time.Now().Add(time.Second * time.Duration(tomeData.TimeToUnlock))) - timeNow
-
-	return int(math.Ceil(float64(tomeData.GemsToUnlock) * float64(unlockTime / totalUnlockTime)))
+	timeRemaining := util.TicksToTime(tome.UnlockTime).Sub(time.Now().UTC())
+	return int(math.Ceil(float64(tomeData.GemsToUnlock) * (timeRemaining.Seconds() / float64(tomeData.TimeToUnlock))))
 }
 
 func GetEmptyTome() (tome Tome) {
