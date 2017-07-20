@@ -5,17 +5,16 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"bloodtales/util"	
+	"bloodtales/util"
 )
 
 // root data directory
-var url = "https://s3-us-west-1.amazonaws.com/bloodtalesdev/btMain"
-var rootDirectory string = "%v/server/GameData/%v"
+var rootDirectoryUrl string = "https://s3-us-west-1.amazonaws.com/bloodtalesdev/btMain/server/GameData/%v"
 
 // initialize data system
 func init() {
 	// create data table
-	dataIdMap = map[DataId]string {}
+	dataIdMap = map[DataId]string{}
 
 	// load all data files
 	// ------------------------------------------
@@ -42,15 +41,14 @@ func init() {
 // load a particular file into a container
 func loadDataFile(fileName string, processor func([]byte)) {
 	// read file
-	pathUrl := fmt.Sprintf(rootDirectory, url, fileName)
-	print(pathUrl)
+	pathUrl := fmt.Sprintf(rootDirectoryUrl, fileName)
 
 	rawUrl, errUrl := http.Get(pathUrl)
 	defer rawUrl.Body.Close()
 	util.Must(errUrl)
 
 	body, errUrl := ioutil.ReadAll(rawUrl.Body)
-	util.Must(errUrl)	
+	util.Must(errUrl)
 
 	// process
 	processor(body)
