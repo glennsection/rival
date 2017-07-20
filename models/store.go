@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"strconv"
 	"sort"
-	"fmt"
 
 	"bloodtales/data"
 	"bloodtales/util"
@@ -21,8 +20,6 @@ type StoreHistory struct {
 
 type StoreItem struct {
 	Name                    string
-	DisplayName 			string
-	Description 			string
 
 	ItemID                  string
 	Category                data.StoreCategory
@@ -31,7 +28,6 @@ type StoreItem struct {
 	Currency                data.CurrencyType
 	Cost                    float64
 
-	Availability 			data.AvailabilityType
 	IsOneTimeOffer 			bool
 	ExpirationDate 			int64
 }
@@ -41,8 +37,6 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	client := map[string]interface{} {}
 
 	client["id"] = storeItem.Name
-	client["displayName"] = storeItem.DisplayName
-	client["descrition"] = storeItem.Description
 	client["itemId"] = storeItem.ItemID
 	client["cost"] = storeItem.Cost
 	client["isOneTimeOffer"] = storeItem.IsOneTimeOffer
@@ -55,10 +49,6 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	}
 
 	if client["currency"], err = data.CurrencyTypeToString(storeItem.Currency); err != nil {
-		return nil, err
-	}
-
-	if client["availability"], err = data.AvailabilityTypeToString(storeItem.Availability); err != nil {
 		return nil, err
 	}
 
@@ -136,12 +126,10 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 	}
 
 	// next confirm the offer is available at this time
-	if storeItemData.Availability != data.Availability_Permanent {
 
-	  	if (storeItemData.AvailableDate > 0 && storeItemData.AvailableDate > currentDate) || 
-	       (storeItemData.ExpirationDate > 0 && currentDate > storeItemData.ExpirationDate) {
-			return false
-		}
+	if (storeItemData.AvailableDate > 0 && storeItemData.AvailableDate > currentDate) || 
+	   (storeItemData.ExpirationDate > 0 && currentDate > storeItemData.ExpirationDate) {
+		return false
 	}
 
 	if storeItemData.IsOneTimeOffer {
@@ -167,14 +155,11 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 func (player *Player) generateStoreItem(storeItemData *data.StoreItemData) (*StoreItem) {
 	storeItem := &StoreItem {
 		Name: storeItemData.Name,
-		DisplayName: storeItemData.DisplayName,
-		Description: storeItemData.Description,
 		ItemID: storeItemData.ItemID,
 		Category: storeItemData.Category,
 		RewardIDs: storeItemData.RewardIDs,
 		Currency: storeItemData.Currency,
 		Cost: storeItemData.Cost,
-		Availability: storeItemData.Availability,
 		IsOneTimeOffer: storeItemData.IsOneTimeOffer,
 	}
 
@@ -261,12 +246,10 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) (*StoreI
 
 	storeCard := &StoreItem {
 		Name: card.Name,
-		DisplayName: fmt.Sprintf("%s_NAME", card.Name),
 		ItemID: card.Name,
 		Category: data.StoreCategoryCards,
 		Currency: data.CurrencyStandard,
 		Cost: player.getCardCost(cardId),
-		Availability: data.Availability_Limited,
 		IsOneTimeOffer: false,
 		ExpirationDate: expirationDate,
 	}

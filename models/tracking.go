@@ -21,22 +21,28 @@ type Tracking struct {
 }
 
 func ensureIndexTracking(database *mgo.Database) {
-	c := database.C(TrackingCollectionName)
+	if util.HasSQLDatabase() {
+		// prepare DB schema
+		util.ExecuteSQL("./resources/models/tracking.sql")
+	} else {
+		// fallback on main database
+		c := database.C(TrackingCollectionName)
 
-	// user index
-	util.Must(c.EnsureIndex(mgo.Index {
-		Key:          []string { "us" },
-		Background:   true,
-		Sparse:       true,
-	}))
+		// user index
+		util.Must(c.EnsureIndex(mgo.Index {
+			Key:          []string { "us" },
+			Background:   true,
+			Sparse:       true,
+		}))
 
-	// expiration
-	util.Must(c.EnsureIndex(mgo.Index {
-		Key:          []string { "exp" },
-		Background:   true,
-		Sparse:       true,
-		ExpireAfter:  1,
-	}))
+		// expiration
+		util.Must(c.EnsureIndex(mgo.Index {
+			Key:          []string { "exp" },
+			Background:   true,
+			Sparse:       true,
+			ExpireAfter:  1,
+		}))
+	}
 }
 
 func GetTrackingById(context *util.Context, id bson.ObjectId) (tracking *Tracking, err error) {
