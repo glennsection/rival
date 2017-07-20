@@ -1,9 +1,9 @@
 package models
 
 import (
-	"time"
-	"math"
 	"encoding/json"
+	"math"
+	"time"
 
 	"bloodtales/data"
 	"bloodtales/util"
@@ -11,6 +11,7 @@ import (
 
 // tome state
 type TomeState int
+
 const (
 	TomeEmpty TomeState = iota
 	TomeLocked
@@ -20,17 +21,17 @@ const (
 
 // server model
 type Tome struct {
-	DataID         data.DataId   `bson:"id" json:"tomeId"`
-	State          TomeState     `bson:"st" json:"state"`
-	UnlockTime     int64     	`bson:"tu" json:"unlockTime"`
+	DataID     data.DataId `bson:"id" json:"tomeId"`
+	State      TomeState   `bson:"st" json:"state"`
+	UnlockTime int64       `bson:"tu" json:"unlockTime"`
 }
 
 // client model
 type TomeClientAlias Tome
 type TomeClient struct {
-	DataID         string        `json:"tomeId"`
-	State          string        `json:"state"`
-	UnlockTime     int64         `json:"unlockTime"`
+	DataID     string `json:"tomeId"`
+	State      string `json:"state"`
+	UnlockTime int64  `json:"unlockTime"`
 
 	*TomeClientAlias
 }
@@ -38,10 +39,10 @@ type TomeClient struct {
 // custom marshalling
 func (tome *Tome) MarshalJSON() ([]byte, error) {
 	// create client model
-	client := &TomeClient {
-		DataID: data.ToDataName(tome.DataID),
-		State: "Locked",
-		UnlockTime: tome.UnlockTime - util.TimeToTicks(time.Now().UTC()),
+	client := &TomeClient{
+		DataID:          data.ToDataName(tome.DataID),
+		State:           "Locked",
+		UnlockTime:      tome.UnlockTime - util.TimeToTicks(time.Now().UTC()),
 		TomeClientAlias: (*TomeClientAlias)(tome),
 	}
 
@@ -52,7 +53,7 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 	case TomeUnlocked:
 		client.State = "Unlocked"
 	}
-	
+
 	// marshal with client model
 	return json.Marshal(client)
 }
@@ -60,7 +61,7 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 // custom unmarshalling
 func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	// create client model
-	client := &TomeClient {
+	client := &TomeClient{
 		TomeClientAlias: (*TomeClientAlias)(tome),
 	}
 
@@ -142,8 +143,8 @@ func (tome *Tome) GetUnlockCost() int {
 
 func GetEmptyTome() (tome Tome) {
 	tome = Tome{
-		DataID: data.ToDataId(""),
-		State: TomeEmpty,
+		DataID:     data.ToDataId(""),
+		State:      TomeEmpty,
 		UnlockTime: 0,
 	}
 	return
@@ -182,14 +183,15 @@ func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
 func (tome *Tome) UpdateTome() {
 	if tome.State == TomeUnlocking && time.Now().After(util.TicksToTime(tome.UnlockTime)) {
 		tome.State = TomeUnlocked
-	} 
+	}
 }
 
 func (player *Player) UpdateTomes(context *util.Context) error {
 	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
 
 	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
-		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
+		//unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
+		unlockTime = unlockTime.Add(time.Duration(SecondsToUnlockFreeTome) * time.Seconds)
 		player.FreeTomes++
 	}
 
@@ -225,7 +227,7 @@ func (player *Player) ModifyArenaPoints(val int) {
 	}
 }
 
-func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward, err error) {
+func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, err error) {
 	err = player.UpdateTomes(context)
 
 	if player.FreeTomes == 0 || err != nil {
@@ -233,7 +235,8 @@ func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward,
 	}
 
 	if player.FreeTomes == 3 {
-		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
+		//player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
+		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(SecondsToUnlockFreeTome) * time.Second))
 	}
 
 	player.FreeTomes--
@@ -241,7 +244,7 @@ func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward,
 	tomeReward = player.GetReward(data.ToDataId("FREE_TOME_REWARD"))
 	err = player.AddRewards(tomeReward, context)
 
-	return 
+	return
 }
 
 func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward, err error) {
@@ -249,10 +252,10 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 		return
 	}
 
-	player.ArenaPoints = 0;
+	player.ArenaPoints = 0
 
 	tomeReward = player.GetReward(data.ToDataId("ARENA_TOME_REWARD"))
 	err = player.AddRewards(tomeReward, context)
 
-	return 
+	return
 }
