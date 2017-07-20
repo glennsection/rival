@@ -10,9 +10,11 @@ import (
 	"net/url"
 	"html"
 	"encoding/json"
+	"database/sql"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	_ "github.com/lib/pq"
 
 	"bloodtales/config"
 	"bloodtales/log"
@@ -21,6 +23,7 @@ import (
 type Context struct {
 	UserID          bson.ObjectId          `json:"-"`
 	DB              *mgo.Database          `json:"-"`
+	SQL             *sql.DB                `json:"-"`
 	Session         *Session               `json:"-"`
 	Cache           *Cache                 `json:"-"`
 	Client          *Client                `json:"-"`
@@ -45,6 +48,7 @@ func CreateContext(w http.ResponseWriter, r *http.Request) *Context {
 	// create context
 	context := &Context {
 		DB: GetDatabaseConnection(),
+		SQL: GetSQLDatabaseConnection(),
 		Session: session,
 		Cache: GetCacheConnection(),
 		Client: LoadClient(session),

@@ -6,6 +6,7 @@ import (
 
 // initialize models and collections
 func init() {
+	// no-sql database
 	db := util.GetDatabaseConnection()
 	defer db.Session.Close()
 	defer func() {

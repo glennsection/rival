@@ -1,99 +1,99 @@
 package models
 
 import (
-	"time"
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	
+	"time"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/config"
 	"bloodtales/data"
-	"bloodtales/util"
 	"bloodtales/log"
+	"bloodtales/util"
 )
 
 const PlayerCollectionName = "players"
-const MinutesToUnlockFreeTome = 5
+const MinutesToUnlockFreeTome = 15
 
 const (
-	PlayerDataMask_None util.Bits = 0x0
-	PlayerDataMask_All = 0xfffffff
-	PlayerDataMask_Name = 0x1
-	PlayerDataMask_Currency = 0x2
-	PlayerDataMask_XP = 0x4
-	PlayerDataMask_Cards = 0x8
-	PlayerDataMask_Deck = 0x10
-	PlayerDataMask_Loadout = 0x20
-	PlayerDataMask_Tomes = 0x40
-	PlayerDataMask_Stars = 0x80
-	PlayerDataMask_Quests = 0x100
-	PlayerDataMask_Friends = 0x200
-	PlayerDataMask_Guild = 0x400
+	PlayerDataMask_None     util.Bits = 0x0
+	PlayerDataMask_All                = 0xfffffff
+	PlayerDataMask_Name               = 0x1
+	PlayerDataMask_Currency           = 0x2
+	PlayerDataMask_XP                 = 0x4
+	PlayerDataMask_Cards              = 0x8
+	PlayerDataMask_Deck               = 0x10
+	PlayerDataMask_Loadout            = 0x20
+	PlayerDataMask_Tomes              = 0x40
+	PlayerDataMask_Stars              = 0x80
+	PlayerDataMask_Quests             = 0x100
+	PlayerDataMask_Friends            = 0x200
+	PlayerDataMask_Guild              = 0x400
 )
 
 type Player struct {
-	ID                  bson.ObjectId				`bson:"_id,omitempty" json:"-"`
-	UserID              bson.ObjectId   			`bson:"us" json:"-"`
-	LastTime            time.Time       			`bson:"tz" json:"-"`
-	Name                string          			`bson:"-" json:"name"`
-	Tag                 string          			`bson:"-" json:"tag"`
-	XP                  int             			`bson:"xp" json:"xp"`
-	RankPoints          int             			`bson:"rk" json:"rankPoints"`
-	Rating              int             			`bson:"rt" json:"rating"`
+	ID         bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	UserID     bson.ObjectId `bson:"us" json:"-"`
+	LastTime   time.Time     `bson:"tz" json:"-"`
+	Name       string        `bson:"-" json:"name"`
+	Tag        string        `bson:"-" json:"tag"`
+	XP         int           `bson:"xp" json:"xp"`
+	RankPoints int           `bson:"rk" json:"rankPoints"`
+	Rating     int           `bson:"rt" json:"rating"`
 
-	WinCount            int             			`bson:"wc" json:"winCount"`
-	LossCount           int             			`bson:"lc" json:"lossCount"`
-	MatchCount          int             			`bson:"mc" json:"matchCount"`
+	WinCount   int `bson:"wc" json:"winCount"`
+	LossCount  int `bson:"lc" json:"lossCount"`
+	MatchCount int `bson:"mc" json:"matchCount"`
 
-	StandardCurrency    int             			`bson:"cs" json:"standardCurrency"`
-	PremiumCurrency     int             			`bson:"cp" json:"premiumCurrency"`
-	Cards               []Card          			`bson:"cd" json:"cards"`
-	UncollectedCards    []Card          			`bson:"uc" json:"uncollectedCards"`
-	Decks               []Deck          			`bson:"ds" json:"decks"`
-	CurrentDeck         int             			`bson:"dc" json:"currentDeck"`
-	Tomes               []Tome          			`bson:"tm" json:"tomes"`
-	ArenaPoints         int             			`bson:"ap" json:"arenaPoints"`
-	FreeTomes           int             			`bson:"ft" json:"freeTomes"`
-	FreeTomeUnlockTime  int64           			`bson:"fu" json:"freeTomeUnlockTime"`
+	StandardCurrency   int    `bson:"cs" json:"standardCurrency"`
+	PremiumCurrency    int    `bson:"cp" json:"premiumCurrency"`
+	Cards              []Card `bson:"cd" json:"cards"`
+	UncollectedCards   []Card `bson:"uc" json:"uncollectedCards"`
+	Decks              []Deck `bson:"ds" json:"decks"`
+	CurrentDeck        int    `bson:"dc" json:"currentDeck"`
+	Tomes              []Tome `bson:"tm" json:"tomes"`
+	ArenaPoints        int    `bson:"ap" json:"arenaPoints"`
+	FreeTomes          int    `bson:"ft" json:"freeTomes"`
+	FreeTomeUnlockTime int64  `bson:"fu" json:"freeTomeUnlockTime"`
 
-	QuestSlots 			[]QuestSlot 				`bson:"qu" json:"quests"`
-	QuestClearTime 		int64 						`bson:"qc" json:"questClearTime"`
+	QuestSlots     []QuestSlot `bson:"qu" json:"quests"`
+	QuestClearTime int64       `bson:"qc" json:"questClearTime"`
 
-	GuildID             bson.ObjectId   			`bson:"gd,omitempty" json:"-"`
-	GuildRole           GuildRole       			`bson:"gr,omitempty" json:"-"`
+	GuildID   bson.ObjectId `bson:"gd,omitempty" json:"-"`
+	GuildRole GuildRole     `bson:"gr,omitempty" json:"-"`
 
-	DirtyMask           util.Bits      				`bson:"-" json:"-"`
+	DirtyMask util.Bits `bson:"-" json:"-"`
 
-	Store 			 	StoreHistory		 		`bson:"sh"`
+	Store StoreHistory `bson:"sh"`
 }
 
 // client model
 type PlayerClient struct {
-	Name                string          			`json:"name"`
-	Tag                 string          			`json:"tag"`
-	XP                  int             			`json:"xp"`
-	RankPoints          int             			`json:"rankPoints"`
-	Rating              int             			`json:"rating"`
+	Name       string `json:"name"`
+	Tag        string `json:"tag"`
+	XP         int    `json:"xp"`
+	RankPoints int    `json:"rankPoints"`
+	Rating     int    `json:"rating"`
 
-	WinCount            int             			`json:"winCount"`
-	LossCount           int             			`json:"lossCount"`
-	MatchCount          int             			`json:"matchCount"`
+	WinCount   int `json:"winCount"`
+	LossCount  int `json:"lossCount"`
+	MatchCount int `json:"matchCount"`
 
-	GuildRole           GuildRole       			`json:"guildRole"`
+	GuildRole GuildRole `json:"guildRole"`
 
-	Online              bool            			`json:"online"`
-	LastOnline          int64           			`json:"lastOnline"`
+	Online     bool  `json:"online"`
+	LastOnline int64 `json:"lastOnline"`
 }
 
 func ensureIndexPlayer(database *mgo.Database) {
 	c := database.C(PlayerCollectionName)
 
 	// username index
-	util.Must(c.EnsureIndex(mgo.Index {
-		Key:        []string { "us" },
+	util.Must(c.EnsureIndex(mgo.Index{
+		Key:        []string{"us"},
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
@@ -102,13 +102,13 @@ func ensureIndexPlayer(database *mgo.Database) {
 
 func GetPlayerById(context *util.Context, id bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
-	err = context.DB.C(PlayerCollectionName).Find(bson.M { "_id": id } ).One(&player)
+	err = context.DB.C(PlayerCollectionName).Find(bson.M{"_id": id}).One(&player)
 	return
 }
 
 func GetPlayerByUser(context *util.Context, userId bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
-	err = context.DB.C(PlayerCollectionName).Find(bson.M { "us": userId } ).One(&player)
+	err = context.DB.C(PlayerCollectionName).Find(bson.M{"us": userId}).One(&player)
 	return
 }
 
@@ -130,19 +130,19 @@ func (player *Player) loadDefaults() (err error) {
 
 	// assign starting quests (must happen after default cards are assigned - quests use player's card list)
 	player.SetupQuestDefaults()
-	
+
 	return
 }
 
 func CreatePlayer(userID bson.ObjectId) (player *Player, err error) {
-	player = &Player {}
+	player = &Player{}
 
 	// load initial player data values
 	err = player.loadDefaults()
 	if err != nil {
 		return
 	}
-	
+
 	player.UserID = userID
 	return
 }
@@ -155,24 +155,24 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 
 	// check if online (TODO - better validation?)
 	lastOnline := time.Now().Sub(player.LastTime)
-	online := (lastOnline < time.Second * config.Config.Sessions.OfflineTimeout)
+	online := (lastOnline < time.Second*config.Config.Sessions.OfflineTimeout)
 
 	// create player client
-	client = &PlayerClient {
-		Name: playerUser.Name,
-		Tag: playerUser.Tag,
-		XP: player.XP,
+	client = &PlayerClient{
+		Name:       playerUser.Name,
+		Tag:        playerUser.Tag,
+		XP:         player.XP,
 		RankPoints: player.RankPoints,
-		Rating: player.Rating,
+		Rating:     player.Rating,
 
-		WinCount: player.WinCount,
-		LossCount: player.LossCount,
+		WinCount:   player.WinCount,
+		LossCount:  player.LossCount,
 		MatchCount: player.MatchCount,
 
 		//GuildName: ... // TODO
 		GuildRole: player.GuildRole,
 
-		Online: online,
+		Online:     online,
 		LastOnline: util.DurationToTicks(lastOnline),
 	}
 	return
@@ -186,9 +186,9 @@ func (player *Player) Reset(context *util.Context) (err error) {
 	}
 
 	// clear cache for player
-	context.Cache.Set("PlayerUserId:" + player.ID.Hex(), nil)
-	context.Cache.Set("PlayerName:" + player.ID.Hex(), nil)
-	context.Cache.Set("UserName:" + player.UserID.Hex(), nil)
+	context.Cache.Set("PlayerUserId:"+player.ID.Hex(), nil)
+	context.Cache.Set("PlayerName:"+player.ID.Hex(), nil)
+	context.Cache.Set("UserName:"+player.UserID.Hex(), nil)
 	context.Cache.RemoveScore("Leaderboard", player.ID.Hex())
 
 	// update database
@@ -198,12 +198,12 @@ func (player *Player) Reset(context *util.Context) (err error) {
 func ResetPlayers(context *util.Context) error {
 	// TODO - this is an example of a bulk aggregate operation, but isn't fully tested...
 	var result bson.D
-	return context.DB.Run(bson.D {
-		bson.DocElem { "update",  PlayerCollectionName },
-		bson.DocElem { "updates",  []bson.M {
-			bson.M {
-				"q": bson.M {},
-				"u": bson.M {
+	return context.DB.Run(bson.D{
+		bson.DocElem{"update", PlayerCollectionName},
+		bson.DocElem{"updates", []bson.M{
+			bson.M{
+				"q": bson.M{},
+				"u": bson.M{
 					"xp": 0,
 					"rk": 0,
 					"rt": 1200,
@@ -212,17 +212,17 @@ func ResetPlayers(context *util.Context) error {
 					"mc": 0,
 					"ap": 0,
 				},
-				"multi": false,
+				"multi":  false,
 				"upsert": false,
-				"limit": 0,
+				"limit":  0,
 			},
-		} },
-		bson.DocElem { "writeConcern", bson.M {
-			"w": 1,
-			"j": true,
+		}},
+		bson.DocElem{"writeConcern", bson.M{
+			"w":        1,
+			"j":        true,
 			"wtimeout": 1000,
-		} },
-		bson.DocElem { "ordered", false },
+		}},
+		bson.DocElem{"ordered", false},
 	}, &result)
 }
 
@@ -235,7 +235,7 @@ func (player *Player) Save(context *util.Context) (err error) {
 	player.LastTime = time.Now()
 
 	// update entire player to database
-	_, err = context.DB.C(PlayerCollectionName).Upsert(bson.M { "_id": player.ID }, player)
+	_, err = context.DB.C(PlayerCollectionName).Upsert(bson.M{"_id": player.ID}, player)
 	return
 }
 
@@ -251,13 +251,13 @@ func (player *Player) UpdateFromJson(context *util.Context, data string) (err er
 
 func (player *Player) Update(context *util.Context, updates bson.M) (err error) {
 	// update given values
-	err = context.DB.C(PlayerCollectionName).Update(bson.M { "_id": player.ID }, bson.M { "$set": updates })
+	err = context.DB.C(PlayerCollectionName).Update(bson.M{"_id": player.ID}, bson.M{"$set": updates})
 	return
 }
 
 func (player *Player) Delete(context *util.Context) (err error) {
 	// delete player from database
-	return context.DB.C(PlayerCollectionName).Remove(bson.M { "_id": player.ID })
+	return context.DB.C(PlayerCollectionName).Remove(bson.M{"_id": player.ID})
 }
 
 func GetUserIdByPlayerId(context *util.Context, playerID bson.ObjectId) bson.ObjectId {
@@ -353,7 +353,7 @@ func (player *Player) GetDrawCount() int {
 
 func (player *Player) GetWinRatio() string {
 	if player.MatchCount > 0 {
-		return fmt.Sprintf("%d%%", player.WinCount * 100 / player.MatchCount)
+		return fmt.Sprintf("%d%%", player.WinCount*100/player.MatchCount)
 	}
 	return "-"
 }
@@ -374,7 +374,7 @@ func (player *Player) GetRankName() string {
 	rank := player.GetRankData()
 	if rank != nil {
 		tier := rank.GetTier()
-		rankInTier := rank.Level - (tier - 1) * 5
+		rankInTier := rank.Level - (tier-1)*5
 		// return fmt.Sprintf("Tier %d Rank %d", tier, rankInTier)
 		return fmt.Sprintf("%d-%d", tier, rankInTier)
 	}
@@ -413,12 +413,12 @@ func UpdateAllPlayersPlace(context *util.Context) {
 
 func (player *Player) SetDirty(flags ...util.Bits) {
 	for _, flag := range flags {
-		player.DirtyMask = util.SetMask(player.DirtyMask, flag);
+		player.DirtyMask = util.SetMask(player.DirtyMask, flag)
 	}
 }
 
 func (player *Player) SetAllDirty() {
-	player.DirtyMask = PlayerDataMask_All;
+	player.DirtyMask = PlayerDataMask_All
 }
 
 func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{} {
@@ -429,7 +429,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 	}
 
 	// create player data map
-	dataMap := map[string]interface{} {}
+	dataMap := map[string]interface{}{}
 
 	// check all updated data
 	if util.CheckMask(dirtyMask, PlayerDataMask_Name) {
@@ -446,27 +446,27 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 		dataMap["level"] = player.GetLevel()
 		dataMap["xp"] = player.XP
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Cards) {
 		dataMap["cards"] = player.Cards
 		dataMap["uncollectedCards"] = player.UncollectedCards
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Deck) {
 		dataMap["decks"] = player.Decks
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Loadout) {
 		dataMap["currentDeck"] = player.CurrentDeck
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Tomes) {
 		dataMap["tomes"] = player.Tomes
 		dataMap["arenaPoints"] = player.ArenaPoints
 		dataMap["freeTomes"] = player.FreeTomes
 		dataMap["freeTomeUnlockTime"] = player.FreeTomeUnlockTime
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Stars) {
 		dataMap["rankPoints"] = player.RankPoints
 		dataMap["rating"] = player.Rating
@@ -474,17 +474,17 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 		dataMap["lossCount"] = player.LossCount
 		dataMap["matchCount"] = player.MatchCount
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Quests) {
 		dataMap["quests"] = player.QuestSlots
 		dataMap["questClearTime"] = player.QuestClearTime
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Friends) {
 		var friends []PlayerClient
 		dataMap["friends"] = friends
 	}
-	
+
 	if util.CheckMask(dirtyMask, PlayerDataMask_Guild) {
 		if player.GuildID.Valid() {
 			guild, err := GetGuildById(context, player.GuildID)
