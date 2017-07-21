@@ -1,8 +1,6 @@
 package controllers 
 
 import(
-	"time"
-
 	"bloodtales/system"
 	"bloodtales/util"
 	"bloodtales/data"
@@ -158,8 +156,7 @@ func DebugRefreshStore(context *util.Context) {
 func DebugClearStoreHistory(context *util.Context) {
 	player := GetPlayer(context)
 
-	player.Store.Purchases = map[string][]time.Time {}
-	player.Store.CustomExpirationDates = map[string]int64 {}
+	player.Store.SpecialOfferHistory = map[string]models.OfferHistory {}
 
 	player.Save(context)
 }

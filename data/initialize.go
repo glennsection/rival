@@ -3,35 +3,35 @@ package data
 import (
 	"fmt"
 	"io/ioutil"
-	"path/filepath"
+	"net/http"
 
 	"bloodtales/util"
 )
 
 // root data directory
-var rootDirectory string = "./resources/data/%v.json"
+var rootDirectoryUrl string = "https://s3-us-west-1.amazonaws.com/bloodtalesdev/btMain/server/GameData/%v"
 
 // initialize data system
 func init() {
 	// create data table
-	dataIdMap = map[DataId]string {}
+	dataIdMap = map[DataId]string{}
 
 	// load all data files
 	// ------------------------------------------
-	loadDataFile("PlayerLevelProgression", LoadPlayerLevelProgression)
-	loadDataFile("Cards", LoadCards)
-	loadDataFile("CommonCardLeveling", LoadCommonCardProgression)
-	loadDataFile("RareCardLeveling", LoadRareCardProgression)
-	loadDataFile("EpicCardLeveling", LoadEpicCardProgression)
-	loadDataFile("LegendaryCardLeveling", LoadLegendaryCardProgression)
-	loadDataFile("Tomes", LoadTomes)
-	loadDataFile("TomeOrder", LoadTomeOrder)
-	loadDataFile("PvPRanking", LoadRanks)
-	loadDataFile("Rewards", LoadRewardData)
-	loadDataFile("Store", LoadStore)
-	loadDataFile("CardPurchaseCosts", LoadCardPurchaseCosts)
-	loadDataFile("Rarity", LoadRarityData)
-	loadDataFile("QuestTypes", LoadQuestData)
+	loadDataFile("ExcelConverted/PlayerLevelProgression.json", LoadPlayerLevelProgression)
+	loadDataFile("ExcelConverted/Cards.json", LoadCards)
+	loadDataFile("ExcelConverted/CommonCardLeveling.json", LoadCommonCardProgression)
+	loadDataFile("ExcelConverted/RareCardLeveling.json", LoadRareCardProgression)
+	loadDataFile("ExcelConverted/EpicCardLeveling.json", LoadEpicCardProgression)
+	loadDataFile("ExcelConverted/LegendaryCardLeveling.json", LoadLegendaryCardProgression)
+	loadDataFile("ExcelConverted/Tomes.json", LoadTomes)
+	loadDataFile("ExcelConverted/TomeOrder.json", LoadTomeOrder)
+	loadDataFile("ExcelConverted/PvPRanking.json", LoadRanks)
+	loadDataFile("ExcelConverted/Rewards.json", LoadRewardData)
+	loadDataFile("ExcelConverted/Store.json", LoadStore)
+	loadDataFile("ExcelConverted/CardPurchaseCosts.json", LoadCardPurchaseCosts)
+	loadDataFile("ExcelConverted/Rarity.json", LoadRarityData)
+	loadDataFile("Definitions/QuestTypes.txt", LoadQuestData)
 	// ------------------------------------------
 
 	// template funcs
@@ -41,12 +41,15 @@ func init() {
 // load a particular file into a container
 func loadDataFile(fileName string, processor func([]byte)) {
 	// read file
-	path, err := filepath.Abs(fmt.Sprintf(rootDirectory, fileName))
-	util.Must(err)
+	pathUrl := fmt.Sprintf(rootDirectoryUrl, fileName)
 
-	raw, err := ioutil.ReadFile(path)
-	util.Must(err)
+	rawUrl, errUrl := http.Get(pathUrl)
+	defer rawUrl.Body.Close()
+	util.Must(errUrl)
+
+	body, errUrl := ioutil.ReadAll(rawUrl.Body)
+	util.Must(errUrl)
 
 	// process
-	processor(raw)
+	processor(body)
 }
