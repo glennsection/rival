@@ -189,7 +189,7 @@ func (player *Player) UpdateTomes(context *util.Context) error {
 	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
 
 	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
-		unlockTime = unlockTime.Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute)
+		unlockTime = unlockTime.Add(time.Duration(SecondsToUnlockFreeTome) * time.Second)
 		player.FreeTomes++
 	}
 
@@ -233,7 +233,7 @@ func (player *Player) ClaimFreeTome(context *util.Context,) (tomeReward *Reward,
 	}
 
 	if player.FreeTomes == 3 {
-		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(MinutesToUnlockFreeTome) * time.Minute))
+		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(SecondsToUnlockFreeTome) * time.Second))
 	}
 
 	player.FreeTomes--

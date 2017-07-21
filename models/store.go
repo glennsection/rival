@@ -1,40 +1,40 @@
 package models
 
-import ( 
-	"time"
-	"math/rand"
+import (
 	"encoding/json"
-	"strconv"
+	"math/rand"
 	"sort"
+	"strconv"
+	"time"
 
 	"bloodtales/data"
 	"bloodtales/util"
 )
 
 type StoreHistory struct {
-	LastUpdate 					int64 						`bson:"lu"`
-	CurrentOffers 				map[string]StoreItem 		`bson:"co"`
-	Purchases 					map[string][]time.Time 		`bson:"ph"`
-	CustomExpirationDates		map[string]int64 			`bson:"ed"`
+	LastUpdate            int64                  `bson:"lu"`
+	CurrentOffers         map[string]StoreItem   `bson:"co"`
+	Purchases             map[string][]time.Time `bson:"ph"`
+	CustomExpirationDates map[string]int64       `bson:"ed"`
 }
 
 type StoreItem struct {
-	Name                    string
+	Name string
 
-	ItemID                  string
-	Category                data.StoreCategory
-	RewardIDs				[]data.DataId
+	ItemID    string
+	Category  data.StoreCategory
+	RewardIDs []data.DataId
 
-	Currency                data.CurrencyType
-	Cost                    float64
+	Currency data.CurrencyType
+	Cost     float64
 
-	IsOneTimeOffer 			bool
-	ExpirationDate 			int64
+	IsOneTimeOffer bool
+	ExpirationDate int64
 }
 
 // custom marshalling
 func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
-	client := map[string]interface{} {}
+	client := map[string]interface{}{}
 
 	client["id"] = storeItem.Name
 	client["itemId"] = storeItem.ItemID
@@ -58,8 +58,8 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	}
 	client["rewardIds"] = util.StringArrayToString(clientRewards)
 
-	if(storeItem.ExpirationDate > 0) {
-		client["expirationDate"] = strconv.FormatInt(storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC()), 10)	
+	if storeItem.ExpirationDate > 0 {
+		client["expirationDate"] = strconv.FormatInt(storeItem.ExpirationDate-util.TimeToTicks(time.Now().UTC()), 10)
 	}
 
 	return json.Marshal(client)
@@ -67,9 +67,9 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 
 func (player *Player) InitStore() {
 	player.Store = StoreHistory{
-		LastUpdate: 0,
-		Purchases: map[string][]time.Time {},
-		CustomExpirationDates: map[string]int64 {},
+		LastUpdate:            0,
+		Purchases:             map[string][]time.Time{},
+		CustomExpirationDates: map[string]int64{},
 	}
 }
 
@@ -86,14 +86,14 @@ func (player *Player) RecordPurchase(id string) {
 }
 
 func (player *Player) GetCurrentStoreOffers(context *util.Context) map[string]StoreItem {
-	year, month, day := time.Now().UTC().Date() 
+	year, month, day := time.Now().UTC().Date()
 	currentDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
 
 	save := false
 
 	if currentDate > player.Store.LastUpdate || len(player.Store.CurrentOffers) == 0 {
 		player.Store.LastUpdate = currentDate
-		player.Store.CurrentOffers = map[string]StoreItem {}
+		player.Store.CurrentOffers = map[string]StoreItem{}
 		player.getStoreCards()
 
 		storeItems := data.GetStoreItemDataCollection()
@@ -105,7 +105,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) map[string]St
 			}
 
 			if storeItem := player.generateStoreItem(storeItemData); storeItem != nil {
-				player.Store.CurrentOffers[(*storeItem).Name] =  *storeItem
+				player.Store.CurrentOffers[(*storeItem).Name] = *storeItem
 			}
 		}
 
@@ -119,7 +119,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) map[string]St
 	return player.Store.CurrentOffers
 }
 
-func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate int64) bool { 
+func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate int64) bool {
 	// first confirm the offer is available in the player's current league
 	if storeItemData.League != 0 && storeItemData.League != player.GetRankTier() {
 		return false
@@ -127,8 +127,8 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 
 	// next confirm the offer is available at this time
 
-	if (storeItemData.AvailableDate > 0 && storeItemData.AvailableDate > currentDate) || 
-	   (storeItemData.ExpirationDate > 0 && currentDate > storeItemData.ExpirationDate) {
+	if (storeItemData.AvailableDate > 0 && storeItemData.AvailableDate > currentDate) ||
+		(storeItemData.ExpirationDate > 0 && currentDate > storeItemData.ExpirationDate) {
 		return false
 	}
 
@@ -152,14 +152,14 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 	return true
 }
 
-func (player *Player) generateStoreItem(storeItemData *data.StoreItemData) (*StoreItem) {
-	storeItem := &StoreItem {
-		Name: storeItemData.Name,
-		ItemID: storeItemData.ItemID,
-		Category: storeItemData.Category,
-		RewardIDs: storeItemData.RewardIDs,
-		Currency: storeItemData.Currency,
-		Cost: storeItemData.Cost,
+func (player *Player) generateStoreItem(storeItemData *data.StoreItemData) *StoreItem {
+	storeItem := &StoreItem{
+		Name:           storeItemData.Name,
+		ItemID:         storeItemData.ItemID,
+		Category:       storeItemData.Category,
+		RewardIDs:      storeItemData.RewardIDs,
+		Currency:       storeItemData.Currency,
+		Cost:           storeItemData.Cost,
 		IsOneTimeOffer: storeItemData.IsOneTimeOffer,
 	}
 
@@ -172,7 +172,7 @@ func (player *Player) generateStoreItem(storeItemData *data.StoreItemData) (*Sto
 			expirationDate = customExpDate
 		} else {
 			// generate a date and store it
-			year, month, day := time.Now().UTC().Date() 
+			year, month, day := time.Now().UTC().Date()
 			expirationDate = util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, storeItemData.Duration))
 
 			if storeItemData.ExpirationDate > 0 && storeItemData.ExpirationDate < expirationDate {
@@ -191,8 +191,8 @@ func (player *Player) generateStoreItem(storeItemData *data.StoreItemData) (*Sto
 }
 
 func (player *Player) getStoreCards() {
-		
-	for i,_ := range player.Cards {
+
+	for i := range player.Cards {
 		player.Cards[i].PurchaseCount = 0
 	}
 
@@ -201,23 +201,23 @@ func (player *Player) getStoreCards() {
 	// get individual card offers
 	var cardTypes []string
 	if player.GetRankTier() == 6 {
-		cardTypes = []string{"COMMON","COMMON","RARE","EPIC","LEGENDARY"}
+		cardTypes = []string{"COMMON", "COMMON", "RARE", "EPIC", "LEGENDARY"}
 	} else {
-		cardTypes = []string{"COMMON","COMMON","RARE","EPIC"}
+		cardTypes = []string{"COMMON", "COMMON", "RARE", "EPIC"}
 	}
 
-	year, month, day := time.Now().UTC().Date() 
+	year, month, day := time.Now().UTC().Date()
 	expDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, 1))
 
-	for _,cardType := range cardTypes {
+	for _, cardType := range cardTypes {
 
 		if storeItem := player.getStoreCard(cardType, expDate); storeItem != nil {
-			player.Store.CurrentOffers[(*storeItem).Name] =  *storeItem
+			player.Store.CurrentOffers[(*storeItem).Name] = *storeItem
 		}
 	}
 }
 
-func (player *Player) getStoreCard(rarity string, expirationDate int64) (*StoreItem) {
+func (player *Player) getStoreCard(rarity string, expirationDate int64) *StoreItem {
 	// get cards of the desired rarity
 	getCard := func(card *data.CardData) bool {
 
@@ -231,25 +231,25 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) (*StoreI
 
 		return card.Rarity == rarity // ensure rarity is correct
 	}
-	cardIds := data.GetCards(getCard)
+	cardIDs := data.GetCards(getCard)
 
-	if len(cardIds) == 0 {
+	if len(cardIDs) == 0 {
 		return nil
 	}
 
 	// sort these cards to ensure we get the same cards for the generated index every time
-	sort.Sort(data.DataIdCollection(cardIds))
+	sort.Sort(data.DataIdCollection(cardIDs))
 
 	// select a card
-	cardId := cardIds[rand.Intn(len(cardIds))]
-	card := data.GetCard(cardId)
+	cardID := cardIDs[rand.Intn(len(cardIDs))]
+	card := data.GetCard(cardID)
 
-	storeCard := &StoreItem {
-		Name: card.Name,
-		ItemID: card.Name,
-		Category: data.StoreCategoryCards,
-		Currency: data.CurrencyStandard,
-		Cost: player.getCardCost(cardId),
+	storeCard := &StoreItem{
+		Name:           card.Name,
+		ItemID:         card.Name,
+		Category:       data.StoreCategoryCards,
+		Currency:       data.CurrencyStandard,
+		Cost:           player.getCardCost(cardID),
 		IsOneTimeOffer: false,
 		ExpirationDate: expirationDate,
 	}
@@ -277,9 +277,9 @@ func (player *Player) HandleCardPurchase(storeItem *StoreItem) {
 
 	player.AddCards(id, 1)
 
-	cardRef,_ := player.HasCard(id)
+	cardRef, _ := player.HasCard(id)
 	cardRef.PurchaseCount++
-	
+
 	storeItem.Cost = player.getCardCost(id)
 	player.Store.CurrentOffers[storeItem.Name] = *storeItem
 }
