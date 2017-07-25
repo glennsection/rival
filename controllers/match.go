@@ -51,6 +51,9 @@ func MatchResult(context *util.Context) {
 	roomID := context.Params.GetRequiredString("roomId")
 
 	player := GetPlayer(context)
+
+	// remember previous rank
+	context.SetData("previousRankPoints", player.RankPoints)
 	
 	// update match as complete
 	_, reward, err := models.CompleteMatch(context, player, roomID, outcome, playerScore, opponentScore)
