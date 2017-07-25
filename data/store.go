@@ -26,6 +26,15 @@ const (
 	StoreCategorySpecialOffers
 )
 
+type OfferPriority int
+const (
+	OfferPriority_Highest OfferPriority = iota
+	OfferPriority_High 
+	OfferPriority_Medium 
+	OfferPriority_Low 
+	OfferPriority_Lowest
+)
+
 // server data
 type StoreItemData struct {
 	Name                    string
@@ -37,8 +46,8 @@ type StoreItemData struct {
 	Currency                CurrencyType
 	Cost                    float64
 
+	Priority 				OfferPriority
 	League 					int
-	IsOneTimeOffer 			bool
 	AvailableDate 			int64
 	ExpirationDate 			int64
 	Duration 				int
@@ -56,8 +65,8 @@ type StoreItemDataClient struct {
 	Currency                string        `json:"currency"`
 	Cost                    float64       `json:"cost,string"`
 
+	Priority 				string 		  `json:"priority"`
 	League 					string 		  `json:"league"`
-	IsOneTimeOffer 			bool 		  `json:"isOneTimeOffer,string"`
 	AvailableDate 			string 		  `json:"availableDate"`
 	ExpirationDate 			string 		  `json:"expirationDate"`
 	Duration 				string 		  `json:"duration"`
@@ -70,6 +79,9 @@ type CardPurchaseCost struct {
 
 // store item data map
 var storeItems map[DataId]*StoreItemData
+
+// special offer data map
+var specialOffers map[DataId]*StoreItemData
 
 // card purchasing data map
 var cardPurchaseCosts map[string][]int
@@ -101,7 +113,6 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	storeItemData.Name = client.Name
 	storeItemData.ItemID = client.ItemID
 	storeItemData.Cost = client.Cost
-	storeItemData.IsOneTimeOffer = client.IsOneTimeOffer
 
 	// server reward ids
 	storeItemData.RewardIDs = make([]DataId, 0)
@@ -122,6 +133,13 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	// server currency
 	if storeItemData.Currency, err = StringToCurrencyType(client.Currency); err != nil {
 		panic(err)
+	}
+
+	// server priority
+	if storeItemData.Category == StoreCategorySpecialOffers {
+		if storeItemData.Priority, err = StringToOfferPriority(client.Priority); err != nil {
+			panic(err)
+		}
 	}
 
 	// server League
@@ -171,6 +189,7 @@ func LoadStore(raw []byte) {
 
 	// enter into system data
 	storeItems = map[DataId]*StoreItemData {}
+	specialOffers = map[DataId]*StoreItemData {}
 	for i, storeItem := range container.Store {
 		name := storeItem.GetDataName()
 
@@ -178,8 +197,12 @@ func LoadStore(raw []byte) {
 		id, err := mapDataName(name)
 		util.Must(err)
 
-		// insert into table
-		storeItems[id] = &container.Store[i]
+		// insert into appropriate table
+		if storeItem.Category == StoreCategorySpecialOffers {
+			specialOffers[id] = &container.Store[i]
+		} else {
+			storeItems[id] = &container.Store[i]
+		}
 	}
 }
 
@@ -197,11 +220,23 @@ func LoadCardPurchaseCosts(raw []byte) {
 
 // get store item by server ID
 func GetStoreItemData(id DataId) (store *StoreItemData) {
-	return storeItems[id]
+	if storeItem, contains := storeItems[id]; contains {
+		return storeItem
+	} else {
+		if specialOffer, contains := specialOffers[id]; contains {
+			return specialOffer
+		}
+	}
+
+	return nil
 }
 
 func GetStoreItemDataCollection() (map[DataId]*StoreItemData) {
 	return storeItems
+}
+
+func GetSpecialOfferCollection() (map[DataId]*StoreItemData) {
+	return specialOffers
 }
 
 // cards can't be purchased past a certain level specific to each rarity. this function
@@ -281,4 +316,38 @@ func StringToCurrencyType(val string) (CurrencyType, error) {
 	}
 
 	return CurrencyStandard, errors.New(fmt.Sprintf("Cannot convert %s to CurrencyType", val))
+}
+
+func OfferPriorityToString(val OfferPriority) (string, error) {
+	switch val {
+	case OfferPriority_Highest:
+		return "Highest", nil
+	case OfferPriority_High:
+		return "High", nil
+	case OfferPriority_Medium:
+		return "Medium", nil
+	case OfferPriority_Low:
+		return "Low", nil
+	case OfferPriority_Lowest:
+		return "Lowest", nil
+	}
+
+	return "", errors.New("Invalid value passed as OfferPriority")
+}
+
+func StringToOfferPriority(val string) (OfferPriority, error) {
+	switch val {
+	case "Highest":
+		return OfferPriority_Highest, nil
+	case "High":
+		return OfferPriority_High, nil
+	case "Medium":
+		return OfferPriority_Medium, nil
+	case "Low":
+		return OfferPriority_Low, nil
+	case "Lowest":
+		return OfferPriority_Lowest, nil
+	}
+
+	return OfferPriority_Lowest, errors.New(fmt.Sprintf("Cannot convert %s to OfferPriority", val))
 }

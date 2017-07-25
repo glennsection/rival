@@ -1,45 +1,49 @@
 package models
 
-import ( 
-	"time"
-	"math/rand"
+import (
 	"encoding/json"
-	"strconv"
+	"math/rand"
 	"sort"
+	"strconv"
+	"time"
 
 	"bloodtales/data"
 	"bloodtales/util"
 )
 
+type OfferHistory struct {
+	ExpirationDate 				time.Time
+	Purchased 					bool
+}
+
 type StoreHistory struct {
 	LastUpdate 					int64 						`bson:"lu"`
-	CurrentOffers 				map[string]StoreItem 		`bson:"co"`
-	Purchases 					map[string][]time.Time 		`bson:"ph"`
-	CustomExpirationDates		map[string]int64 			`bson:"ed"`
+	Cards 	 					[]StoreItem 				`bson:"co"`
+	SpecialOffer 				StoreItem 					`bson:"so"`
+	SpecialOfferQueue 			OfferQueue 					`bson:"oq"`
+	SpecialOfferHistory 		map[string]OfferHistory		`bson:"ed"`
 }
 
 type StoreItem struct {
-	Name                    string
+	Name 						string
 
-	ItemID                  string
-	Category                data.StoreCategory
-	RewardIDs				[]data.DataId
+	ItemID    					string
+	Category  					data.StoreCategory
+	RewardIDs 					[]data.DataId
 
-	Currency                data.CurrencyType
-	Cost                    float64
+	Currency 					data.CurrencyType
+	Cost     					float64
 
-	IsOneTimeOffer 			bool
-	ExpirationDate 			int64
+	ExpirationDate 				int64
 }
 
 // custom marshalling
 func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
-	client := map[string]interface{} {}
+	client := map[string]interface{}{}
 
 	client["id"] = storeItem.Name
 	client["itemId"] = storeItem.ItemID
 	client["cost"] = storeItem.Cost
-	client["isOneTimeOffer"] = storeItem.IsOneTimeOffer
 
 	var err error
 	err = nil
@@ -58,171 +62,185 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	}
 	client["rewardIds"] = util.StringArrayToString(clientRewards)
 
-	if(storeItem.ExpirationDate > 0) {
-		client["expirationDate"] = strconv.FormatInt(storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC()), 10)	
+	if storeItem.ExpirationDate > 0 {
+		client["expirationDate"] = strconv.FormatInt(storeItem.ExpirationDate-util.TimeToTicks(time.Now().UTC()), 10)
 	}
 
 	return json.Marshal(client)
 }
 
 func (player *Player) InitStore() {
-	player.Store = StoreHistory{
+	defaultSpecialOffer := StoreItem { 
+		Name: "", 
+		ExpirationDate: 0, 
+	}
+
+	player.Store = StoreHistory {
 		LastUpdate: 0,
-		Purchases: map[string][]time.Time {},
-		CustomExpirationDates: map[string]int64 {},
+		SpecialOffer: defaultSpecialOffer,
+		SpecialOfferHistory: map[string]OfferHistory {},
 	}
 }
 
-func (player *Player) RecordPurchase(id string) {
-	if _, hasEntry := player.Store.Purchases[id]; !hasEntry {
-		player.Store.Purchases[id] = make([]time.Time, 0)
-	}
+func (player *Player) RecordSpecialOfferPurchase() {
+	id := player.Store.SpecialOffer.Name
 
-	player.Store.Purchases[id] = append(player.Store.Purchases[id], time.Now())
+	offerHistory := player.Store.SpecialOfferHistory[id]
+	offerHistory.Purchased = true
+	player.Store.SpecialOfferHistory[id] = offerHistory
 
-	if item, hasOffer := player.Store.CurrentOffers[id]; hasOffer && item.IsOneTimeOffer {
-		delete(player.Store.CurrentOffers, id)
-	}
+	player.Store.SpecialOffer.ExpirationDate = 0
 }
 
-func (player *Player) GetCurrentStoreOffers(context *util.Context) map[string]StoreItem {
+func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
+	currentOffers := make([]StoreItem, 0)
+
 	year, month, day := time.Now().UTC().Date() 
 	currentDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
 
-	save := false
+	// get a special offer if one is currently available to the player
+	currentSpecialOffer := player.getSpecialOffer(currentDate)
+	if currentSpecialOffer != nil {
+		currentOffers = append(currentOffers, *currentSpecialOffer)
+	}
 
-	if currentDate > player.Store.LastUpdate || len(player.Store.CurrentOffers) == 0 {
-		player.Store.LastUpdate = currentDate
-		player.Store.CurrentOffers = map[string]StoreItem {}
+	// next check to see if we need to generate new card offers
+	if currentDate > player.Store.LastUpdate || len(player.Store.Cards) == 0 {
 		player.getStoreCards()
+	}
 
-		storeItems := data.GetStoreItemDataCollection()
+	// add the current day's card offers to the slice
+	for _, storeCard := range player.Store.Cards {
+		currentOffers = append(currentOffers, storeCard)
+	}
 
-		for _, storeItemData := range storeItems {
-
-			if !player.canPurchase(storeItemData, currentDate) {
-				continue
-			}
-
-			if storeItem := player.generateStoreItem(storeItemData); storeItem != nil {
-				player.Store.CurrentOffers[(*storeItem).Name] =  *storeItem
-			}
+	// Next retrieve the rest of the store's currently available offerings
+	storeItems := data.GetStoreItemDataCollection()
+	for _, storeItemData := range storeItems {
+		if !player.canPurchase(storeItemData, currentDate) {
+			continue
 		}
 
-		save = true
+		currentOffers = append(currentOffers, StoreItem {
+			Name: storeItemData.Name,
+			ItemID: storeItemData.ItemID,
+			Category: storeItemData.Category,
+			RewardIDs: storeItemData.RewardIDs,
+			Currency: storeItemData.Currency,
+			Cost: storeItemData.Cost,
+		})
 	}
 
-	if save {
-		player.Save(context)
-	}
+	player.Store.LastUpdate = currentDate
+	player.Save(context)
 
-	return player.Store.CurrentOffers
+	return currentOffers
 }
 
-func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate int64) bool { 
+func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate int64) bool {
 	// first confirm the offer is available in the player's current league
 	if storeItemData.League != 0 && storeItemData.League != player.GetRankTier() {
 		return false
 	}
 
 	// next confirm the offer is available at this time
-
 	if (storeItemData.AvailableDate > 0 && storeItemData.AvailableDate > currentDate) || 
 	   (storeItemData.ExpirationDate > 0 && currentDate > storeItemData.ExpirationDate) {
 		return false
 	}
 
-	if storeItemData.IsOneTimeOffer {
-		// first check to see if the user has ever purchased this item before
-		if _, hasEntry := player.Store.Purchases[storeItemData.Name]; hasEntry {
+	if storeItemData.Category == data.StoreCategorySpecialOffers {
+		// check to see if the user has ever purchased this item before or if it already exists in their queue
+		if _, hasEntry := player.Store.SpecialOfferHistory[storeItemData.Name]; hasEntry || player.Store.SpecialOfferQueue.Contains(data.ToDataId(storeItemData.Name)) {
 			return false
 		}
 
-		//next check to see if this offer requires a custom expiration date
-		if storeItemData.Duration > 0 {
-			// first check if we've already generated a date
-			if customExpDate, hasDate := player.Store.CustomExpirationDates[storeItemData.Name]; hasDate {
-				if currentDate > customExpDate {
-					return false
-				}
-			}
-		}
+		//TODO check cooldowns
 	}
 
 	return true
 }
 
-func (player *Player) generateStoreItem(storeItemData *data.StoreItemData) (*StoreItem) {
-	storeItem := &StoreItem {
-		Name: storeItemData.Name,
-		ItemID: storeItemData.ItemID,
-		Category: storeItemData.Category,
-		RewardIDs: storeItemData.RewardIDs,
-		Currency: storeItemData.Currency,
-		Cost: storeItemData.Cost,
-		IsOneTimeOffer: storeItemData.IsOneTimeOffer,
-	}
+func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
+	// first check to see if the current special offer is still valid
+	if player.Store.SpecialOffer.ExpirationDate > util.TimeToTicks(time.Now().UTC()) {
+		return &player.Store.SpecialOffer
+	} 
 
-	// client expiration date
-	var expirationDate int64
+	if currentDate > player.Store.LastUpdate {
+		// Populate our special offer queue
+		specialOffers := data.GetSpecialOfferCollection()
+		for _, specialOfferData := range specialOffers {
+			if player.canPurchase(specialOfferData, currentDate) {
+				player.Store.SpecialOfferQueue.Push(data.ToDataId(specialOfferData.Name))
+			}
+		}
 
-	if storeItemData.IsOneTimeOffer && storeItemData.Duration > 0 {
-		// first check if we've already generated a date
-		if customExpDate, hasDate := player.Store.CustomExpirationDates[storeItemData.Name]; hasDate {
-			expirationDate = customExpDate
-		} else {
-			// generate a date and store it
-			year, month, day := time.Now().UTC().Date() 
-			expirationDate = util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, storeItemData.Duration))
+		//if we have any available offers in our queue, pop the highest priority one
+		if !player.Store.SpecialOfferQueue.IsEmpty() {
+			specialOfferData := data.GetStoreItemData(player.Store.SpecialOfferQueue.Pop())
+			expirationDate := time.Now().UTC().AddDate(0, 0, specialOfferData.Duration)
 
-			if storeItemData.ExpirationDate > 0 && storeItemData.ExpirationDate < expirationDate {
-				expirationDate = storeItemData.ExpirationDate
+			//now create a StoreItem and assign it to the current special offer field
+			player.Store.SpecialOffer = StoreItem {
+				Name: specialOfferData.Name,
+				ItemID: specialOfferData.ItemID,
+				Category: specialOfferData.Category,
+				RewardIDs: specialOfferData.RewardIDs,
+				Currency: specialOfferData.Currency,
+				Cost: specialOfferData.Cost,
+				ExpirationDate: util.TimeToTicks(expirationDate),
 			}
 
-			player.Store.CustomExpirationDates[storeItemData.Name] = expirationDate
+			//create an OfferHistory record for the offer
+			player.Store.SpecialOfferHistory[specialOfferData.Name] = OfferHistory {
+				ExpirationDate: expirationDate,
+				Purchased: false,
+			}
+
+			return &player.Store.SpecialOffer
 		}
-	} else {
-		expirationDate = storeItemData.ExpirationDate
 	}
 
-	storeItem.ExpirationDate = expirationDate
-
-	return storeItem
+	return nil
 }
 
 func (player *Player) getStoreCards() {
-		
-	for i,_ := range player.Cards {
+
+	for i := range player.Cards {
 		player.Cards[i].PurchaseCount = 0
 	}
+
+	player.Store.Cards = make([]StoreItem, 0)
 
 	rand.Seed(time.Now().UnixNano())
 
 	// get individual card offers
 	var cardTypes []string
 	if player.GetRankTier() == 6 {
-		cardTypes = []string{"COMMON","COMMON","RARE","EPIC","LEGENDARY"}
+		cardTypes = []string{"COMMON", "COMMON", "RARE", "EPIC", "LEGENDARY"}
 	} else {
-		cardTypes = []string{"COMMON","COMMON","RARE","EPIC"}
+		cardTypes = []string{"COMMON", "COMMON", "RARE", "EPIC"}
 	}
 
-	year, month, day := time.Now().UTC().Date() 
+	year, month, day := time.Now().UTC().Date()
 	expDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, 1))
 
-	for _,cardType := range cardTypes {
+	for _, cardType := range cardTypes {
 
 		if storeItem := player.getStoreCard(cardType, expDate); storeItem != nil {
-			player.Store.CurrentOffers[(*storeItem).Name] =  *storeItem
+			player.Store.Cards = append(player.Store.Cards, *storeItem)
 		}
 	}
 }
 
-func (player *Player) getStoreCard(rarity string, expirationDate int64) (*StoreItem) {
+func (player *Player) getStoreCard(rarity string, expirationDate int64) *StoreItem {
 	// get cards of the desired rarity
-	getCard := func(card *data.CardData) bool {
-
-		if _, hasOffer := player.Store.CurrentOffers[card.Name]; hasOffer { // ensure no duplicates
-			return false
+	cardIds := data.GetCards( func(card *data.CardData) bool {
+ 		for _, storeCard := range player.Store.Cards { // ensure no duplicates
+ 			if storeCard.Name == card.Name {
+ 				return false
+ 			}
 		}
 
 		if card.Tier > player.GetLevel() { // ensure player only gets cards they can earn in tomes
@@ -230,8 +248,7 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) (*StoreI
 		}
 
 		return card.Rarity == rarity // ensure rarity is correct
-	}
-	cardIds := data.GetCards(getCard)
+	})
 
 	if len(cardIds) == 0 {
 		return nil
@@ -250,7 +267,6 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) (*StoreI
 		Category: data.StoreCategoryCards,
 		Currency: data.CurrencyStandard,
 		Cost: player.getCardCost(cardId),
-		IsOneTimeOffer: false,
 		ExpirationDate: expirationDate,
 	}
 
@@ -277,9 +293,15 @@ func (player *Player) HandleCardPurchase(storeItem *StoreItem) {
 
 	player.AddCards(id, 1)
 
-	cardRef,_ := player.HasCard(id)
+	cardRef, _ := player.HasCard(id)
 	cardRef.PurchaseCount++
-	
+
 	storeItem.Cost = player.getCardCost(id)
-	player.Store.CurrentOffers[storeItem.Name] = *storeItem
+
+	for i := range player.Store.Cards {
+		if storeItem.Name == player.Store.Cards[i].Name {
+			player.Store.Cards[i] = *storeItem
+			break
+		}
+	}
 }
