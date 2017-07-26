@@ -4,16 +4,18 @@ import (
 	"bloodtales/models"
 	"bloodtales/system"
 	"bloodtales/util"
-
-	"gopkg.in/mgo.v2/bson"
+	"time"
 
 	"fmt"
+
+	"gopkg.in/mgo.v2/bson"
 )
 
 func handleGuild() {
 	handleGameAPI("/guild/create", system.TokenAuthentication, CreateGuild)
 	handleGameAPI("/guild/getGuilds", system.TokenAuthentication, GetGuilds)
 	handleGameAPI("/guild/addMember", system.TokenAuthentication, AddMember)
+	handleGameAPI("/guild/chat", system.TokenAuthentication, GuildChat)
 }
 
 func CreateGuild(context *util.Context) {
@@ -64,4 +66,55 @@ func AddMember(context *util.Context) {
 
 	err2 := models.AddMember(context, player, guild)
 	util.Must(err2)
+}
+
+func SendGuildChatNotification(context *util.Context, channel string, message string) {
+	notificationType := "GuildChat"
+
+	// sending player
+	player := GetPlayer(context)
+	playerClient, err := player.GetPlayerClient(context)
+	util.Must(err)
+
+	// friend player (TODO - player to player chat?)
+	// friendUser, err := models.GetUserByTag(context, tag)
+	// util.Must(err)
+	// friendPlayer, err := models.GetPlayerByUser(context, friendUser.ID)
+	// util.Must(err)
+	// receiverID := friendPlayer.ID
+	//var receiverID bson.ObjectId = bson.ObjectId("")
+	//var receiverUserID bson.ObjectId = bson.ObjectId("")
+
+	guild, err := models.GetGuildById(context, player.GuildID)
+	util.Must(err)
+
+	var memberPlayers []*models.Player
+	err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
+	util.Must(err)
+
+	for _, memberPlayer := range memberPlayers {
+		// create notification
+		notification := &models.Notification{
+			SenderID:   player.ID,
+			ReceiverID: memberPlayer.ID,
+			Guild:      false, // TODO - guild chat based on "channel"
+			ExpiresAt:  time.Now().Add(time.Hour * time.Duration(168)),
+			Type:       notificationType,
+			Message:    message,
+			SenderName: playerClient.Name,
+		}
+		util.Must(notification.Save(context))
+
+		// notify receiver
+		socketData := map[string]interface{}{"notification": notification, "player": playerClient}
+		system.SocketSend(memberPlayer.UserID, notificationType, socketData)
+	}
+}
+
+func GuildChat(context *util.Context) {
+	// parse parameters
+	channel := context.Params.GetString("channel", "")
+	message := context.Params.GetRequiredString("message")
+
+	SendGuildChatNotification(context, channel, message)
 }
