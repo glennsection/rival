@@ -56,7 +56,11 @@ func UserLogin(context *util.Context) {
 	}
 
 	// analytics tracking
-	InsertTracking(context, "login", nil, 0)
+	if util.HasSQLDatabase() {
+		InsertTrackingSQL(context, "login", 0, "","", 0, 0, nil)
+	}else{
+		InsertTracking(context, "login", nil, 0)
+	}
 
 	// respond with player data
 	FetchPlayer(context)
