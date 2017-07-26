@@ -52,6 +52,7 @@ func Purchase(context *util.Context) {
 	// check store item currency cost and store the string converted currency type for tracking
 	var currencyType string
 	purchasePrice := storeItem.Cost // need to cache this for analytics, since some store items change price after purchase
+	currentTime := util.TimeToTicks(time.Now().UTC())
 
 	switch storeItem.Currency {
 
@@ -104,7 +105,11 @@ func Purchase(context *util.Context) {
 		// analytics
 		tome := data.GetTome(data.ToDataId(storeItem.ItemID))
 		if tome != nil {
-			InsertTracking(context, "tomeOpened", bson.M { "rarity": tome.Rarity }, 0)
+			if util.HasSQLDatabase() {
+				InsertTrackingSQL(context, "tomeOpened", currentTime, tome.Name, "Premium", 1, 0, nil)
+			}else{
+				InsertTracking(context, "tomeOpened", bson.M { "tomeId": tome.Name }, 0)
+			}
 		} else {
 			log.Errorf("Failed find data for purchased tome: %s", storeItem.ItemID)
 		}
@@ -119,11 +124,19 @@ func Purchase(context *util.Context) {
 	}
 
 
-	InsertTracking(context, "purchase", bson.M { "time": util.TimeToTicks(time.Now().UTC()),
+	if util.HasSQLDatabase() {
+		InsertTrackingSQL(context, "purchase", currentTime, storeItem.Name, currencyType, 1, purchasePrice, bson.M { "time": currentTime,
+													"productId":storeItem.Name,
+													"price":purchasePrice,
+													"currency":currencyType,
+													"receipt":"" })
+	} else {
+		InsertTracking(context, "purchase", bson.M { "time": currentTime,
 													"productId":storeItem.Name,
 													"price":purchasePrice,
 													"currency":currencyType,
 													"receipt":"" }, 0)
+	}
 
 	player.Save(context)
 }

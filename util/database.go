@@ -62,8 +62,8 @@ func GetDatabaseConnection() (*mgo.Database) {
 }
 
 func HasSQLDatabase() (bool) {
-	return false
-	// return pqDB != nil
+	//return false
+	return pqDB != nil
 }
 
 func ExecuteSQL(path string) {

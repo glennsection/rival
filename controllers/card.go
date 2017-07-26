@@ -55,16 +55,24 @@ func UpgradeCard(context *util.Context) {
 	currentLevel := player.GetLevel()
 	if previousLevel != currentLevel {
 	// analytics
-		InsertTracking(context, "levelUp", bson.M { "level": currentLevel }, 0)
+		if util.HasSQLDatabase() {
+			InsertTrackingSQL(context, "levelUp", 0, "", "", currentLevel, 0, nil)
+		} else {
+			InsertTracking(context, "levelUp", bson.M { "level": currentLevel }, 0)
+		}
 	}
 
 	card.CardCount -= levelData.CardsNeeded
 	card.Level += 1
 
 	// analytics
-	InsertTracking(context, "cardLevelUp", bson.M { "cardId": data.ToDataName(card.DataID), 
+	if util.HasSQLDatabase() {
+		InsertTrackingSQL(context, "cardLevelUp", 0, data.ToDataName(card.DataID), "", card.Level, float64(levelData.Cost), nil)
+	} else {
+		InsertTracking(context, "cardLevelUp", bson.M { "cardId": data.ToDataName(card.DataID), 
 													"level": card.Level,
 													"price": levelData.Cost }, 0)
+	}
 
 	player.SetDirty(models.PlayerDataMask_Cards, models.PlayerDataMask_Currency, models.PlayerDataMask_XP)
 	player.Save(context)
@@ -137,19 +145,31 @@ func CraftCard(context *util.Context) {
 	currentTime := util.TimeToTicks(time.Now().UTC())
 	
 	for cardId, num := range consumableCards {
-		InsertTracking(context, "cardConsumed", bson.M { "time":currentTime,
+		if util.HasSQLDatabase() {
+			InsertTrackingSQL(context, "cardConsumed", currentTime, cardId, "", num, 0, nil)
+		} else {
+			InsertTracking(context, "cardConsumed", bson.M { "time":currentTime,
 														 "cardId":cardId,
 														 "count":num }, 0)
+		}
 	}
 
 	for cardId, num := range cardsGained {
-		InsertTracking(context, "cardCrafted", bson.M { "time":currentTime,
+		if util.HasSQLDatabase() {
+			InsertTrackingSQL(context, "cardCrafted", currentTime, cardId, "", num, float64(baseCost * num), nil)
+		} else {
+			InsertTracking(context, "cardCrafted", bson.M { "time":currentTime,
 														"cardId":cardId,
 														"count":num,
-														"goldSpent":(baseCost * num) }, 0)		
+														"goldSpent":(baseCost * num) }, 0)
+		}
 	} 
 
-	TrackRewards(context, reward)
+	if util.HasSQLDatabase() {
+		TrackRewardsSQL(context, reward, currentTime)
+	}else{
+		TrackRewards(context, reward)
+	}
 
 	player.Save(context)
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
