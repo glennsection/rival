@@ -154,13 +154,6 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 func TrackRewards(context *util.Context, reward *models.Reward) {
 	currentTime := util.TimeToTicks(time.Now().UTC())
 
-	for _, id := range reward.Tomes {
-		InsertTracking(context, "gainItem", bson.M { "time":currentTime,
-													 "itemId":data.ToDataName(id),
-													 "type":"Tome",
-													 "count":1 }, 0)
-	}
-
 	for i, id := range reward.Cards {
 		InsertTracking(context, "gainItem", bson.M { "time":currentTime,
 													 "itemId":data.ToDataName(id),
@@ -187,10 +180,6 @@ func TrackRewardsSQL(context *util.Context, reward *models.Reward, timeId int64)
 	currentTime := timeId
 	if (currentTime <= 0){
 		currentTime = util.TimeToTicks(time.Now().UTC())
-	}
-
-	for _, id := range reward.Tomes {
-		InsertTrackingSQL(context, "gainItem", currentTime, data.ToDataName(id), "Tome", 1, 0, nil)
 	}
 
 	for i, id := range reward.Cards {
