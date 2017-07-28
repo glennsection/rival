@@ -2,13 +2,25 @@ package data
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 
 	"bloodtales/util"
 )
 
+type RewardType int
+const (
+	RewardType_StandardCurrency RewardType = iota
+	RewardType_PremiumCurrency
+	RewardType_Card
+	RewardType_Tome
+)
+
+
 type RewardData struct {
 	ID 					string 			`json:"id"`
-	TomeIds 			[]DataId
+	ItemID 				string 			`json:"itemId"`
+	Type 				RewardType 		
 	CardRarities		[]int 			
 	CardAmounts			[]int
 	MaxPremiumCurrency	int 			`json:"maxPremiumCurrency,string"`
@@ -19,7 +31,7 @@ type RewardData struct {
 
 type RewardDataClientAlias RewardData
 type RewardDataClient struct {
-	Tomes 				string 			`json:"tomes"`		
+	Type 				string 			`json:"rewardType"`	
 	CardRarities 		string 			`json:"cardRarities"`
 	CardAmounts 		string 			`json:"cardAmounts"`
 
@@ -38,20 +50,18 @@ func (reward *RewardData)UnmarshalJSON(raw []byte) error {
 		RewardDataClientAlias: (*RewardDataClientAlias)(reward),
 	}
 
+	var err error
+	err = nil
+
 	// unmarshal to client model
-	if err := json.Unmarshal(raw,client); err != nil {
+	if err = json.Unmarshal(raw,client); err != nil {
 		return err
 	}
 
-	// tomes
-	reward.TomeIds = make([]DataId, 0)
-	if client.Tomes != "" {
-		tomes := util.StringToStringArray(client.Tomes)
-
-		for _, tomeId := range tomes {
-			reward.TomeIds = append(reward.TomeIds, ToDataId(tomeId))
-		}
-	} 
+	// type
+	if reward.Type, err = StringToRewardType(client.Type); err != nil {
+		return err
+	}
 
 	// guaranteed card rarities
 	if client.CardRarities != "" {
@@ -89,4 +99,34 @@ func LoadRewardData(raw []byte) {
 func GetRewardData(id DataId) *RewardData {
 	reward := rewards[id]
 	return &reward
+}
+
+func RewardTypeToString(val RewardType) (string, error) {
+	switch val {
+	case RewardType_StandardCurrency:
+		return "StandardCurrency", nil
+	case RewardType_PremiumCurrency:
+		return "PremiumCurrency", nil
+	case RewardType_Tome:
+		return "Tome", nil
+	case RewardType_Card:
+		return "Card", nil
+	}
+	
+	return "", errors.New("Invalid value passed as RewardType")
+}
+
+func StringToRewardType(val string) (RewardType, error) {
+	switch val {
+	case "StandardCurrency":
+		return RewardType_StandardCurrency, nil
+	case "PremiumCurrency":
+		return RewardType_PremiumCurrency, nil
+	case "Tome":
+		return RewardType_Tome, nil
+	case "Card":
+		return RewardType_Card, nil
+	}
+
+	return RewardType_StandardCurrency, errors.New(fmt.Sprintf("Cannot convert %s to RewardType", val))
 }

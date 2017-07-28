@@ -11,7 +11,8 @@ import (
 
 //server model
 type Reward struct {
-	Tomes 				[]data.DataId
+	ItemID 				string
+	Type 				data.RewardType
 	Cards 				[]data.DataId
 	NumRewarded			[]int 			
 	PremiumCurrency 	int 			
@@ -24,15 +25,13 @@ type Reward struct {
 func (reward *Reward) MarshalJSON() ([]byte, error) {
 	client := map[string]interface{}{}
 
-	// tomes
-	if len(reward.Tomes) > 0 {
-		tomes := make([]string, len(reward.Tomes))
+	client["itemId"] = reward.ItemID
 
-		for i, id := range reward.Tomes {
-			tomes[i] = data.ToDataName(id)
-		}
+	var err error
+	err = nil
 
-		client["tomes"] = tomes	
+	if client["rewardType"], err = data.RewardTypeToString(reward.Type); err != nil {
+		panic(err)
 	}
 
 	// cards
@@ -98,6 +97,7 @@ func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward 
 	}
 
 	rewardData := &data.RewardData {
+		Type: data.RewardType_Card,
 		CardRarities: rarities,
 		CardAmounts: numRewarded,
 	}
@@ -106,11 +106,13 @@ func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward 
 }
 
 func (player *Player)CreateReward(rewardData *data.RewardData, allowDuplicates bool) *Reward {
-	reward := &Reward{}
+	reward := &Reward{
+		ItemID: rewardData.ItemID,
+		Type: rewardData.Type,
+	}
 	
 	reward.getCurrencyRewards(rewardData)
 	reward.getCardRewards(rewardData, player.GetLevel(), allowDuplicates)
-	reward.getTomeRewards(rewardData)
 	reward.getOverflowAmounts(player)
 
 	return reward
@@ -131,42 +133,6 @@ func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData) {
 		reward.StandardCurrency = rewardData.MinStandardCurrency + rand.Intn(rewardData.MaxStandardCurrency - rewardData.MinStandardCurrency + 1)
 	}
 }
-/*
-func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, allowDuplicates bool) {
-	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
-	reward.Cards = make([]data.DataId, 0)
-	reward.NumRewarded = make([]int, 0)
-
-	rand.Seed(time.Now().UTC().UnixNano())
-
-	for i := 0; i < len(rewardData.CardRarities); i++ {
-		getCards := func(card *data.CardData) bool {
-			return card.Rarity == rarities[i] && card.Tier <= tier
-		}
-
-		cardSlice := data.GetCards(getCards)
-
-		for j := 0; j < rewardData.CardRarities[i]; j++ {
-			if len(cardSlice) == 0 {
-				break
-			}
-
-			index := rand.Intn(len(cardSlice))
-
-			card := cardSlice[index]
-
-			if !allowDuplicates {
-				if index != (len(cardSlice) - 1) {
-					cardSlice[index] = cardSlice[len(cardSlice) - 1]
-				} 
-				cardSlice = cardSlice[:len(cardSlice) - 1]
-			}
-
-			reward.Cards = append(reward.Cards, card)
-			reward.NumRewarded = append(reward.NumRewarded, rewardData.CardAmounts[i])
-		}
-	}
-}*/
 
 func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, allowDuplicates bool) {
 	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
@@ -233,10 +199,6 @@ func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, allow
 	}
 }
 
-func (reward *Reward)getTomeRewards(rewardData *data.RewardData) {
-	reward.Tomes = rewardData.TomeIds
-}
-
 func (reward *Reward)getOverflowAmounts(player *Player) {
 	reward.OverflowAmounts = make([]int, len(reward.Cards))
 
@@ -272,16 +234,6 @@ func (player *Player) AddRewards(reward *Reward, context *util.Context) (err err
 	for i, id := range reward.Cards {
 		overflow := reward.getOverflowForIndex(player, i) 
 		player.AddCards(id, (reward.NumRewarded[i] - overflow))
-	}
-
-	for _, id := range reward.Tomes {
-		//if the player has an open tome slot, add this tome
-		_, tome := player.GetEmptyTomeSlot()
-		if tome != nil {
-			tome.DataID = id
-			tome.State = TomeLocked
-			tome.UnlockTime = 0
-		}
 	}
 
 	if context != nil {
