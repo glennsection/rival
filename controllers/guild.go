@@ -92,19 +92,19 @@ func SendGuildChatNotification(context *util.Context, channel string, message st
 	err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
 	util.Must(err)
 
-	for _, memberPlayer := range memberPlayers {
-		// create notification
-		notification := &models.Notification{
-			SenderID:   player.ID,
-			ReceiverID: memberPlayer.ID,
-			Guild:      false, // TODO - guild chat based on "channel"
-			ExpiresAt:  time.Now().Add(time.Hour * time.Duration(168)),
-			Type:       notificationType,
-			Message:    message,
-			SenderName: playerClient.Name,
-		}
-		util.Must(notification.Save(context))
+	// create notification
+	notification := &models.Notification{
+		SenderID:   player.ID,
+		ReceiverID: player.GuildID,
+		Guild:      true, // TODO - guild chat based on "channel"
+		ExpiresAt:  time.Now().Add(time.Hour * time.Duration(168)),
+		Type:       notificationType,
+		Message:    message,
+		SenderName: playerClient.Name,
+	}
+	util.Must(notification.Save(context))
 
+	for _, memberPlayer := range memberPlayers {
 		// notify receiver
 		socketData := map[string]interface{}{"notification": notification, "player": playerClient}
 		system.SocketSend(memberPlayer.UserID, notificationType, socketData)
