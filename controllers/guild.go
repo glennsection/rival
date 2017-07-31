@@ -16,6 +16,7 @@ func handleGuild() {
 	handleGameAPI("/guild/getGuilds", system.TokenAuthentication, GetGuilds)
 	handleGameAPI("/guild/addMember", system.TokenAuthentication, AddMember)
 	handleGameAPI("/guild/chat", system.TokenAuthentication, GuildChat)
+	handleGameAPI("/guild/shareReplay", system.TokenAuthentication, ShareReplayToGuild)
 }
 
 func CreateGuild(context *util.Context) {
@@ -117,4 +118,52 @@ func GuildChat(context *util.Context) {
 	message := context.Params.GetRequiredString("message")
 
 	SendGuildChatNotification(context, channel, message)
+}
+
+func SendReplayGuildNotification(context *util.Context, replayInfoId string, message string) {
+	notificationType := "GuildChat"
+	// sending player
+	player := GetPlayer(context)
+	playerClient, err := player.GetPlayerClient(context)
+	util.Must(err)
+
+	guild, err := models.GetGuildById(context, player.GuildID)
+	util.Must(err)
+
+	var memberPlayers []*models.Player
+	err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
+	util.Must(err)
+
+	
+	fmt.Println("infoID:", replayInfoId)
+	replayInfo, err := models.GetReplayInfoById(context, bson.ObjectIdHex(replayInfoId))
+	util.Must(err)
+
+	data := bson.M{"replayInfo": replayInfo}
+
+	// create notification
+	notification := &models.Notification{
+		SenderID:   player.ID,
+		ReceiverID: player.GuildID,
+		Guild:      true, // TODO - guild chat based on "channel"
+		ExpiresAt:  time.Now().Add(time.Hour * time.Duration(168)),
+		Type:       notificationType,
+		Message:    message,
+		SenderName: playerClient.Name,
+		Data:       data,
+	}
+	util.Must(notification.Save(context))
+
+	for _, memberPlayer := range memberPlayers {
+		// notify receiver
+		socketData := map[string]interface{}{"notification": notification, "player": playerClient}
+		system.SocketSend(memberPlayer.UserID, notificationType, socketData)
+	}
+}
+
+func ShareReplayToGuild(context *util.Context) {
+	replayInfoId := context.Params.GetRequiredString("infoId")
+	message  := context.Params.GetRequiredString("message")
+
+	SendReplayGuildNotification(context, replayInfoId, message)
 }
