@@ -215,7 +215,7 @@ func (player *Player) AddTomeRewards(context *util.Context, tome *Tome) (reward 
 }
 
 func (player *Player) ModifyArenaPoints(val int) {
-	if val < 1 {
+	if val < 1 || time.Now().UTC().Before(util.TicksToTime(player.ArenaTomeUnlockTime)) {
 		return
 	}
 
@@ -234,7 +234,7 @@ func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, 
 	}
 
 	if player.FreeTomes == 3 {
-		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(SecondsToUnlockFreeTome) * time.Second))
+		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(SecondsToUnlockFreeTome) * time.Second))
 	}
 
 	player.FreeTomes--
@@ -246,11 +246,12 @@ func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, 
 }
 
 func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward, err error) {
-	if player.ArenaPoints < 10 {
+	if player.ArenaPoints < 10 || time.Now().UTC().Before(util.TicksToTime(player.ArenaTomeUnlockTime)) {
 		return
 	}
 
 	player.ArenaPoints = 0
+	player.ArenaTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(data.BattleTomeCooldown) * time.Second))
 
 	tomeReward = player.GetReward(data.ToDataId("ARENA_TOME_REWARD"))
 	err = player.AddRewards(tomeReward, context)
