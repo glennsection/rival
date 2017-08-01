@@ -292,5 +292,6 @@
     ],
     "arenaPoints": 0,
     "freeTomes": 0,
-    "freeTomeUnlockTime": 0
+    "freeTomeUnlockTime": 0,
+    "tutorial": []
 }
