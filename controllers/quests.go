@@ -77,7 +77,7 @@ func ClearQuest(context *util.Context) {
 
 	player.QuestSlots[index].State = models.QuestState_Ready
 	player.AssignRandomQuest(index)
-	player.QuestClearTime = util.TimeToTicks(time.Now().UTC().Add(data.QuestSlotCooldownTime * time.Minute))
+	player.QuestClearTime = util.TimeToTicks(util.GetTomorrowDate())
 	player.Save(context)
 	
 	player.SetDirty(models.PlayerDataMask_Quests)
