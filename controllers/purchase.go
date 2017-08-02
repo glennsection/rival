@@ -120,6 +120,7 @@ func Purchase(context *util.Context) {
 		context.SetData("storeItem", storeItem) //include the updated store item
 
 	case data.StoreCategorySpecialOffers:
+		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 		player.RecordSpecialOfferPurchase()
 	}
 
