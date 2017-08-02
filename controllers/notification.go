@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"bloodtales/util"
-	"bloodtales/system"
+	"gopkg.in/mgo.v2/bson"
+
 	"bloodtales/models"
+	"bloodtales/system"
+	"bloodtales/util"
 )
 
 func handleNotification() {
@@ -32,13 +34,34 @@ func GetNotifications(context *util.Context) {
 	notifications, err := models.GetReceivedNotifications(context, player, types)
 	util.Must(err)
 
+	var senderPlayerIds []bson.ObjectId
+	var senderPlayers []*models.Player
+	var playerClientList []*models.PlayerClient
+
+	util.Must(err)
+
 	// insert all sender names
 	for _, notification := range notifications {
 		prepareNotification(context, notification)
+		senderPlayerIds = append(senderPlayerIds, notification.SenderID)
+		//var senderPlayer *models.Player
+		//err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"_id": notification.SenderID}).One(&senderPlayer)
+		//util.Must(err)
+	}
+
+	err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"_id": bson.M{"$in": senderPlayerIds}}).All(&senderPlayers)
+	util.Must(err)
+
+	for _, senderPlayer := range senderPlayers {
+		playerClient, err := senderPlayer.GetPlayerClient(context)
+		util.Must(err)
+
+		playerClientList = append(playerClientList, playerClient)
 	}
 
 	// result
 	context.SetData("notifications", notifications)
+	context.SetData("senderClientData", playerClientList)
 }
 
 func RespondNotification(context *util.Context) {

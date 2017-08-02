@@ -6,28 +6,23 @@ import (
 )
 
 type Configuration struct {
-	General  				GeneralConfiguration 	`json:"general"`
-}
-
-type GeneralConfiguration struct {
-	FreeTomeUnlockTime 		int64  					`json:"freeTomeUnlockTime"`
+	FreeTomeUnlockTime 			int  		`json:"freeTomeUnlockTime"` //seconds
+	BattleTomeCooldown 			int 		`json:"battleTomeCooldown"` //seconds
+	LegendaryCardCurrencyValue 	int 		`json:"legendaryCardCurrencyValue"`
 }
 
 var config *Configuration
-var configFile *string
+
+type ConfigurationParsed struct {
+	Config		 				Configuration
+}
 
 // data processor
 func LoadConfig(raw []byte) {
-	// parse
+	config = &Configuration{}
 	util.Must(json.Unmarshal(raw, config))
-
-	*configFile = string(raw)
 }
 
 func Config() Configuration {
 	return *config
-}
-
-func GetConfigFile() string {
-	return *configFile
 }
