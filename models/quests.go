@@ -112,11 +112,13 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	currentDeck := player.Decks[player.CurrentDeck]
 
 	// check update conditions and incremement progress if the conditions are met
-	if requiresVictory && totalGamesWon < player.WinCount {
-		diff := player.WinCount - totalGamesWon
+	if requiresVictory {
+		if  totalGamesWon < player.WinCount {
+			diff := player.WinCount - totalGamesWon
 
-		if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
-			progress += diff
+			if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
+				progress += diff
+			}
 		}
 
 	} else {
