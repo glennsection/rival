@@ -5,6 +5,7 @@ import (
 	"bloodtales/system"
 	"bloodtales/models"
 	"bloodtales/util"
+	"bloodtales/data"
 )
 
 func handleUser() {
@@ -33,6 +34,7 @@ func UserConnect(context *util.Context) {
 	// update client values
 	context.Client.Version = version
 	context.Client.Save()
+	context.SetData("configuration", data.Config())
 }
 
 func UserLogin(context *util.Context) {

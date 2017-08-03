@@ -16,7 +16,6 @@ import (
 )
 
 const PlayerCollectionName = "players"
-const SecondsToUnlockFreeTome = 10800 //3 hours
 
 const (
 	PlayerDataMask_None     util.Bits 		= 0x0
@@ -113,6 +112,16 @@ func GetPlayerById(context *util.Context, id bson.ObjectId) (player *Player, err
 func GetPlayerByUser(context *util.Context, userId bson.ObjectId) (player *Player, err error) {
 	// find player data by user ID
 	err = context.DB.C(PlayerCollectionName).Find(bson.M{"us": userId}).One(&player)
+	return
+}
+
+func GetPlayerByTag(context *util.Context, tag string) (player *Player, err error) {
+	var user *User
+	if user, err = GetUserByTag(context, tag); err != nil {
+		return 
+	}
+
+	player, err = GetPlayerByUser(context, user.ID)
 	return
 }
 

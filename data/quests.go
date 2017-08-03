@@ -6,10 +6,6 @@ import (
 	"bloodtales/util"
 )
 
-const MinutesTillWeeklyQuestExpires = 10080
-const MinutesTillDailyQuestExpires = 1440
-const QuestSlotCooldownTime = 5
-
 type QuestType int
 const (
 	QuestType_Daily QuestType = iota

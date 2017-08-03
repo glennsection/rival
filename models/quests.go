@@ -20,7 +20,6 @@ const (
 type QuestSlot struct {
 	QuestInstance	Quest 					`bson:"qi"`
 	State 			QuestState 				`bson:"qs"`
-	UnlockTime 		int64 					`bson:"ut"`
 	ExpireTime 		int64 					`bson:"et"`
 	SupportedTypes	[]data.QuestType
 }
@@ -28,7 +27,6 @@ type QuestSlot struct {
 type QuestSlotClient struct {
 	QuestInstance 	string 					`json:"questInstance"`
 	State 			string 					`json:"questSlotState"`
-	UnlockTime 		int64 					`json:"questUnlockTime"`
 	ExpireTime 		int64 					`json:"questExpireTime"`
 }
 
@@ -41,7 +39,6 @@ type Quest struct {
 func (slot *QuestSlot) MarshalJSON() ([]byte, error) {
 	// create client model
 	client := &QuestSlotClient{
-		UnlockTime: slot.UnlockTime - util.TimeToTicks(time.Now().UTC()),
 		ExpireTime: slot.ExpireTime - util.TimeToTicks(time.Now().UTC()),
 	}
 
@@ -84,14 +81,6 @@ func (quest *Quest) MarshalJSON() ([]byte, error) {
 
 func (slot *QuestSlot) StartCooldown() {
 	slot.State = QuestState_Cooldown
-
-	// first check if this is the weekly quest slot. if it is, we want it immediately available for a new quest
-	if len(slot.SupportedTypes) == 1 && slot.SupportedTypes[0] == data.QuestType_Weekly { 
-		slot.UnlockTime = slot.ExpireTime
-	} else { //otherwise, we want this slot to unlock only after its cooldown has expired
-		expireTime := util.TicksToTime(slot.ExpireTime)
-		slot.UnlockTime = util.TimeToTicks(expireTime.Add(data.QuestSlotCooldownTime * time.Minute))
-	}
 }
 
 
@@ -123,11 +112,13 @@ func (quest *Quest) UpdateBattleQuest(player *Player) (questComplete bool) {
 	currentDeck := player.Decks[player.CurrentDeck]
 
 	// check update conditions and incremement progress if the conditions are met
-	if requiresVictory && totalGamesWon < player.WinCount {
-		diff := player.WinCount - totalGamesWon
+	if requiresVictory {
+		if  totalGamesWon < player.WinCount {
+			diff := player.WinCount - totalGamesWon
 
-		if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
-			progress += diff
+			if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
+				progress += diff
+			}
 		}
 
 	} else {
@@ -294,11 +285,10 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 	switch questData.Type {
 
 	case data.QuestType_Daily:
-		player.QuestSlots[index].ExpireTime = util.TimeToTicks(time.Now().UTC().Add(data.MinutesTillDailyQuestExpires * time.Minute))
+		player.QuestSlots[index].ExpireTime = util.TimeToTicks(util.GetTomorrowDate())
 
 	case data.QuestType_Weekly:
-		year, month, day := time.Now().UTC().Date()
-		currentDate := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+		currentDate := util.GetCurrentDate()
 		expirationDate := currentDate
 
 		for expirationDate == currentDate || expirationDate.Weekday() != time.Monday {
@@ -312,7 +302,6 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData data
 	}
 
 	player.QuestSlots[index].State = QuestState_InProgress
-	player.QuestSlots[index].UnlockTime = util.TimeToTicks(time.Now().UTC())
 }
 
 // Certain quests types (ex: battle quests) should only update at specific times (ex: immediately after
@@ -330,15 +319,10 @@ func (player *Player) UpdateQuests(context *util.Context, logicTypes ...data.Que
 	for i,_ := range player.QuestSlots {
 
 		if player.QuestSlots[i].State == QuestState_InProgress {
-			// check to see if the quest has expired
+			// check to see if the quest has expired. if so, assign a new quest
 			if currentTime > player.QuestSlots[i].ExpireTime {
-				player.QuestSlots[i].StartCooldown()
-
-				// check to see if the quest has already passed the amount of time necessary to unlock
-				if currentTime > player.QuestSlots[i].UnlockTime {
-					player.QuestSlots[i].State = QuestState_Ready
-					player.AssignRandomQuest(i)
-				}
+				player.QuestSlots[i].State = QuestState_Ready
+				player.AssignRandomQuest(i)
 				continue
 			}
 
@@ -352,7 +336,7 @@ func (player *Player) UpdateQuests(context *util.Context, logicTypes ...data.Que
 				player.QuestSlots[i].State = QuestState_Collect
 			}
 		} else { // check to see if we're ready for a new quest
-			if player.QuestSlots[i].State == QuestState_Cooldown && currentTime > player.QuestSlots[i].UnlockTime {
+			if player.QuestSlots[i].State == QuestState_Cooldown && currentTime > player.QuestSlots[i].ExpireTime {
 				player.QuestSlots[i].State = QuestState_Ready
 				player.AssignRandomQuest(i)
 			}

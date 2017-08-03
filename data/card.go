@@ -8,8 +8,6 @@ import (
 	"bloodtales/util"
 )
 
-const LegendaryCardCurrencyValue = 500;
-
 type CardData struct {
 	// TODO ?->  ID int `json:"databaseId"`
 	Name                    string        `json:"id"`

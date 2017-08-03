@@ -8,9 +8,6 @@ import (
 	"bloodtales/util"
 )
 
-
-const BattleTomeCooldown = 21600 //6 hours measured in seconds
-
 // server data
 type TomeData struct {
 	Name                    string        `json:"id"`
