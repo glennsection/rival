@@ -115,6 +115,16 @@ func GetPlayerByUser(context *util.Context, userId bson.ObjectId) (player *Playe
 	return
 }
 
+func GetPlayerByTag(context *util.Context, tag string) (player *Player, err error) {
+	var user *User
+	if user, err = GetUserByTag(context, tag); err != nil {
+		return 
+	}
+
+	player, err = GetPlayerByUser(context, user.ID)
+	return
+}
+
 func (player *Player) loadDefaults() (err error) {
 	// template file path for initial player data
 	path := "./resources/models/player.json"

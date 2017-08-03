@@ -11,6 +11,7 @@ import (
 func handlePlayer() {
 	handleGameAPI("/player/set", system.TokenAuthentication, OverwritePlayer) // HACK
 	handleGameAPI("/player/name", system.TokenAuthentication, SetPlayerName)
+	handleGameAPI("/player/view", system.NoAuthentication, ViewPlayerProfile)
 
 	// template functions
 	util.AddTemplateFunc("getUserName", models.GetUserName)
@@ -48,6 +49,22 @@ func SetPlayerName(context *util.Context) {
 
 	// update cache
 	player.CacheName(context, name)
+}
+
+func ViewPlayerProfile(context *util.Context) {
+	tag := context.Params.GetRequiredString("tag")
+
+	var player *models.Player
+	var err error
+
+	if player, err = models.GetPlayerByTag(context, tag); err != nil || player == nil {
+		panic(err)
+	}
+
+	context.SetData("name", player.Name)
+	context.SetData("rankPoints", player.RankPoints)
+	context.SetData("wins", player.WinCount)
+	context.SetData("cards", len(player.Cards))
 }
 
 func OverwritePlayer(context *util.Context) {
