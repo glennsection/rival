@@ -150,6 +150,18 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 	return
 }
 
+func RemoveMember(context *util.Context, player *Player, guild *Guild) (err error) {
+	guild.MemberCount--
+	//TODO Check guild role before removing
+
+	err = guild.Save(context)
+
+	player.GuildID = bson.ObjectId("")
+	player.Save(context)
+	player.SetDirty(PlayerDataMask_Guild)
+	return
+}
+
 func (guild *Guild) Save(context *util.Context) (err error) {
 	if !guild.ID.Valid() {
 		guild.ID = bson.NewObjectId()

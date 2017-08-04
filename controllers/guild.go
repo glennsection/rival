@@ -15,6 +15,7 @@ func handleGuild() {
 	handleGameAPI("/guild/create", system.TokenAuthentication, CreateGuild)
 	handleGameAPI("/guild/getGuilds", system.TokenAuthentication, GetGuilds)
 	handleGameAPI("/guild/addMember", system.TokenAuthentication, AddMember)
+	handleGameAPI("/guild/removeMember", system.TokenAuthentication, RemoveMember)
 	handleGameAPI("/guild/chat", system.TokenAuthentication, GuildChat)
 	handleGameAPI("/guild/shareReplay", system.TokenAuthentication, ShareReplayToGuild)
 	handleGameAPI("/guild/guildBattle", system.TokenAuthentication, GuildBattle)
@@ -70,6 +71,20 @@ func AddMember(context *util.Context) {
 	util.Must(err2)
 }
 
+func RemoveMember(context *util.Context) {
+	tag := context.Params.GetRequiredString("tag")
+
+	player := GetPlayer(context)
+
+	// guild
+	guild, err := models.GetGuildByTag(context, tag)
+	//guild, err := models.GetGuildById(context, bson.ObjectIdHex(tag))
+	util.Must(err)
+
+	err2 := models.RemoveMember(context, player, guild)
+	util.Must(err2)
+}
+
 func SendGuildChatNotification(context *util.Context, notificationType string, message string, acceptName string, acceptAction string, declineName string, declineAction string, data map[string]interface{}, expiresAt time.Time) {
 	//notificationType := "GuildChat"
 
@@ -103,17 +118,17 @@ func SendGuildChatNotification(context *util.Context, notificationType string, m
 		Type:       notificationType,
 		Message:    message,
 		SenderName: playerClient.Name,
-		Actions: []models.NotificationAction {
-			models.NotificationAction {
-				Name: acceptName,
+		Actions: []models.NotificationAction{
+			models.NotificationAction{
+				Name:  acceptName,
 				Value: acceptAction,
 			},
-			models.NotificationAction {
-				Name: declineName,
+			models.NotificationAction{
+				Name:  declineName,
 				Value: declineAction,
 			},
 		},
-		Data:		data,
+		Data: data,
 	}
 	util.Must(notification.Save(context))
 
@@ -129,7 +144,7 @@ func GuildChat(context *util.Context) {
 	//channel := context.Params.GetString("channel", "")
 	message := context.Params.GetRequiredString("message")
 
-	SendGuildChatNotification(context, "GuildChat", message, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour * time.Duration(168)) )
+	SendGuildChatNotification(context, "GuildChat", message, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour*time.Duration(168)))
 }
 
 func SendReplayGuildNotification(context *util.Context, replayInfoId string, message string) {
@@ -146,7 +161,6 @@ func SendReplayGuildNotification(context *util.Context, replayInfoId string, mes
 	err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
 	util.Must(err)
 
-	
 	fmt.Println("infoID:", replayInfoId)
 	replayInfo, err := models.GetReplayInfoById(context, bson.ObjectIdHex(replayInfoId))
 	util.Must(err)
@@ -175,7 +189,7 @@ func SendReplayGuildNotification(context *util.Context, replayInfoId string, mes
 
 func ShareReplayToGuild(context *util.Context) {
 	replayInfoId := context.Params.GetRequiredString("infoId")
-	message  := context.Params.GetRequiredString("message")
+	message := context.Params.GetRequiredString("message")
 
 	SendReplayGuildNotification(context, replayInfoId, message)
 }
@@ -188,12 +202,12 @@ func GuildBattle(context *util.Context) {
 	// generate Room ID
 	roomID := util.GenerateUUID()
 	//message := fmt.Sprintf("Battle Request from: %s", models.GetUserName(context, context.UserID))
-	data := map[string]interface{} {
+	data := map[string]interface{}{
 		"roomId": roomID,
 	}
 	expiresAt := time.Now().Add(time.Hour)
 
-	SendGuildChatNotification (context, "GuildBattle", message, "Accept", "accept", "Decline", "decline", data, expiresAt)
+	SendGuildChatNotification(context, "GuildBattle", message, "Accept", "accept", "Decline", "decline", data, expiresAt)
 	//sendFriendNotification(context, tag, "FriendBattle", image, message, "Battle", "accept", "Decline", "decline", data, expiresAt)
 
 	context.SetData("roomId", roomID)
