@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"strconv"
 	"errors"
 	"fmt"
 
@@ -21,12 +22,23 @@ type RewardData struct {
 	ID 					string 			`json:"id"`
 	ItemID 				string 			`json:"itemId"`
 	Type 				RewardType 		
-	CardRarities		[]int 			
-	CardAmounts			[]int
-	MaxPremiumCurrency	int 			`json:"maxPremiumCurrency,string"`
-	MinPremiumCurrency	int 			`json:"minPremiumCurrency,string"`
-	MaxStandardCurrency	int 			`json:"maxStandardCurrency,string"`
-	MinStandardCurrency	int 			`json:"minStandardCurrency,string"`
+
+	LegendaryCards 		int 			
+	EpicCards 	 		int 			
+	RareCards 	 		int 			
+	RandomCards 		int			
+
+	LegendaryChance 	float32 		
+	EpicChance 			float32 		
+	RareChance 			float32			
+
+	LegendaryBounds 	[]int
+	EpicBounds 			[]int
+	RareBounds 			[]int
+	CommonBounds 		[]int
+
+	PremiumCurrency 	[]int 			
+	StandardCurrency	[]int 			
 }
 
 type RewardDataClientAlias RewardData
@@ -34,6 +46,23 @@ type RewardDataClient struct {
 	Type 				string 			`json:"rewardType"`	
 	CardRarities 		string 			`json:"cardRarities"`
 	CardAmounts 		string 			`json:"cardAmounts"`
+
+	LegendaryCards 		string 			`json:"legendaryCards"`
+	EpicCards 	 		string 			`json:"epicCards"`
+	RareCards 	 		string 			`json:"rareCards"`
+	RandomCards 		string 			`json:"randomCards"`
+
+	LegendaryChance 	string 			`json:"legendaryChance"`
+	EpicChance 			string 			`json:"epicChance"`
+	RareChance 			string			`json:"rareChance"`
+
+	LegendaryBounds 	string 			`json:"legendaryBounds"`
+	EpicBounds 			string 			`json:"epicBounds"`
+	RareBounds 			string 			`json:"rareBounds"`
+	CommonBounds 		string 			`json:"commonBounds"`
+
+	PremiumCurrency 	string 			`json:"premiumCurrency"`
+	StandardCurrency 	string 			`json:"standardCurrency"`
 
 	*RewardDataClientAlias
 }
@@ -62,20 +91,90 @@ func (reward *RewardData)UnmarshalJSON(raw []byte) error {
 	if reward.Type, err = StringToRewardType(client.Type); err != nil {
 		return err
 	}
+	 // card amounts  
+	var i int64
 
-	// guaranteed card rarities
-	if client.CardRarities != "" {
-		reward.CardRarities = util.StringToIntArray(client.CardRarities)
-	} else {
-		reward.CardRarities = []int{0,0,0,0}
+	if client.LegendaryCards != "" {
+		if i, err = strconv.ParseInt(client.LegendaryCards, 10, 64); err != nil { 
+			panic(err) 
+		} else { reward.LegendaryCards = int(i) }
+	} 
+
+	if client.EpicCards != "" {
+		if i, err = strconv.ParseInt(client.EpicCards, 10, 64); err != nil { 
+			panic(err) 
+		} else { reward.EpicCards = int(i) }
 	}
 
-	// card counts per rarity
-	if client.CardAmounts != "" {
-		reward.CardAmounts = util.StringToIntArray(client.CardAmounts)
-	} else {
-		reward.CardAmounts = []int{0,0,0,0}
-	} 
+	if client.RareCards != "" {
+		if i, err = strconv.ParseInt(client.RareCards, 10, 64); err != nil { 
+			panic(err) 
+		} else { reward.RareCards = int(i) }
+	}
+
+	if client.RandomCards != "" {
+		if i, err = strconv.ParseInt(client.RandomCards, 10, 64); err != nil { 
+			panic(err) 
+		} else { reward.RandomCards = int(i) }
+	}
+
+	// bonus chances
+	var f float64
+
+	if client.LegendaryChance != "" {
+		if f, err = strconv.ParseFloat(client.LegendaryChance, 64); err != nil { 
+			panic(err) 
+		} else { reward.LegendaryChance = float32(f) }
+	}
+
+	if client.EpicChance != "" {
+		if f, err = strconv.ParseFloat(client.EpicChance, 64); err != nil { 
+			panic(err) 
+		} else { reward.EpicChance = float32(f) }
+	}
+
+	if client.RareChance != "" {
+		if f, err = strconv.ParseFloat(client.RareChance, 64); err != nil { 
+			panic(err) 
+		} else { reward.RareChance = float32(f) }
+	}
+
+	// card bounds
+	if reward.LegendaryCards > 0 || reward.RandomCards > 0 {
+		if reward.LegendaryBounds = util.StringToIntArray(client.LegendaryBounds); len(reward.LegendaryBounds) != 2 {
+			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Legendary cards in reward %s", reward.ID)))
+		}
+	}
+
+	if reward.EpicCards > 0 || reward.RandomCards > 0 {
+		if reward.EpicBounds = util.StringToIntArray(client.EpicBounds); len(reward.EpicBounds) != 2 {
+			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Epic cards in reward %s", reward.ID)))
+		}
+	}
+
+	if reward.RareCards > 0 || reward.RandomCards > 0 {
+		if reward.RareBounds = util.StringToIntArray(client.RareBounds); len(reward.RareBounds) != 2 {
+			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Rare cards in reward %s", reward.ID)))
+		}
+	}
+
+	if reward.RandomCards > 0 {
+		if reward.CommonBounds = util.StringToIntArray(client.CommonBounds); len(reward.CommonBounds) != 2 {
+			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Common cards in reward %s", reward.ID)))
+		}
+	}
+
+	if client.PremiumCurrency != "" {
+		if reward.PremiumCurrency = util.StringToIntArray(client.PremiumCurrency); len(reward.PremiumCurrency) != 2 {
+			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Premium currency in reward %s", reward.ID)))
+		}
+	}
+
+	if client.StandardCurrency != "" {
+		if reward.StandardCurrency = util.StringToIntArray(client.StandardCurrency); len(reward.StandardCurrency) != 2 {
+			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Standard currency in reward %s", reward.ID)))
+		}
+	}
 
 	return nil
 }
@@ -101,14 +200,52 @@ func GetRewardData(id DataId) *RewardData {
 	return &reward
 }
 
+func (reward *RewardData)GetBoundsForPremiumCurrency() (int, int) { // helper for readability
+	if len(reward.PremiumCurrency) != 2 { return 0, 0 }
+	return reward.PremiumCurrency[0], reward.PremiumCurrency[1]
+}
+
+func (reward *RewardData)GetBoundsForStandardCurrency() (int, int) { // helper for readability
+	if len(reward.StandardCurrency) != 2 { return 0, 0 }
+	return reward.StandardCurrency[0], reward.StandardCurrency[1]
+}
+
+func (reward *RewardData)GetBoundsForRarity(rarity string) (int, int) { // helper for readability
+	switch(rarity) {
+
+	case "LEGENDARY":
+		if len(reward.LegendaryBounds) != 2 { return 0,0 }
+		return reward.LegendaryBounds[0], reward.LegendaryBounds[1]
+
+	case "EPIC":
+		if len(reward.EpicBounds) != 2 { return 0,0 }
+		return reward.EpicBounds[0], reward.EpicBounds[1]
+
+	case "RARE":
+		if len(reward.RareBounds) != 2 { return 0,0 }
+		return reward.RareBounds[0], reward.RareBounds[1]
+
+	case "COMMON":
+		if len(reward.CommonBounds) != 2 { return 0,0 }
+		return reward.CommonBounds[0], reward.CommonBounds[1]
+	}
+
+	panic(errors.New("Invalid value passed as rarity"))
+	return 0, 0
+}
+
 func RewardTypeToString(val RewardType) (string, error) {
 	switch val {
+
 	case RewardType_StandardCurrency:
 		return "StandardCurrency", nil
+
 	case RewardType_PremiumCurrency:
 		return "PremiumCurrency", nil
+
 	case RewardType_Tome:
 		return "Tome", nil
+
 	case RewardType_Card:
 		return "Card", nil
 	}
@@ -118,12 +255,16 @@ func RewardTypeToString(val RewardType) (string, error) {
 
 func StringToRewardType(val string) (RewardType, error) {
 	switch val {
+
 	case "StandardCurrency":
 		return RewardType_StandardCurrency, nil
+
 	case "PremiumCurrency":
 		return RewardType_PremiumCurrency, nil
+
 	case "Tome":
 		return RewardType_Tome, nil
+
 	case "Card":
 		return RewardType_Card, nil
 	}
