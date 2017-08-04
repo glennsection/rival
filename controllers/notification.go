@@ -113,6 +113,10 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 		// handle friend battle
 		respondFriendBattle(context, notification, action)
 
+	case "GuildBattle":
+		// handle Guild Battle
+		respondGuildBattle(context, notification, action)
+
 	}
 
 	// notify sender
