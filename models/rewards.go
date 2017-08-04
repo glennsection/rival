@@ -170,6 +170,8 @@ func (reward *Reward)getCardsForRarity(rewardData *data.RewardData, rarity strin
 		return card.Rarity == rarity && card.Tier <= tier
 	})
 
+	startingIndex := len(reward.Cards)
+
 	for numCards > 0 {
 		if len(possibleCards) == 0 {
 			return
@@ -182,6 +184,20 @@ func (reward *Reward)getCardsForRarity(rewardData *data.RewardData, rarity strin
 
 		cardsRewarded := reward.getCard(&possibleCards, lowerBound, upperBound)
 		numCards -= cardsRewarded
+
+		if numCards != 0 && numCards < lowerBound {
+			for i := len(reward.NumRewarded) - 1; i >= startingIndex && numCards > 0; i-- {
+				diff := upperBound - reward.NumRewarded[i]
+
+				if diff > numCards {
+					reward.NumRewarded[i] += numCards
+					numCards = 0
+				} else {
+					reward.NumRewarded[i] += diff
+					numCards -= diff
+				}
+			}
+		}
 	}
 }
 
@@ -244,7 +260,6 @@ func (reward *Reward)getCard(possibleCards *[]data.DataId, lowerBound int, upper
 	} else {
 		cardsRewarded = rand.Intn(upperBound - lowerBound + 1) + lowerBound
 	}
-
 
 	// add the character card to the reward
 	reward.Cards = append(reward.Cards, card)
