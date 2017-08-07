@@ -14,8 +14,7 @@ type GuildRole int
 
 const (
 	GuildMember GuildRole = iota
-	GuildElder
-	GuildCaptain
+	GuildElite
 	GuildOwner
 )
 

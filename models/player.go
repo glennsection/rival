@@ -85,7 +85,8 @@ type PlayerClient struct {
 	LossCount  				int 			`json:"lossCount"`
 	MatchCount 				int 			`json:"matchCount"`
 
-	GuildRole 				GuildRole 		`json:"guildRole"`
+	GuildName               string          `json:"guildName"` // TODO - put GuildBrief in here, once we break PlayerClient into PlayerBrief and PlayerProfile
+	GuildRole 				string  		`json:"guildRole"`
 
 	Online     				bool  			`json:"online"`
 	LastOnline 				int64 			`json:"lastOnline"`
@@ -170,6 +171,30 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 	lastOnline := time.Now().Sub(player.LastTime)
 	online := (lastOnline < time.Second*config.Config.Sessions.OfflineTimeout)
 
+	// get guild
+	guildName := ""
+	guildRole := "None"
+	if player.GuildID.Valid() {
+		var guild *Guild
+		guild, err = GetGuildById(context, player.GuildID)
+		if err != nil {
+			return
+		}
+
+		// guild name
+		guildName = guild.Name
+
+		// guild role
+		switch player.GuildRole {
+		case GuildMember:
+			guildRole = "Member"
+		case GuildElite:
+			guildRole = "Elite"
+		case GuildOwner:
+			guildRole = "Owner"
+		}
+	}
+
 	// create player client
 	client = &PlayerClient{
 		Name:       playerUser.Name,
@@ -182,8 +207,8 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		LossCount:  player.LossCount,
 		MatchCount: player.MatchCount,
 
-		//GuildName: ... // TODO
-		GuildRole: player.GuildRole,
+		GuildName:  guildName,
+		GuildRole:  guildRole,
 
 		Online:     online,
 		LastOnline: util.DurationToTicks(lastOnline),
