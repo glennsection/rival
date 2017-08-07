@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"encoding/json"
 	"math/rand"
 	"time"
@@ -35,6 +36,7 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 	}
 
 	// cards
+	fmt.Println(fmt.Sprintf("Cards in reward: %d", len(reward.Cards)))
 	if len(reward.Cards) > 0 {
 		cards := make([]string, len(reward.Cards))
 
@@ -61,7 +63,7 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 
 func (player *Player) GetReward(rewardId data.DataId) *Reward {
 	rewardData := data.GetRewardData(rewardId)
-	return player.CreateReward(rewardData, false)
+	return player.CreateReward(rewardData)
 }
 
 func (player *Player) GetRewards(rewardIds []data.DataId) []*Reward {
@@ -75,128 +77,195 @@ func (player *Player) GetRewards(rewardIds []data.DataId) []*Reward {
 }
 
 func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward {
-	var rarities []int
-	var numRewarded []int
-
-	switch(rarity) {
-	case "COMMON":
-		rarities = []int{numCards,0,0,0}
-		numRewarded = []int{numCards,0,0,0}
-
-	case "RARE":
-		rarities = []int{0,numCards,0,0}
-		numRewarded = []int{0,numCards,0,0}
-
-	case "EPIC":
-		rarities = []int{0,0,numCards,0}
-		numRewarded = []int{0,0,numCards,0}
-
-	case "LEGENDARY":
-		rarities = []int{0,0,0,numCards}
-		numRewarded = []int{0,0,0,numCards}
+	reward := &Reward {
+		Cards: make([]data.DataId, 0),
+		NumRewarded: make([]int, 0),
 	}
 
-	rewardData := &data.RewardData {
-		Type: data.RewardType_Card,
-		CardRarities: rarities,
-		CardAmounts: numRewarded,
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	tier := player.GetLevel()
+
+	possibleCards := data.GetCards(func(card *data.CardData) bool {
+		return card.Rarity == rarity && card.Tier <= tier
+	})
+
+	for numCards > 0 {
+		// select a random character card
+		index := rand.Intn(len(possibleCards))
+		card := possibleCards[index]
+
+		// add the character card to the reward
+		reward.Cards = append(reward.Cards, card)
+		reward.NumRewarded = append(reward.NumRewarded, 1)
+
+		numCards--
 	}
 
-	return player.CreateReward(rewardData, true)
+	return reward
 }
 
-func (player *Player)CreateReward(rewardData *data.RewardData, allowDuplicates bool) *Reward {
+func (player *Player)CreateReward(rewardData *data.RewardData) *Reward {
 	reward := &Reward{
 		ItemID: rewardData.ItemID,
 		Type: rewardData.Type,
 	}
 	
 	reward.getCurrencyRewards(rewardData)
-	reward.getCardRewards(rewardData, player.GetLevel(), allowDuplicates)
+	reward.getCardRewards(rewardData, player.GetLevel())
 	reward.getOverflowAmounts(player)
 
 	return reward
 }
 
 func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData) {
+
+	minPremiumCurrency, maxPremiumCurrency := rewardData.GetBoundsForPremiumCurrency()
+	minStandardCurrency, maxStandardCurrency := rewardData.GetBoundsForStandardCurrency()
+
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	if rewardData.MaxPremiumCurrency == rewardData.MinPremiumCurrency {
-		reward.PremiumCurrency = rewardData.MaxPremiumCurrency
+
+
+	if maxPremiumCurrency == minPremiumCurrency {
+		reward.PremiumCurrency = maxPremiumCurrency
 	} else {
-		reward.PremiumCurrency = rewardData.MinPremiumCurrency + rand.Intn(rewardData.MaxPremiumCurrency - rewardData.MinPremiumCurrency + 1)
+		reward.PremiumCurrency = minPremiumCurrency + rand.Intn(maxPremiumCurrency - minPremiumCurrency + 1)
 	}
 	
-	if rewardData.MaxStandardCurrency == rewardData.MinStandardCurrency {
-		reward.StandardCurrency = rewardData.MaxStandardCurrency
+	if maxStandardCurrency == minStandardCurrency {
+		reward.StandardCurrency = maxStandardCurrency
 	} else {
-		reward.StandardCurrency = rewardData.MinStandardCurrency + rand.Intn(rewardData.MaxStandardCurrency - rewardData.MinStandardCurrency + 1)
+		reward.StandardCurrency = minStandardCurrency + rand.Intn(maxStandardCurrency - minStandardCurrency + 1)
 	}
 }
 
-func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, allowDuplicates bool) {
-	rarities := []string{"COMMON","RARE","EPIC","LEGENDARY"}
+func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int) {
 	reward.Cards = make([]data.DataId, 0)
 	reward.NumRewarded = make([]int, 0)
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	for i := 0; i < len(rewardData.CardRarities); i++ {
+	// first assign cards for the guaranteed rarities
+	reward.getCardsForRarity(rewardData, "LEGENDARY", rewardData.LegendaryCards, tier)
+	reward.getCardsForRarity(rewardData, "EPIC", rewardData.EpicCards, tier)
+	reward.getCardsForRarity(rewardData, "RARE", rewardData.RareCards, tier)
 
-		totalCards := rewardData.CardAmounts[i]
-		cardInstances := rewardData.CardRarities[i]
+	// next roll for a rare or better card
+	remainingCards := rewardData.RandomCards
+	reward.rollForCard(rewardData, &remainingCards, tier)
 
-		if totalCards == 0 || cardInstances == 0 {
-			continue;
+	//finally, fill out the remaining cards
+	reward.getCardsForRarity(rewardData, "COMMON", remainingCards, tier)
+}
+
+func (reward *Reward)getCardsForRarity(rewardData *data.RewardData, rarity string, numCards int, tier int) {
+	if numCards == 0 {
+		return
+	}
+
+	lowerBound, upperBound := rewardData.GetBoundsForRarity(rarity)
+
+	possibleCards := data.GetCards(func(card *data.CardData) bool {
+		return card.Rarity == rarity && card.Tier <= tier
+	})
+
+	startingIndex := len(reward.Cards)
+
+	for numCards > 0 {
+		if len(possibleCards) == 0 {
+			return
 		}
 
-
-		getCards := func(card *data.CardData) bool {
-			return card.Rarity == rarities[i] && card.Tier <= tier
+		if upperBound >= numCards {
+			lowerBound = numCards
+			upperBound = numCards
 		}
 
-		cardSlice := data.GetCards(getCards)
+		cardsRewarded := reward.getCard(&possibleCards, lowerBound, upperBound)
+		numCards -= cardsRewarded
 
-		cardCountFloor := totalCards / (cardInstances * 2)
-		if cardCountFloor == 0 {
-			cardCountFloor = 1
-		}
+		if numCards != 0 && numCards < lowerBound {
+			for i := len(reward.NumRewarded) - 1; i >= startingIndex && numCards > 0; i-- {
+				diff := upperBound - reward.NumRewarded[i]
 
-		for j := 0; j < cardInstances; j++ {
-			if len(cardSlice) == 0 {
-				break
-			}
-
-			index := rand.Intn(len(cardSlice))
-
-			card := cardSlice[index]
-
-			if !allowDuplicates {
-				if index != (len(cardSlice) - 1) {
-					cardSlice[index] = cardSlice[len(cardSlice) - 1]
-				} 
-				cardSlice = cardSlice[:len(cardSlice) - 1]
-			}
-
-			var cardsRewarded int
-			if j == cardInstances - 1 {
-				cardsRewarded = totalCards
-			} else {
-				randMax := totalCards - (cardCountFloor * (cardInstances - j))
-
-				if randMax > 0 {
-					cardsRewarded = rand.Intn(randMax) + cardCountFloor
+				if diff > numCards {
+					reward.NumRewarded[i] += numCards
+					numCards = 0
 				} else {
-					cardsRewarded = cardCountFloor
+					reward.NumRewarded[i] += diff
+					numCards -= diff
 				}
-
-				totalCards -= cardsRewarded
 			}
-
-			reward.Cards = append(reward.Cards, card)
-			reward.NumRewarded = append(reward.NumRewarded, cardsRewarded)
 		}
 	}
+}
+
+
+func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *int, tier int) {
+	roll := float32(rand.Intn(100)) + rand.Float32()
+	rarity := ""
+
+	//first determine if we rolled successfully
+	if roll <= (rewardData.RareChance + rewardData.EpicChance + rewardData.LegendaryChance) {
+		rarity = "RARE"
+	}	
+	if roll <= (rewardData.EpicChance + rewardData.LegendaryChance) {
+		rarity = "EPIC"
+	}
+	if roll <= rewardData.LegendaryChance {
+		rarity = "LEGENDARY"
+	}
+	if rarity == "" {
+		return
+	}
+
+	possibleCards := data.GetCards(func(card *data.CardData) bool {
+		id := data.ToDataId(card.Name)
+		for _, cardId := range reward.Cards {
+			if id == cardId { // ensure we don't already have this card
+				return false
+			}
+		}
+
+		return card.Rarity == rarity && card.Tier <= tier
+	})
+
+	if len(possibleCards) == 0 {
+		return
+	}
+
+	lowerBound, upperBound := rewardData.GetBoundsForRarity(rarity)
+	if upperBound > *remainingCards {
+			upperBound = *remainingCards
+	}
+
+	*remainingCards -= reward.getCard(&possibleCards, lowerBound, upperBound)
+}
+
+func (reward *Reward)getCard(possibleCards *[]data.DataId, lowerBound int, upperBound int) (cardsRewarded int) {
+	// select a random character card
+	index := rand.Intn(len(*possibleCards))
+	card := (*possibleCards)[index]
+
+	// remove that card from the slice of possible character cards
+	if index != (len(*possibleCards) - 1) {
+		(*possibleCards)[index] = (*possibleCards)[len(*possibleCards) - 1]
+	} 
+	*possibleCards = (*possibleCards)[:len(*possibleCards) - 1]
+
+	// determine the card count for selected character card
+	if upperBound <= lowerBound {
+		cardsRewarded = upperBound
+	} else {
+		cardsRewarded = rand.Intn(upperBound - lowerBound + 1) + lowerBound
+	}
+
+	// add the character card to the reward
+	reward.Cards = append(reward.Cards, card)
+	reward.NumRewarded = append(reward.NumRewarded, cardsRewarded)
+
+	return
 }
 
 func (reward *Reward)getOverflowAmounts(player *Player) {

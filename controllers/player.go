@@ -9,7 +9,7 @@ import (
 )
 
 func handlePlayer() {
-	handleGameAPI("/player/set", system.TokenAuthentication, OverwritePlayer) // HACK
+	//handleGameAPI("/player/set", system.TokenAuthentication, OverwritePlayer) // HACK - do not allow in production
 	handleGameAPI("/player/name", system.TokenAuthentication, SetPlayerName)
 	handleGameAPI("/player/view", system.NoAuthentication, ViewPlayerProfile)
 
@@ -56,14 +56,14 @@ func ViewPlayerProfile(context *util.Context) {
 
 	var player *models.Player
 	var err error
+	player, err = models.GetPlayerByTag(context, tag)
+	util.Must(err)
 
-	if player, err = models.GetPlayerByTag(context, tag); err != nil || player == nil {
-		panic(err)
-	}
+	var playerClient *models.PlayerClient
+	playerClient, err = player.GetPlayerClient(context)
+	util.Must(err)
 
-	context.SetData("name", player.Name)
-	context.SetData("rankPoints", player.RankPoints)
-	context.SetData("wins", player.WinCount)
+	context.SetData("player", playerClient)
 	context.SetData("cards", len(player.Cards))
 }
 

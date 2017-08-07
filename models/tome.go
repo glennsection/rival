@@ -239,7 +239,7 @@ func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, 
 
 	player.FreeTomes--
 
-	tomeReward = player.GetReward(data.ToDataId("FREE_TOME_REWARD"))
+	tomeReward = player.GetReward(data.ToDataId("TOME_FREE_REWARD"))
 	err = player.AddRewards(tomeReward, context)
 
 	return
@@ -253,7 +253,7 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 	player.ArenaPoints = 0
 	player.ArenaTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(data.Config().BattleTomeCooldown) * time.Second))
 
-	tomeReward = player.GetReward(data.ToDataId("ARENA_TOME_REWARD"))
+	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"))
 	err = player.AddRewards(tomeReward, context)
 
 	return
