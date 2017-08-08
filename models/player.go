@@ -373,6 +373,27 @@ func (player *Player) GetLevel() int {
 	return data.GetAccountLevel(player.XP)
 }
 
+func (player *Player) GetCard(cardId data.DataId) *Card {
+	for i, card := range player.Cards {
+		if card.DataID == cardId {
+			return &player.Cards[i]
+		}
+	}
+	return nil
+}
+
+func (player *Player) GetDeckCards(deckIndex int) (cards []*Card) {
+	deck := player.Decks[deckIndex]
+	cards = make([]*Card, 9)
+
+	cards[0] = player.GetCard(deck.LeaderCardID)
+	for i, cardId := range deck.CardIDs {
+		cards[i + 1] = player.GetCard(cardId)
+	}
+
+	return
+}
+
 func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *Tome) {
 	index, tome = player.GetEmptyTomeSlot()
 
