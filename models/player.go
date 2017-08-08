@@ -185,14 +185,7 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		guildTag = guild.Tag
 
 		// guild role
-		switch player.GuildRole {
-		case GuildMember:
-			guildRole = "Member"
-		case GuildElite:
-			guildRole = "Elite"
-		case GuildOwner:
-			guildRole = "Owner"
-		}
+		guildRole = GetGuildRoleName(player.GuildRole)
 	}
 
 	// create player client
@@ -557,7 +550,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 				}
 			}
 
-			dataMap["guildRole"] = player.GuildRole
+			dataMap["guildRole"] = GetGuildRoleName(player.GuildRole)
 		}
 	}
 

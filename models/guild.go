@@ -40,6 +40,19 @@ type GuildClient struct {
 	*GuildClientAlias
 }
 
+func GetGuildRoleName(guildRole GuildRole) string {
+	switch guildRole {
+	default:
+		return "None"
+	case GuildMember:
+		return "Member"
+	case GuildElite:
+		return "Elite"
+	case GuildOwner:
+		return "Owner"
+	}
+}
+
 func (guild *Guild) CreateGuildClient(context *util.Context) (client *GuildClient, err error) {
 	// get member players
 	var memberPlayers []*Player
