@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -10,17 +12,18 @@ import (
 const ReplayInfoCollectionName = "replayInfos"
 
 type ReplayInfo struct {
-	ID     bson.ObjectId `bson:"_id,omitempty" json:"id"`
-	UserID bson.ObjectId `bson:"us" json:"-"`
-	Info   string        `bson:"in" json:"info"`
+	ID         bson.ObjectId `bson:"_id,omitempty" json:"id"`
+	UserID     bson.ObjectId `bson:"us" json:"-"`
+	CreatedAt  time.Time     `bson:"t0" json:"created"`
+	Info       string        `bson:"in" json:"info"`
 }
 
 const ReplayDataCollectionName = "replayDatas"
 
 type ReplayData struct {
-	ID     bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	InfoID bson.ObjectId `bson:"iid" json:"-"`
-	Data   string        `bson:"dt" json:"data"`
+	ID         bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	InfoID     bson.ObjectId `bson:"iid" json:"-"`
+	Data       string        `bson:"dt" json:"data"`
 }
 
 func ensureIndexReplay(database *mgo.Database) {
@@ -28,7 +31,13 @@ func ensureIndexReplay(database *mgo.Database) {
 
 	// user index
 	util.Must(c.EnsureIndex(mgo.Index{
-		Key:        []string{"us"},
+		Key:        []string { "us" },
+		Background: true,
+	}))
+
+	// user/time index
+	util.Must(c.EnsureIndex(mgo.Index{
+		Key:        []string { "us", "t0" },
 		Background: true,
 	}))
 
@@ -36,7 +45,7 @@ func ensureIndexReplay(database *mgo.Database) {
 
 	// user index
 	util.Must(c.EnsureIndex(mgo.Index{
-		Key:        []string{"iid"},
+		Key:        []string { "iid" },
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
@@ -45,7 +54,7 @@ func ensureIndexReplay(database *mgo.Database) {
 
 func CreateReplay(context *util.Context, info string, data string) (err error) {
 	// init replay info
-	replayInfo := &ReplayInfo{
+	replayInfo := &ReplayInfo {
 		UserID: context.UserID,
 		Info:   info,
 	}
@@ -57,7 +66,7 @@ func CreateReplay(context *util.Context, info string, data string) (err error) {
 	}
 
 	// init replay data
-	replayData := &ReplayData{
+	replayData := &ReplayData {
 		InfoID: replayInfo.ID,
 		Data:   data,
 	}
@@ -69,23 +78,30 @@ func CreateReplay(context *util.Context, info string, data string) (err error) {
 
 func GetReplayInfosByUser(context *util.Context, userId bson.ObjectId) (replayInfos []*ReplayInfo, err error) {
 	// find replay infos by user ID
-	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M{"us": userId}).All(&replayInfos)
+	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).All(&replayInfos)
+	return
+}
+
+func GetLastReplayInfoByUser(context *util.Context, userId bson.ObjectId) (replayInfo *ReplayInfo, err error) {
+	// find last replay info by user ID
+	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).Limit(1).Sort("-t0").One(&replayInfo)
 	return
 }
 
 func GetReplayInfoById(context *util.Context, infoId bson.ObjectId) (replayInfo *ReplayInfo, err error) {
-	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M{"_id": infoId}).One(&replayInfo)
+	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "_id": infoId }).One(&replayInfo)
 	return
 }
 
 func GetReplayDataByInfo(context *util.Context, infoId bson.ObjectId) (replayData *ReplayData, err error) {
 	// find replay data by info ID
-	err = context.DB.C(ReplayDataCollectionName).Find(bson.M{"iid": infoId}).One(&replayData)
+	err = context.DB.C(ReplayDataCollectionName).Find(bson.M { "iid": infoId }).One(&replayData)
 	return
 }
 
 func (replayInfo *ReplayInfo) Save(context *util.Context) (err error) {
 	replayInfo.ID = bson.NewObjectId()
+	replayInfo.CreatedAt = time.Now()
 
 	err = context.DB.C(ReplayInfoCollectionName).Insert(replayInfo)
 	return
@@ -100,7 +116,7 @@ func (replayData *ReplayData) Save(context *util.Context) (err error) {
 
 func (replayInfo *ReplayInfo) Delete(context *util.Context) (err error) {
 	// delete replay data from database
-	err = context.DB.C(ReplayDataCollectionName).Remove(bson.M{"iid": replayInfo.ID})
+	err = context.DB.C(ReplayDataCollectionName).Remove(bson.M { "iid": replayInfo.ID })
 	if err != nil {
 		return
 	}
