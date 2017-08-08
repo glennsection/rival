@@ -27,17 +27,30 @@ type Guild struct {
 	Rating      int           `bson:"rt" json:"rating"`
 	MemberCount int           `bson:"ms" json:"-"`
 
-	WinCount   int `bson:"wc" json:"winCount"`
-	LossCount  int `bson:"lc" json:"lossCount"`
-	MatchCount int `bson:"mc" json:"matchCount"`
+	WinCount    int           `bson:"wc" json:"winCount"`
+	LossCount   int           `bson:"lc" json:"lossCount"`
+	MatchCount  int           `bson:"mc" json:"matchCount"`
 }
 
 // client model
 type GuildClientAlias Guild
 type GuildClient struct {
-	Members []*PlayerClient `json:"members"`
+	Members []*PlayerClient   `json:"members"`
 
 	*GuildClientAlias
+}
+
+func GetGuildRoleName(guildRole GuildRole) string {
+	switch guildRole {
+	default:
+		return "None"
+	case GuildMember:
+		return "Member"
+	case GuildElite:
+		return "Elite"
+	case GuildOwner:
+		return "Owner"
+	}
 }
 
 func (guild *Guild) CreateGuildClient(context *util.Context) (client *GuildClient, err error) {

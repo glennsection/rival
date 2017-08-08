@@ -85,7 +85,7 @@ type PlayerClient struct {
 	LossCount  				int 			`json:"lossCount"`
 	MatchCount 				int 			`json:"matchCount"`
 
-	GuildName               string          `json:"guildName"` // TODO - put GuildBrief in here, once we break PlayerClient into PlayerBrief and PlayerProfile
+	GuildTag                string          `json:"guildTag"`
 	GuildRole 				string  		`json:"guildRole"`
 
 	Online     				bool  			`json:"online"`
@@ -172,7 +172,7 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 	online := (lastOnline < time.Second*config.Config.Sessions.OfflineTimeout)
 
 	// get guild
-	guildName := ""
+	guildTag := ""
 	guildRole := "None"
 	if player.GuildID.Valid() {
 		var guild *Guild
@@ -182,17 +182,10 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		}
 
 		// guild name
-		guildName = guild.Name
+		guildTag = guild.Tag
 
 		// guild role
-		switch player.GuildRole {
-		case GuildMember:
-			guildRole = "Member"
-		case GuildElite:
-			guildRole = "Elite"
-		case GuildOwner:
-			guildRole = "Owner"
-		}
+		guildRole = GetGuildRoleName(player.GuildRole)
 	}
 
 	// create player client
@@ -207,7 +200,7 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		LossCount:  player.LossCount,
 		MatchCount: player.MatchCount,
 
-		GuildName:  guildName,
+		GuildTag:   guildTag,
 		GuildRole:  guildRole,
 
 		Online:     online,
@@ -557,7 +550,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 				}
 			}
 
-			dataMap["guildRole"] = player.GuildRole
+			dataMap["guildRole"] = GetGuildRoleName(player.GuildRole)
 		}
 	}
 
