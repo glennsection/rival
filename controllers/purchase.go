@@ -86,6 +86,12 @@ func Purchase(context *util.Context) {
 
 		for _, reward := range rewards {
 			player.AddRewards(reward, nil)
+
+			if util.HasSQLDatabase() {
+				TrackRewardsSQL(context, reward, currentTime)
+			}else{
+				TrackRewards(context, reward)
+			}
 		}
 		context.SetData("rewards", rewards)
 	}

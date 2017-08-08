@@ -85,7 +85,8 @@ type PlayerClient struct {
 	LossCount  				int 			`json:"lossCount"`
 	MatchCount 				int 			`json:"matchCount"`
 
-	GuildRole 				GuildRole 		`json:"guildRole"`
+	GuildName               string          `json:"guildName"` // TODO - put GuildBrief in here, once we break PlayerClient into PlayerBrief and PlayerProfile
+	GuildRole 				string  		`json:"guildRole"`
 
 	Online     				bool  			`json:"online"`
 	LastOnline 				int64 			`json:"lastOnline"`
@@ -170,6 +171,30 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 	lastOnline := time.Now().Sub(player.LastTime)
 	online := (lastOnline < time.Second*config.Config.Sessions.OfflineTimeout)
 
+	// get guild
+	guildName := ""
+	guildRole := "None"
+	if player.GuildID.Valid() {
+		var guild *Guild
+		guild, err = GetGuildById(context, player.GuildID)
+		if err != nil {
+			return
+		}
+
+		// guild name
+		guildName = guild.Name
+
+		// guild role
+		switch player.GuildRole {
+		case GuildMember:
+			guildRole = "Member"
+		case GuildElite:
+			guildRole = "Elite"
+		case GuildOwner:
+			guildRole = "Owner"
+		}
+	}
+
 	// create player client
 	client = &PlayerClient{
 		Name:       playerUser.Name,
@@ -182,8 +207,8 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		LossCount:  player.LossCount,
 		MatchCount: player.MatchCount,
 
-		//GuildName: ... // TODO
-		GuildRole: player.GuildRole,
+		GuildName:  guildName,
+		GuildRole:  guildRole,
 
 		Online:     online,
 		LastOnline: util.DurationToTicks(lastOnline),
@@ -346,6 +371,27 @@ func GetPlayerName(context *util.Context, playerID bson.ObjectId) string {
 
 func (player *Player) GetLevel() int {
 	return data.GetAccountLevel(player.XP)
+}
+
+func (player *Player) GetCard(cardId data.DataId) *Card {
+	for i, card := range player.Cards {
+		if card.DataID == cardId {
+			return &player.Cards[i]
+		}
+	}
+	return nil
+}
+
+func (player *Player) GetDeckCards(deckIndex int) (cards []*Card) {
+	deck := player.Decks[deckIndex]
+	cards = make([]*Card, 9)
+
+	cards[0] = player.GetCard(deck.LeaderCardID)
+	for i, cardId := range deck.CardIDs {
+		cards[i + 1] = player.GetCard(cardId)
+	}
+
+	return
 }
 
 func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *Tome) {
