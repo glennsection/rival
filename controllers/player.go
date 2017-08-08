@@ -63,8 +63,10 @@ func ViewPlayerProfile(context *util.Context) {
 	playerClient, err = player.GetPlayerClient(context)
 	util.Must(err)
 
+	currentDeck := player.GetDeckCards(player.CurrentDeck)
+
 	context.SetData("player", playerClient)
-	context.SetData("cards", len(player.Cards))
+	context.SetData("cards", currentDeck)
 }
 
 func OverwritePlayer(context *util.Context) {
