@@ -65,8 +65,15 @@ func ViewPlayerProfile(context *util.Context) {
 
 	currentDeck := player.GetDeckCards(player.CurrentDeck)
 
+	var guild *models.Guild = nil
+	if player.GuildID.Valid() {
+		guild, err = models.GetGuildById(context, player.GuildID)
+		util.Must(err)
+	}
+
 	context.SetData("player", playerClient)
 	context.SetData("cards", currentDeck)
+	context.SetData("guild", guild)
 }
 
 func OverwritePlayer(context *util.Context) {

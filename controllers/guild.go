@@ -77,6 +77,15 @@ func GetGuildById(context *util.Context) {
 	context.SetData("guild", guild)
 }
 
+func GetGuildByTag(context *util.Context) {
+	tag := context.Params.GetString("tag", "")
+
+	guild,err := models.GetGuildByTag(context, tag)
+	util.Must(err)
+
+	context.SetData("guild", guild)
+}
+
 func GetGuilds(context *util.Context) {
 	// parse parameters
 	name := context.Params.GetString("name", "")
