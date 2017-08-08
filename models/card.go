@@ -115,13 +115,6 @@ func (player *Player) AddCards(id data.DataId, num int) {
 	}
 
 	player.Cards = append(player.Cards, card)
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "cardUnlocked", 0, data.ToDataName(id), 
-			"", 1, float64(0), nil)
-	}else{
-		InsertTracking(context, "cardUnlocked", bson.M{"cardId": data.ToDataName(id), 
-			"level": 1}, 0)
-	}
 }
 
 func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
