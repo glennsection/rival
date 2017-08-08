@@ -13,7 +13,9 @@ import (
 
 func handleGuild() {
 	handleGameAPI("/guild/create", system.TokenAuthentication, CreateGuild)
+	handleGameAPI("/guild/delete", system.TokenAuthentication, DeleteGuild)
 	handleGameAPI("/guild/getGuilds", system.TokenAuthentication, GetGuilds)
+	handleGameAPI("/guild/getGuildById", system.TokenAuthentication, GetGuildById)
 	handleGameAPI("/guild/addMember", system.TokenAuthentication, AddMember)
 	handleGameAPI("/guild/removeMember", system.TokenAuthentication, RemoveMember)
 	handleGameAPI("/guild/chat", system.TokenAuthentication, GuildChat)
@@ -30,9 +32,49 @@ func CreateGuild(context *util.Context) {
 
 	// TODO - make sure player doesn't already own a guild...
 
+	// TODO - make sure that the guild name is unique
+	var guilds []*models.Guild
+	if name != "" {
+		util.Must(context.DB.C(models.GuildCollectionName).Find(bson.M{
+			"nm": bson.M{
+				"$regex": bson.RegEx{
+					Pattern: fmt.Sprintf("%s", name),
+					Options: "i",
+				},
+			},
+		}).All(&guilds))
+	}
+	fmt.Printf("Length of Guilds with same name: %d", len(guilds))
+	if (len(guilds) > 0) {
+		//Return invalid name
+		err := util.NewError("Guild name is already taken. Please choose another")
+		util.Must(err)
+		return
+	}
+
+
 	// create guild
 	_, err := models.CreateGuild(context, player, name)
 	util.Must(err)
+}
+
+func DeleteGuild(context *util.Context) {
+	player := GetPlayer(context)
+
+	guild,err := models.GetGuildById(context, player.GuildID)
+	util.Must(err)
+
+	err2 := guild.Delete(context)
+	util.Must(err2)
+}
+
+func GetGuildById(context *util.Context) {
+	id := context.Params.GetString("id", "")
+
+	guild,err := models.GetGuildById(context, bson.ObjectIdHex(id))
+	util.Must(err)
+
+	context.SetData("guild", guild)
 }
 
 func GetGuilds(context *util.Context) {
@@ -59,12 +101,15 @@ func GetGuilds(context *util.Context) {
 }
 
 func AddMember(context *util.Context) {
+	guildTag := context.Params.GetRequiredString("guildTag")
 	tag := context.Params.GetRequiredString("tag")
 
-	player := GetPlayer(context)
+	//player := GetPlayer(context)
+	player, err1 := models.GetPlayerByTag(context, tag)
+	util.Must(err1)
 
 	// guild
-	guild, err := models.GetGuildByTag(context, tag)
+	guild, err := models.GetGuildByTag(context, guildTag)
 	util.Must(err)
 
 	err2 := models.AddMember(context, player, guild)
@@ -88,6 +133,7 @@ func RemoveMember(context *util.Context) {
 func SendGuildChatNotification(context *util.Context, notificationType string, message string, acceptName string, acceptAction string, declineName string, declineAction string, data map[string]interface{}, expiresAt time.Time) {
 	//notificationType := "GuildChat"
 
+	fmt.Printf("Inside send guild chat notification")
 	// sending player
 	player := GetPlayer(context)
 	playerClient, err := player.GetPlayerClient(context)
@@ -206,6 +252,8 @@ func GuildBattle(context *util.Context) {
 		"roomId": roomID,
 	}
 	expiresAt := time.Now().Add(time.Hour)
+
+	fmt.Printf("Creating Guild Battle Notification")
 
 	SendGuildChatNotification(context, "GuildBattle", message, "Accept", "accept", "Decline", "decline", data, expiresAt)
 	//sendFriendNotification(context, tag, "FriendBattle", image, message, "Battle", "accept", "Decline", "decline", data, expiresAt)
