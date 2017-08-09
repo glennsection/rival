@@ -26,6 +26,7 @@ func handleGuild() {
 func CreateGuild(context *util.Context) {
 	// parse parameters
 	name := context.Params.GetRequiredString("name")
+	iconId := context.Params.GetRequiredString("iconId")
 
 	// get player
 	player := GetPlayer(context)
@@ -54,7 +55,7 @@ func CreateGuild(context *util.Context) {
 
 
 	// create guild
-	_, err := models.CreateGuild(context, player, name)
+	_, err := models.CreateGuild(context, player, name, iconId)
 	util.Must(err)
 }
 
