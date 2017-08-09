@@ -30,7 +30,6 @@ func init() {
 	loadDataFile("GameData/ExcelConverted/PvPRanking.json", LoadRanks)
 	loadDataFile("GameData/ExcelConverted/Rewards.json", LoadRewardData)
 	loadDataFile("GameData/ExcelConverted/Store.json", LoadStore)
-	loadDataFile("GameData/ExcelConverted/CardPurchaseCosts.json", LoadCardPurchaseCosts)
 	loadDataFile("GameData/ExcelConverted/Rarity.json", LoadRarityData)
 	loadDataFile("GameData/Definitions/QuestTypes.txt", LoadQuestData)
 	// ------------------------------------------

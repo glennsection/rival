@@ -83,9 +83,6 @@ var storeItems map[DataId]*StoreItemData
 // special offer data map
 var specialOffers map[DataId]*StoreItemData
 
-// card purchasing data map
-var cardPurchaseCosts map[string][]int
-
 // implement Data interface
 func (data *StoreItemData) GetDataName() string {
 	return data.Name
@@ -94,10 +91,6 @@ func (data *StoreItemData) GetDataName() string {
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type StoreParsed struct {
 	Store []StoreItemData
-}
-
-type CardPurchaseCostsParsed struct {
-	CardPurchaseCosts []CardPurchaseCost
 }
 
 // custom unmarshalling
@@ -206,18 +199,6 @@ func LoadStore(raw []byte) {
 	}
 }
 
-func LoadCardPurchaseCosts(raw []byte) {
-	//parse
-	container := &CardPurchaseCostsParsed {}
-	util.Must(json.Unmarshal(raw, container))
-
-	//enter into system data
-	cardPurchaseCosts = map[string][]int{}
-	for _, data := range container.CardPurchaseCosts {
-		cardPurchaseCosts[data.Rarity] = util.StringToIntArray(data.Cost)
-	}
-}
-
 // get store item by server ID
 func GetStoreItemData(id DataId) (store *StoreItemData) {
 	if storeItem, contains := storeItems[id]; contains {
@@ -237,25 +218,6 @@ func GetStoreItemDataCollection() (map[DataId]*StoreItemData) {
 
 func GetSpecialOfferCollection() (map[DataId]*StoreItemData) {
 	return specialOffers
-}
-
-// cards can't be purchased past a certain level specific to each rarity. this function
-// determins if a given card of a provided level is eligible for purchase
-func CanPurchaseCard(rarity string, level int) bool {
-	level -= 1
-
-	return level <= len(cardPurchaseCosts[rarity])
-}
-
-// get card cost by rarity and potential level
-func GetCardCost(rarity string, level int) int {
-	level -= 1
-
-	if level >= len(cardPurchaseCosts[rarity]) {
-		level = len(cardPurchaseCosts[rarity]) - 1
-	}
-
-	return cardPurchaseCosts[rarity][level]
 }
 
 func StoreCategoryToString(val StoreCategory) (string, error) {
