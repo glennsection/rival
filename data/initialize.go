@@ -5,11 +5,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"bloodtales/config"
 	"bloodtales/util"
 )
-
-// root data directory
-var rootDirectoryUrl string = "https://s3-us-west-1.amazonaws.com/bloodtalesdev/btMain/server/%v"
 
 // initialize data system
 func init() {
@@ -18,7 +16,7 @@ func init() {
 
 	// load all data files
 	// ------------------------------------------
-	loadDataFile("ServerConfiguration.txt", LoadConfig)
+	loadDataFile("Default Gameplay Configuration.txt", LoadGameplayConfig)
 	loadDataFile("GameData/ExcelConverted/PlayerLevelProgression.json", LoadPlayerLevelProgression)
 	loadDataFile("GameData/ExcelConverted/Cards.json", LoadCards)
 	loadDataFile("GameData/ExcelConverted/CommonCardLeveling.json", LoadCommonCardProgression)
@@ -42,7 +40,7 @@ func init() {
 // load a particular file into a container
 func loadDataFile(fileName string, processor func([]byte)) {
 	// read file
-	pathUrl := fmt.Sprintf(rootDirectoryUrl, fileName)
+	pathUrl := fmt.Sprintf("%s/%s", config.Config.Resources.DataPath, fileName)
 
 	rawUrl, errUrl := http.Get(pathUrl)
 	defer rawUrl.Body.Close()

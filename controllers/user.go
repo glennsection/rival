@@ -34,7 +34,7 @@ func UserConnect(context *util.Context) {
 	// update client values
 	context.Client.Version = version
 	context.Client.Save()
-	context.SetData("configuration", data.Config())
+	context.SetData("config", data.GameplayConfigJSON)
 }
 
 func UserLogin(context *util.Context) {

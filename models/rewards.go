@@ -274,7 +274,7 @@ func (reward *Reward)getOverflowAmounts(player *Player) {
 	for i,_ := range reward.OverflowAmounts {
 		overflow := reward.getOverflowForIndex(player, i)
 		reward.OverflowAmounts[i] = overflow
-		reward.OverflowCurrency += overflow * data.Config().LegendaryCardCurrencyValue
+		reward.OverflowCurrency += overflow * data.GameplayConfig.LegendaryCardCurrencyValue
 	}
 }
 

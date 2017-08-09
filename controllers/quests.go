@@ -29,13 +29,12 @@ func CompleteQuest(context *util.Context) {
 	questId := player.QuestSlots[index].QuestInstance.DataID //cache for analytics
 
 	reward, success, err := player.CollectQuest(index, context)
+	util.Must(err)
+
 	if !success {
 		player.SetDirty(models.PlayerDataMask_Quests)
-		context.Fail("Invalid Request")
+		context.Fail("Quest not ready to be collected")
 		return
-	}
-	if err != nil {
-		panic(err)
 	}
 
 	player.SetDirty(models.PlayerDataMask_Quests, models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_XP)
@@ -54,8 +53,6 @@ func CompleteQuest(context *util.Context) {
 
 		TrackRewards(context, reward)	
 	}
-
-	
 }
 
 func ClearQuest(context *util.Context) {
@@ -64,14 +61,15 @@ func ClearQuest(context *util.Context) {
 		return
 	}
 
+	player.SetDirty(models.PlayerDataMask_Quests)
+
 	if player.QuestClearTime > util.TimeToTicks(time.Now().UTC()) {
-		player.SetDirty(models.PlayerDataMask_Quests)
-		context.Fail("Cannot clear quests at this time")
+		context.Fail("Cannot clear any quests at this time")
+		return
 	}
 
 	if player.QuestSlots[index].State == models.QuestState_Ready || player.QuestSlots[index].State == models.QuestState_Cooldown {
-		player.SetDirty(models.PlayerDataMask_Quests)
-		context.Fail("Invalid Request")
+		context.Fail("Cannot clear quest at this time")
 		return
 	}
 
@@ -79,8 +77,6 @@ func ClearQuest(context *util.Context) {
 	player.AssignRandomQuest(index)
 	player.QuestClearTime = util.TimeToTicks(util.GetTomorrowDate())
 	player.Save(context)
-	
-	player.SetDirty(models.PlayerDataMask_Quests)
 }
 
 func RefreshQuests(context *util.Context) {
@@ -100,14 +96,11 @@ func validateQuestRequest(context *util.Context) (*models.Player, int, bool) {
 	success := true
 	player := GetPlayer(context)
 	index, err := strconv.Atoi(context.Params.GetRequiredString("index"))
+	util.Must(err)
 
-	if err != nil {
-		panic(err)
-	} else {
-		if index < 0 || index > len(player.QuestSlots) {
-			success = false
-			context.Fail("Invalid Index")
-		}
+	if index < 0 || index > len(player.QuestSlots) {
+		success = false
+		context.Fail("Invalid Index")
 	}
 
 	return player, index, success
