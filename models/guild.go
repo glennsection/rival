@@ -15,6 +15,7 @@ type GuildRole int
 const (
 	GuildMember GuildRole = iota
 	GuildElite
+	GuildCoOwner
 	GuildOwner
 )
 
@@ -23,6 +24,7 @@ type Guild struct {
 	OwnerID     bson.ObjectId `bson:"ow" json:"-"`
 	Name        string        `bson:"nm" json:"name"`
 	Tag         string        `bson:"tg" json:"tag"`
+	Icon        string        `bson:"ic" json:"icon"`
 	XP          int           `bson:"xp" json:"xp"`
 	Rating      int           `bson:"rt" json:"rating"`
 	MemberCount int           `bson:"ms" json:"-"`
@@ -48,6 +50,8 @@ func GetGuildRoleName(guildRole GuildRole) string {
 		return "Member"
 	case GuildElite:
 		return "Elite"
+	case GuildCoOwner:
+		return "CoOwner"
 	case GuildOwner:
 		return "Owner"
 	}
