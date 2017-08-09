@@ -144,11 +144,16 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 				socketData := map[string]interface{}{"notificationId": notification.ID}
 				system.SocketSend(memberPlayer.UserID, "GuildBattle-clear", socketData)
 			}
+
+			if notification.SenderID.Valid() {
+				senderUserID := models.GetUserIdByPlayerId(context, notification.SenderID)
+				system.SocketSend(senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
+			}
 		}
 
 		break
 	}
-	
+
 	// delete notification
 	util.Must(notification.Delete(context))
 }

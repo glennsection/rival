@@ -15,6 +15,7 @@ type GuildRole int
 const (
 	GuildMember GuildRole = iota
 	GuildElite
+	GuildCoOwner
 	GuildOwner
 )
 
@@ -23,6 +24,7 @@ type Guild struct {
 	OwnerID     bson.ObjectId `bson:"ow" json:"-"`
 	Name        string        `bson:"nm" json:"name"`
 	Tag         string        `bson:"tg" json:"tag"`
+	Icon        string        `bson:"ic" json:"icon"`
 	XP          int           `bson:"xp" json:"xp"`
 	Rating      int           `bson:"rt" json:"rating"`
 	MemberCount int           `bson:"ms" json:"-"`
@@ -48,6 +50,8 @@ func GetGuildRoleName(guildRole GuildRole) string {
 		return "Member"
 	case GuildElite:
 		return "Elite"
+	case GuildCoOwner:
+		return "CoOwner"
 	case GuildOwner:
 		return "Owner"
 	}
@@ -121,7 +125,7 @@ func (guild *Guild) initialize() {
 	guild.MatchCount = 0
 }
 
-func CreateGuild(context *util.Context, owner *Player, name string) (guild *Guild, err error) {
+func CreateGuild(context *util.Context, owner *Player, name string, iconId string) (guild *Guild, err error) {
 	// init guild
 	guild = &Guild{}
 	guild.initialize()
@@ -131,6 +135,7 @@ func CreateGuild(context *util.Context, owner *Player, name string) (guild *Guil
 	guild.Name = name
 	guild.MemberCount = 1
 	guild.Tag = util.GenerateTag()
+	guild.Icon = iconId
 
 	// save guild
 	err = guild.Save(context)
