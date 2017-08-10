@@ -89,7 +89,7 @@ func Purchase(context *util.Context) {
 
 	// add rewards
 	if storeItem.Category != data.StoreCategoryCards {
-		rewards := player.GetRewards(storeItem.RewardIDs)
+		rewards := player.GetRewards(storeItem.RewardIDs, data.GetLeague(data.GetRank(player.RankPoints).Level))
 
 		for _, reward := range rewards {
 			player.AddRewards(reward, nil)

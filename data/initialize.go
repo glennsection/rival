@@ -28,6 +28,7 @@ func init() {
 	loadDataFile("GameData/ExcelConverted/Tomes.json", LoadTomes)
 	loadDataFile("GameData/ExcelConverted/TomeOrder.json", LoadTomeOrder)
 	loadDataFile("GameData/ExcelConverted/PvPRanking.json", LoadRanks)
+	loadDataFile("GameData/ExcelConverted/PvPLeagues.json", LoadLeagues)
 	loadDataFile("GameData/ExcelConverted/Rewards.json", LoadRewardData)
 	loadDataFile("GameData/ExcelConverted/Store.json", LoadStore)
 	loadDataFile("GameData/ExcelConverted/Rarity.json", LoadRarityData)

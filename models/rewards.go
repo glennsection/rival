@@ -61,16 +61,16 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 	return json.Marshal(client) 
 }
 
-func (player *Player) GetReward(rewardId data.DataId) *Reward {
+func (player *Player) GetReward(rewardId data.DataId, league data.League) *Reward {
 	rewardData := data.GetRewardData(rewardId)
-	return player.CreateReward(rewardData)
+	return player.CreateReward(rewardData, league)
 }
 
-func (player *Player) GetRewards(rewardIds []data.DataId) []*Reward {
+func (player *Player) GetRewards(rewardIds []data.DataId, league data.League) []*Reward {
 	rewards := make([]*Reward, 0)
 
 	for _, id := range rewardIds {
-		rewards = append(rewards, player.GetReward(id))
+		rewards = append(rewards, player.GetReward(id, league))
 	}
 
 	return rewards
@@ -105,14 +105,16 @@ func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward 
 	return reward
 }
 
-func (player *Player)CreateReward(rewardData *data.RewardData) *Reward {
+func (player *Player)CreateReward(rewardData *data.RewardData, league data.League) *Reward {
 	reward := &Reward{
 		ItemID: rewardData.ItemID,
 		Type: rewardData.Type,
 	}
+
+	volumeMultiplier := data.GetLeagueData(league).TomeVolumeMultiplier
 	
 	reward.getCurrencyRewards(rewardData)
-	reward.getCardRewards(rewardData, player.GetLevel())
+	reward.getCardRewards(rewardData, player.GetLevel(), volumeMultiplier)
 	reward.getOverflowAmounts(player)
 
 	return reward
@@ -140,31 +142,33 @@ func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData) {
 	}
 }
 
-func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int) {
+func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, volumeMultiplier float64) {
 	reward.Cards = make([]data.DataId, 0)
 	reward.NumRewarded = make([]int, 0)
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	// first assign cards for the guaranteed rarities
-	reward.getCardsForRarity(rewardData, "LEGENDARY", rewardData.LegendaryCards, tier)
-	reward.getCardsForRarity(rewardData, "EPIC", rewardData.EpicCards, tier)
-	reward.getCardsForRarity(rewardData, "RARE", rewardData.RareCards, tier)
+	reward.getCardsForRarity(rewardData, "LEGENDARY", int(float64(rewardData.LegendaryCards) * volumeMultiplier), tier, volumeMultiplier)
+	reward.getCardsForRarity(rewardData, "EPIC", int(float64(rewardData.EpicCards) * volumeMultiplier), tier, volumeMultiplier)
+	reward.getCardsForRarity(rewardData, "RARE", int(float64(rewardData.RareCards) * volumeMultiplier), tier, volumeMultiplier)
 
 	// next roll for a rare or better card
-	remainingCards := rewardData.RandomCards
-	reward.rollForCard(rewardData, &remainingCards, tier)
+	remainingCards := int(float64(rewardData.RandomCards) * volumeMultiplier)
+	reward.rollForCard(rewardData, &remainingCards, tier, volumeMultiplier)
 
 	//finally, fill out the remaining cards
-	reward.getCardsForRarity(rewardData, "COMMON", remainingCards, tier)
+	reward.getCardsForRarity(rewardData, "COMMON", remainingCards, tier, volumeMultiplier)
 }
 
-func (reward *Reward)getCardsForRarity(rewardData *data.RewardData, rarity string, numCards int, tier int) {
+func (reward *Reward)getCardsForRarity(rewardData *data.RewardData, rarity string, numCards int, tier int, volumeMultiplier float64) {
 	if numCards == 0 {
 		return
 	}
 
 	lowerBound, upperBound := rewardData.GetBoundsForRarity(rarity)
+	lowerBound = int(float64(lowerBound) * volumeMultiplier)
+	upperBound = int(float64(upperBound) * volumeMultiplier)
 
 	possibleCards := data.GetCards(func(card *data.CardData) bool {
 		return card.Rarity == rarity && card.Tier <= tier
@@ -202,7 +206,7 @@ func (reward *Reward)getCardsForRarity(rewardData *data.RewardData, rarity strin
 }
 
 
-func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *int, tier int) {
+func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *int, tier int, volumeMultiplier float64) {
 	roll := float32(rand.Intn(100)) + rand.Float32()
 	rarity := ""
 
@@ -236,6 +240,9 @@ func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *in
 	}
 
 	lowerBound, upperBound := rewardData.GetBoundsForRarity(rarity)
+	lowerBound = int(float64(lowerBound) * volumeMultiplier)
+	upperBound = int(float64(upperBound) * volumeMultiplier)
+
 	if upperBound > *remainingCards {
 			upperBound = *remainingCards
 	}
