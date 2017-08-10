@@ -267,6 +267,7 @@
             ]
         }
     ],
+    "uncollectedCards": [],
     "currentDeck": 0,
     "tomes": [
         {
@@ -291,7 +292,11 @@
         }
     ],
     "arenaPoints": 0,
+    "arenaTomeUnlockTime": 0,
     "freeTomes": 0,
     "freeTomeUnlockTime": 0,
+    "questClearTime": 0,
+    "quests": [],
+    "friends": [],
     "tutorial": []
 }

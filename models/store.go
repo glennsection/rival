@@ -34,6 +34,9 @@ type StoreItem struct {
 	Currency 					data.CurrencyType
 	Cost     					float64
 
+	NumAvailable 				int 
+	BulkCost 					float64
+
 	ExpirationDate 				int64
 }
 
@@ -44,6 +47,8 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	client["id"] = storeItem.Name
 	client["itemId"] = storeItem.ItemID
 	client["cost"] = storeItem.Cost
+	client["numAvailable"] = storeItem.NumAvailable
+	client["bulkCost"] = storeItem.BulkCost
 
 	var err error
 	err = nil
@@ -128,6 +133,8 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 			RewardIDs: storeItemData.RewardIDs,
 			Currency: storeItemData.Currency,
 			Cost: storeItemData.Cost,
+			NumAvailable: 1,
+			BulkCost: storeItemData.Cost,
 		})
 	}
 
@@ -189,6 +196,8 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 				RewardIDs: specialOfferData.RewardIDs,
 				Currency: specialOfferData.Currency,
 				Cost: specialOfferData.Cost,
+				NumAvailable: 1,
+				BulkCost: specialOfferData.Cost,
 				ExpirationDate: util.TimeToTicks(expirationDate),
 			}
 
@@ -266,37 +275,53 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) *StoreIt
 		ItemID: card.Name,
 		Category: data.StoreCategoryCards,
 		Currency: data.CurrencyStandard,
-		Cost: player.getCardCost(cardId),
+		Cost: getCardCost(rarity, 0),
+		NumAvailable: data.GetMaxPurchaseCount(rarity),
+		BulkCost: getBulkCost(rarity, 0),
 		ExpirationDate: expirationDate,
 	}
 
 	return storeCard
 }
 
-func (player *Player) getCardCost(id data.DataId) float64 {
-	level := 1
-	rarity := data.GetCard(id).Rarity
-	purchaseCount := 0
-
-	if cardRef, hasCard := player.HasCard(id); hasCard {
-		level = cardRef.GetPotentialLevel()
-		purchaseCount = cardRef.PurchaseCount
-	}
-	baseCost := data.GetCardCost(rarity, level)
+func getCardCost(rarity string, purchaseCount int) float64 {
+	baseCost := data.GetCardCost(rarity)
 
 	return float64(baseCost + (purchaseCount * baseCost))
 }
 
-func (player *Player) HandleCardPurchase(storeItem *StoreItem) {
+func getBulkCost(rarity string, purchaseCount int) float64 {
+	baseCost := data.GetCardCost(rarity)
+	maxPurchaseCount := data.GetMaxPurchaseCount(rarity)
+
+	bulkCost := 0
+
+	for i := purchaseCount; i <= maxPurchaseCount; i++ {
+		bulkCost += baseCost + (i * baseCost)
+	}
+
+	return float64(bulkCost)
+}
+
+func (player *Player) HandleCardPurchase(storeItem *StoreItem, bulk bool) {
 	name := storeItem.Name
 	id := data.ToDataId(name)
+	rarity := data.GetCard(id).Rarity
+	var numPurchased int
 
-	player.AddCards(id, 1)
+	if bulk { // player has purchased all remaining cards
+		numPurchased = storeItem.NumAvailable
+		storeItem.NumAvailable = 0
+	} else { // single card purchase
+		numPurchased = 1
+		storeItem.NumAvailable -= 1
 
-	cardRef, _ := player.HasCard(id)
-	cardRef.PurchaseCount++
+		purchaseCount := data.GetMaxPurchaseCount(rarity) - storeItem.NumAvailable
+		storeItem.BulkCost -= storeItem.Cost
+		storeItem.Cost = getCardCost(rarity, purchaseCount)
+	}
 
-	storeItem.Cost = player.getCardCost(id)
+	player.AddCards(id, numPurchased)
 
 	for i := range player.Store.Cards {
 		if storeItem.Name == player.Store.Cards[i].Name {

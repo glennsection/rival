@@ -217,10 +217,12 @@ func (player *Player) Reset(context *util.Context) (err error) {
 	}
 
 	// clear cache for player
-	context.Cache.Set("PlayerUserId:"+player.ID.Hex(), nil)
-	context.Cache.Set("PlayerName:"+player.ID.Hex(), nil)
-	context.Cache.Set("UserName:"+player.UserID.Hex(), nil)
-	context.Cache.RemoveScore("Leaderboard", player.ID.Hex())
+	playerID := player.ID.Hex()
+	userID := player.UserID.Hex()
+	context.Cache.Set(fmt.Sprintf("PlayerUserId:%s", playerID), nil)
+	context.Cache.Set(fmt.Sprintf("PlayerName:%s", playerID), nil)
+	context.Cache.Set(fmt.Sprintf("UserName:%s", userID), nil)
+	context.Cache.RemoveScore("Leaderboard", playerID)
 
 	// update database
 	return player.Save(context)

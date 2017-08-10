@@ -18,6 +18,7 @@ func handlePurchase() {
 func Purchase(context *util.Context) {
 	// parse parameters
 	id := context.Params.GetRequiredString("id")
+	bulk := context.Params.GetBool("bulk", false)
 
 	// get player
 	player := GetPlayer(context)
@@ -36,7 +37,7 @@ func Purchase(context *util.Context) {
 		}
 	}
 
-	if !valid {
+	if !valid || storeItem.NumAvailable == 0 {
 		context.Fail("Invalid store purchase")
 		return
 	}
@@ -62,7 +63,10 @@ func Purchase(context *util.Context) {
 
 	case data.CurrencyPremium:
 		currencyType = "Premium"
-		cost := int(storeItem.Cost)
+
+		var cost int
+		if bulk { cost = int(storeItem.BulkCost) } else { cost = int(storeItem.Cost) }
+
 		if player.PremiumCurrency < cost {
 			context.Fail("Insufficient funds")
 			return
@@ -71,7 +75,10 @@ func Purchase(context *util.Context) {
 
 	case data.CurrencyStandard:
 		currencyType = "Standard"
-		cost := int(storeItem.Cost)
+
+		var cost int
+		if bulk { cost = int(storeItem.BulkCost) } else { cost = int(storeItem.Cost) }
+
 		if player.StandardCurrency < cost {
 			context.Fail("Insufficient funds")
 			return
@@ -121,7 +128,7 @@ func Purchase(context *util.Context) {
 		}
 		
 	case data.StoreCategoryCards:
-		player.HandleCardPurchase(storeItem)
+		player.HandleCardPurchase(storeItem, bulk)
 		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 		context.SetData("storeItem", storeItem) //include the updated store item
 
