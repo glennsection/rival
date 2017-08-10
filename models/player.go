@@ -396,6 +396,7 @@ func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *To
 		tome.DataID = data.GetNextVictoryTomeID(player.WinCount)
 		tome.State = TomeLocked
 		tome.UnlockTime = 0
+		tome.League = data.GetLeague(data.GetRank(player.RankPoints).Level)
 	}
 
 	return index, tome

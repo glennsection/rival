@@ -179,6 +179,15 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 	return
 }
 
+func UpdateGuildIcon(context *util.Context, player *Player, guild *Guild, iconId string) (err error) {
+	guild.Icon = iconId
+
+	err = guild.Save(context)
+
+	player.SetDirty(PlayerDataMask_Guild)
+	return
+}
+
 func (guild *Guild) Save(context *util.Context) (err error) {
 	if !guild.ID.Valid() {
 		guild.ID = bson.NewObjectId()

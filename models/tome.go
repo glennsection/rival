@@ -24,6 +24,7 @@ type Tome struct {
 	DataID     data.DataId `bson:"id" json:"tomeId"`
 	State      TomeState   `bson:"st" json:"state"`
 	UnlockTime int64       `bson:"tu" json:"unlockTime"`
+	League 	   data.League `bson:"cl"`
 }
 
 // client model
@@ -32,6 +33,7 @@ type TomeClient struct {
 	DataID     string `json:"tomeId"`
 	State      string `json:"state"`
 	UnlockTime int64  `json:"unlockTime"`
+	League 	   string `json:"league"`
 
 	*TomeClientAlias
 }
@@ -54,6 +56,8 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 		client.State = "Unlocked"
 	}
 
+	client.League = data.GetLeagueData(tome.League).ID
+
 	// marshal with client model
 	return json.Marshal(client)
 }
@@ -73,22 +77,25 @@ func (tome *Tome) UnmarshalJSON(raw []byte) error {
 	// server data ID
 	tome.DataID = data.ToDataId(client.DataID)
 
-	// server tome state
-	switch client.State {
-	case "Unlocking":
-		tome.State = TomeUnlocking
-	case "Unlocked":
-		tome.State = TomeUnlocked
-	case "Locked":
-		tome.State = TomeLocked
-	default:
-		tome.State = TomeEmpty
-	}
+	   // server tome state
+    switch client.State {
+    case "Unlocking":
+        tome.State = TomeUnlocking
+    case "Unlocked":
+        tome.State = TomeUnlocked
+    case "Locked":
+        tome.State = TomeLocked
+    default:
+        tome.State = TomeEmpty
+    }
 
-	// server unlock time
-	tome.UnlockTime = client.UnlockTime
+    // server unlock time
+    tome.UnlockTime = client.UnlockTime
 
-	return nil
+    // server league
+    tome.League = data.GetLeagueByID(client.League)
+
+    return nil
 }
 
 func (tome *Tome) GetDataName() string {
@@ -146,6 +153,7 @@ func GetEmptyTome() (tome Tome) {
 		DataID:     data.ToDataId(""),
 		State:      TomeEmpty,
 		UnlockTime: 0,
+		League: 	data.WoodLeague,
 	}
 	return
 }
@@ -173,7 +181,7 @@ func (tome *Tome) StartUnlocking() {
 func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
 	tomeData := data.GetTome(tome.DataID)
 
-	reward = player.GetReward(tomeData.RewardID)
+	reward = player.GetReward(tomeData.RewardID, tome.League)
 
 	*tome = GetEmptyTome()
 
@@ -239,7 +247,7 @@ func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, 
 
 	player.FreeTomes--
 
-	tomeReward = player.GetReward(data.ToDataId("TOME_FREE_REWARD"))
+	tomeReward = player.GetReward(data.ToDataId("TOME_FREE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level))
 	err = player.AddRewards(tomeReward, context)
 
 	return
@@ -253,7 +261,7 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 	player.ArenaPoints = 0
 	player.ArenaTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(data.GameplayConfig.BattleTomeCooldown) * time.Second))
 
-	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"))
+	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level))
 	err = player.AddRewards(tomeReward, context)
 
 	return
