@@ -27,7 +27,7 @@ type Guild struct {
 	Icon        string        `bson:"ic" json:"icon"`
 	XP          int           `bson:"xp" json:"xp"`
 	Rating      int           `bson:"rt" json:"rating"`
-	MemberCount int           `bson:"ms" json:"-"`
+	MemberCount int           `bson:"ms" json:"memberCount"`
 
 	WinCount    int           `bson:"wc" json:"winCount"`
 	LossCount   int           `bson:"lc" json:"lossCount"`
@@ -158,6 +158,13 @@ func CreateGuild(context *util.Context, owner *Player, name string, iconId strin
 
 func AddMember(context *util.Context, player *Player, guild *Guild) (err error) {
 	guild.MemberCount++
+
+	if (guild.MemberCount > data.GameplayConfig.GuildMemberLimit) {
+		err := util.NewError("Guild is Full.")
+		util.Must(err)
+		return err
+	}
+
 	err = guild.Save(context)
 
 	player.GuildID = guild.ID
@@ -169,6 +176,8 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 
 func RemoveMember(context *util.Context, player *Player, guild *Guild) (err error) {
 	guild.MemberCount--
+
+
 	//TODO Check guild role before removing
 
 	err = guild.Save(context)
@@ -176,6 +185,11 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 	player.GuildID = bson.ObjectId("")
 	player.Save(context)
 	player.SetDirty(PlayerDataMask_Guild)
+
+	if (guild.MemberCount <= 0) {
+		guild.Delete(context)
+	}
+
 	return
 }
 
