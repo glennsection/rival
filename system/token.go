@@ -82,6 +82,55 @@ func authenticateToken(context *util.Context, required bool) (err error) {
 	return
 }
 
+func ValidateTokenWithoutClaims(context *util.Context) (valid bool, err error) {
+	valid = false
+
+	// check for token first in URL parameters
+	unparsedToken := context.Params.GetString("token", "")
+	if unparsedToken == "" {
+		// if not found, then check session
+		unparsedToken = context.Session.GetString("token", "")
+	}
+
+	if unparsedToken != "" {
+		// keep token in context
+		context.Token = unparsedToken
+
+		// create parser without claims validation
+		parser := new(jwt.Parser)
+		parser.SkipClaimsValidation = true
+
+		// parse token parameter
+		var token *jwt.Token
+		token, err = parser.Parse(unparsedToken, func(token *jwt.Token) (interface{}, error) {
+			// validate the alg is what you expect
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, errors.New(fmt.Sprintf("Unexpected auth signing method: %v", token.Header["alg"]))
+			}
+
+			return authenticationSecret, nil
+		})
+		if err == nil {
+			if claims, ok := token.Claims.(jwt.MapClaims); ok {
+				if id, ok := claims["id"].(string); ok {
+					if bson.IsObjectIdHex(id) {
+						var user *models.User
+						user, err = models.GetUserById(context, bson.ObjectIdHex(id))
+						if err != nil {
+							return
+						}
+
+						SetUser(context, user)
+
+						valid = true
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
 func IssueAuthToken(context *util.Context) (err error) {
 	user := GetUser(context)
 	if user == nil {

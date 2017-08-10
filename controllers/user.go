@@ -11,7 +11,7 @@ import (
 func handleUser() {
 	handleGameAPI("/connect", system.NoAuthentication, UserConnect)
 	handleGameAPI("/login", system.DeviceAuthentication, UserLogin)
-	handleGameAPI("/reauth", system.TokenAuthentication, UserReauth)
+	handleGameAPI("/reauth", system.NoAuthentication, UserReauth)
 	handleGameAPI("/logout", system.TokenAuthentication, UserLogout)
 }
 
@@ -69,8 +69,15 @@ func UserLogin(context *util.Context) {
 }
 
 func UserReauth(context *util.Context) {
-	// issue new auth token
-	system.IssueAuthToken(context)
+	valid, err := system.ValidateTokenWithoutClaims(context)
+	util.Must(err)
+
+	if valid {
+		// issue new auth token
+		system.IssueAuthToken(context)
+	} else {
+		context.Fail("Invalid token for reauthentication")
+	}
 }
 
 func UserLogout(context *util.Context) {
