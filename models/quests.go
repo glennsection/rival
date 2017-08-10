@@ -209,7 +209,7 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 	}
 
 	questData := data.GetQuestData(player.QuestSlots[index].QuestInstance.DataID)
-	reward := player.GetReward(questData.RewardID)
+	reward := player.GetReward(questData.RewardID, data.GetLeague(data.GetRank(player.RankPoints).Level))
 
 	// check if this is a progressive quest
 	if questData.NextID == "" {
