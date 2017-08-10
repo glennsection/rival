@@ -9,9 +9,13 @@ import (
 type GameplayConfiguration struct {
 	FreeTomeUnlockTime 			int  		`json:"freeTomeUnlockTime"` //seconds
 	BattleTomeCooldown 			int 		`json:"battleTomeCooldown"` //seconds
-	LegendaryCardCurrencyValue 	int 		`json:"legendaryCardCurrencyValue"`
+	LegendaryCardCurrencyValue 	int
 
 	GuildMemberLimit			int			`json:"guildMemberLimit"`
+}
+
+type GameplayConfigurationParsed struct {
+	Config GameplayConfiguration		    `json:"gameplay"`
 }
 
 var GameplayConfig GameplayConfiguration
@@ -21,5 +25,8 @@ var GameplayConfigJSON string
 func LoadGameplayConfig(raw []byte) {
 	GameplayConfigJSON = string(raw)
 	
-	util.Must(json.Unmarshal(raw, &GameplayConfig))
+	parsed := &GameplayConfigurationParsed {}
+	util.Must(json.Unmarshal(raw, &parsed))
+
+	GameplayConfig = parsed.Config
 }
