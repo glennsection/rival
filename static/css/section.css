@@ -63,6 +63,7 @@ span.pagination-summary {
 .game-card input.form-control {
 	height: 30px;
 	width: 40px;
+	padding: 8px 8px;
 }
 
 .game-card .btn {

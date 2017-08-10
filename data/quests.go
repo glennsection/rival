@@ -27,6 +27,7 @@ type QuestData struct { // must be embedded in all structs implementing QuestDat
 	Disposable 				bool 				`json:"disposable"`		
 	Time 					int64 				`json:"time"`
 	PercentChance			float32 			`json:"percentChance"`
+	NextID                  string              `json:"nextId"`
 	Objectives 				map[string]interface{}	
 }
 
@@ -67,12 +68,16 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 
 	// quest type
 	switch client.Type {
+
 	case "Daily":
 		quest.Type = QuestType_Daily
+
 	case "Weekly":
 		quest.Type = QuestType_Weekly
+
 	default:
 		quest.Type = QuestType_Event
+
 	}
 
 	// reward id
@@ -89,7 +94,9 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 		quest.Objectives["asLeader"] = client.WinAsLeader
 		quest.Objectives["useRandomCard"] = client.UseRandomCard
 		quest.Objectives["cardId"] = client.CardID
+
 	default:
+
 	}
 
 	return nil
@@ -102,7 +109,7 @@ func LoadQuestData(raw []byte) {
 	util.Must(json.Unmarshal(raw, container))
 
 	quests = map[DataId]QuestData {}
-	for _,quest := range container.QuestTypes {
+	for _, quest := range container.QuestTypes {
 		id, err := mapDataName(quest.ID)
 		util.Must(err)
 
@@ -116,13 +123,13 @@ func GetQuestData(id DataId) QuestData {
 }
 
 func GetRandomQuestData(condition func(DataId, QuestData) bool) (dataId DataId, questData QuestData) {
-	for id,quest := range quests {
-		if condition(id, quest) { //condition should be defined {return true} for any quest to be returned
+	for id, quest := range quests {
+		if condition(id, quest) { // condition should be defined {return true} for any quest to be returned
 			dataId = id
 			questData = quest
-			break //we can break after the first successful iteration because items in golang maps are accessed in randomized order
+			return // we can break after the first successful iteration because items in golang maps are accessed in randomized order
 		}
 	}
 
-	return dataId, questData
+	return
 }

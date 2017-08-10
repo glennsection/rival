@@ -62,16 +62,13 @@ func (deck *Deck) SetDeckCard(card data.DataId, deckIndex int) {
 	//card is the current leader card, swap
 	if card == deck.LeaderCardID {
 		deck.LeaderCardID = deck.CardIDs[deckIndex]
-		deck.CardIDs[deckIndex] = card
-		return
-	}
-
-	//card is already in the deck, swap
-	for _, deckCard := range deck.CardIDs {
-		if deckCard == card {
-			deckCard = deck.CardIDs[deckIndex]
-			deck.CardIDs[deckIndex] = card
-			return
+	} else {
+		//card is already in the deck, swap
+		for i, deckCard := range deck.CardIDs {
+			if deckCard == card {
+				deck.CardIDs[i] = deck.CardIDs[deckIndex]
+				break
+			}
 		}
 	}
 
@@ -89,8 +86,7 @@ func (deck *Deck) SetLeaderCard(card data.DataId) {
 	for i, deckCard := range deck.CardIDs {
 		if deckCard == card {
 			deck.CardIDs[i] = deck.LeaderCardID
-			deck.LeaderCardID = card
-			return
+			break
 		}
 	}
 

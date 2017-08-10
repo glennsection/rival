@@ -45,7 +45,7 @@ func SetDeckCard(context *util.Context) {
 	player := GetPlayer(context)
 
 	//validate params
-	if deckIndex > len(player.Decks[player.CurrentDeck].CardIDs) {
+	if deckIndex >= len(player.Decks[player.CurrentDeck].CardIDs) {
 		context.Fail("Index out of range")
 		return
 	}

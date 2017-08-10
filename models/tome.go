@@ -198,7 +198,7 @@ func (player *Player) UpdateTomes(context *util.Context) error {
 	unlockTime := util.TicksToTime(player.FreeTomeUnlockTime)
 
 	for time.Now().UTC().After(unlockTime) && player.FreeTomes < 3 {
-		unlockTime = unlockTime.Add(time.Duration(data.Config().FreeTomeUnlockTime) * time.Second)
+		unlockTime = unlockTime.Add(time.Duration(data.GameplayConfig.FreeTomeUnlockTime) * time.Second)
 		player.FreeTomes++
 	}
 
@@ -242,7 +242,7 @@ func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, 
 	}
 
 	if player.FreeTomes == 3 {
-		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(data.Config().FreeTomeUnlockTime) * time.Second))
+		player.FreeTomeUnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(data.GameplayConfig.FreeTomeUnlockTime) * time.Second))
 	}
 
 	player.FreeTomes--
@@ -259,7 +259,7 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 	}
 
 	player.ArenaPoints = 0
-	player.ArenaTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(data.Config().BattleTomeCooldown) * time.Second))
+	player.ArenaTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(data.GameplayConfig.BattleTomeCooldown) * time.Second))
 
 	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level))
 	err = player.AddRewards(tomeReward, context)

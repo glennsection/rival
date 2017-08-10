@@ -21,11 +21,13 @@ func handleGuild() {
 	handleGameAPI("/guild/chat", system.TokenAuthentication, GuildChat)
 	handleGameAPI("/guild/shareReplay", system.TokenAuthentication, ShareReplayToGuild)
 	handleGameAPI("/guild/guildBattle", system.TokenAuthentication, GuildBattle)
+	handleGameAPI("/guild/updateGuildIcon",  system.TokenAuthentication, UpdateGuildIcon)
 }
 
 func CreateGuild(context *util.Context) {
 	// parse parameters
 	name := context.Params.GetRequiredString("name")
+	iconId := context.Params.GetRequiredString("iconId")
 
 	// get player
 	player := GetPlayer(context)
@@ -54,7 +56,7 @@ func CreateGuild(context *util.Context) {
 
 
 	// create guild
-	_, err := models.CreateGuild(context, player, name)
+	_, err := models.CreateGuild(context, player, name, iconId)
 	util.Must(err)
 }
 
@@ -278,4 +280,16 @@ func respondGuildBattle(context *util.Context, notification *models.Notification
 		_, err := models.StartPrivateMatch(context, notification.SenderID, player.ID, models.MatchRanked, roomID)
 		util.Must(err)
 	}
+}
+
+func UpdateGuildIcon(context *util.Context) {
+	iconId := context.Params.GetRequiredString("iconId")
+
+	player := GetPlayer(context)
+
+	guild, err := models.GetGuildById(context, player.GuildID)
+	util.Must(err)
+
+	err2 := models.UpdateGuildIcon(context, player, guild, iconId)
+	util.Must(err2)
 }
