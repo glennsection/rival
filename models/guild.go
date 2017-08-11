@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -54,6 +55,32 @@ func GetGuildRoleName(guildRole GuildRole) string {
 		return "CoOwner"
 	case GuildOwner:
 		return "Owner"
+	}
+}
+
+func PromoteGuildRole(guildRole GuildRole) GuildRole {
+	switch guildRole {
+	default:
+		return GuildMember
+	case GuildMember:
+		return GuildElite
+	case GuildElite:
+		return GuildCoOwner
+	case GuildCoOwner:
+		return GuildOwner
+	}
+}
+
+func DemoteGuildRole(guildRole GuildRole) GuildRole {
+	switch guildRole {
+	default:
+		return GuildMember
+	case GuildMember:
+		return GuildMember
+	case GuildElite:
+		return GuildMember
+	case GuildCoOwner:
+		return GuildElite
 	}
 }
 
@@ -165,6 +192,12 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 		return err
 	}
 
+	if (player.GuildID.Valid()) {
+		err := util.NewError("Player is already in a guild")
+		util.Must(err)
+		return err
+	}
+
 	err = guild.Save(context)
 
 	player.GuildID = guild.ID
@@ -191,6 +224,27 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 	}
 
 	return
+}
+
+func PromoteGuildUser(context *util.Context, player *Player, guild *Guild) (err error) {
+	newGuildRole := PromoteGuildRole(player.GuildRole)
+
+	fmt.Printf("Inside PromoteGuildUser %s", player.Tag)
+	player.GuildRole = newGuildRole
+	player.Save(context)
+	player.SetDirty(PlayerDataMask_Guild)
+
+	return 
+}
+
+func DemoteGuildUser(context *util.Context, player *Player, guild *Guild) (err error) {
+	newGuildRole := DemoteGuildRole(player.GuildRole)
+
+	player.GuildRole = newGuildRole
+	player.Save(context)
+	player.SetDirty(PlayerDataMask_Guild)
+
+	return 
 }
 
 func UpdateGuildIcon(context *util.Context, player *Player, guild *Guild, iconId string) (err error) {

@@ -22,6 +22,8 @@ func handleGuild() {
 	handleGameAPI("/guild/shareReplay", system.TokenAuthentication, ShareReplayToGuild)
 	handleGameAPI("/guild/guildBattle", system.TokenAuthentication, GuildBattle)
 	handleGameAPI("/guild/updateGuildIcon",  system.TokenAuthentication, UpdateGuildIcon)
+	handleGameAPI("/guild/promote",  system.TokenAuthentication, PromoteGuildMember)
+	handleGameAPI("/guild/demote",  system.TokenAuthentication, DemoteGuildMember)
 }
 
 func CreateGuild(context *util.Context) {
@@ -128,17 +130,55 @@ func AddMember(context *util.Context) {
 }
 
 func RemoveMember(context *util.Context) {
-	tag := context.Params.GetRequiredString("tag")
+	guildTag := context.Params.GetRequiredString("guildTag")
+	playerTag := context.Params.GetRequiredString("playerTag")
 
-	player := GetPlayer(context)
+	//player := GetPlayer(context)
 
 	// guild
-	guild, err := models.GetGuildByTag(context, tag)
+	guild, err := models.GetGuildByTag(context, guildTag)
 	//guild, err := models.GetGuildById(context, bson.ObjectIdHex(tag))
 	util.Must(err)
 
+	player, err1 := models.GetPlayerByTag(context, playerTag)
+	util.Must(err1)
+
 	err2 := models.RemoveMember(context, player, guild)
 	util.Must(err2)
+}
+
+func PromoteGuildMember(context *util.Context) {
+	guildTag := context.Params.GetRequiredString("guildTag")
+	playerTag := context.Params.GetRequiredString("playerTag")
+
+	guild, err := models.GetGuildByTag(context, guildTag)
+	//guild, err := models.GetGuildById(context, bson.ObjectIdHex(tag))
+	util.Must(err)
+
+	player, err1 := models.GetPlayerByTag(context, playerTag)
+	util.Must(err1)
+
+	err2 := models.PromoteGuildUser(context, player, guild)
+	util.Must(err2)
+
+	context.SetData("guildRole", models.GetGuildRoleName(player.GuildRole))
+}
+
+func DemoteGuildMember(context *util.Context) {
+	guildTag := context.Params.GetRequiredString("guildTag")
+	playerTag := context.Params.GetRequiredString("playerTag")
+
+	guild, err := models.GetGuildByTag(context, guildTag)
+	//guild, err := models.GetGuildById(context, bson.ObjectIdHex(tag))
+	util.Must(err)
+
+	player, err1 := models.GetPlayerByTag(context, playerTag)
+	util.Must(err1)
+
+	err2 := models.DemoteGuildUser(context, player, guild)
+	util.Must(err2)
+
+	context.SetData("guildRole", models.GetGuildRoleName(player.GuildRole))
 }
 
 func SendGuildChatNotification(context *util.Context, notificationType string, message string, acceptName string, acceptAction string, declineName string, declineAction string, data map[string]interface{}, expiresAt time.Time) {
