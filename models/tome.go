@@ -140,12 +140,14 @@ func (tome *Tome) GetUnlockRemaining() string {
 func (tome *Tome) GetUnlockCost() int {
 	tomeData := data.GetTome(tome.DataID)
 
+	costMultiplier := data.GetLeagueData(tome.League).TomeCostMultiplier
+
 	if tome.State != TomeUnlocking {
-		return tomeData.GemsToUnlock
+		return int(float64(tomeData.GemsToUnlock) * costMultiplier)
 	}
 
 	timeRemaining := util.TicksToTime(tome.UnlockTime).Sub(time.Now().UTC())
-	return int(math.Ceil(float64(tomeData.GemsToUnlock) * (timeRemaining.Seconds() / float64(tomeData.TimeToUnlock))))
+	return int(math.Ceil(float64(tomeData.GemsToUnlock) * costMultiplier * (timeRemaining.Seconds() / float64(tomeData.TimeToUnlock))))
 }
 
 func GetEmptyTome() (tome Tome) {

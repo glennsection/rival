@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"math/rand"
+	"math"
 	"sort"
 	"strconv"
 	"time"
@@ -120,11 +121,16 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 	}
 
 	// Next retrieve the rest of the store's currently available offerings
+	costMultiplier := data.GetLeagueData(data.GetLeague(data.GetRank(player.RankPoints).Level)).TomeCostMultiplier
+
 	storeItems := data.GetStoreItemDataCollection()
 	for _, storeItemData := range storeItems {
 		if !player.canPurchase(storeItemData, currentDate) {
 			continue
 		}
+
+		cost := storeItemData.Cost
+		if storeItemData.Category == data.StoreCategoryTomes { cost = math.Floor(cost * costMultiplier) }
 
 		currentOffers = append(currentOffers, StoreItem {
 			Name: storeItemData.Name,
@@ -132,7 +138,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 			Category: storeItemData.Category,
 			RewardIDs: storeItemData.RewardIDs,
 			Currency: storeItemData.Currency,
-			Cost: storeItemData.Cost,
+			Cost: cost,
 			NumAvailable: 1,
 			BulkCost: storeItemData.Cost,
 		})
