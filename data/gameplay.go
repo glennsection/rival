@@ -10,6 +10,8 @@ type GameplayConfiguration struct {
 	FreeTomeUnlockTime 			int  		`json:"freeTomeUnlockTime"` //seconds
 	BattleTomeCooldown 			int 		`json:"battleTomeCooldown"` //seconds
 	LegendaryCardCurrencyValue 	int
+
+	GuildMemberLimit			int			`json:"guildMemberLimit"`
 }
 
 type GameplayConfigurationParsed struct {
