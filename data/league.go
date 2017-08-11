@@ -23,7 +23,7 @@ type LeagueData struct {
 	RankMin 				int 		`json:"rankMin,string"`
 	RankMax 				int 		`json:"rankMax,string"`
 	TomeVolumeMultiplier 	float64 	`json:"tomeVolumeMultiplier,string"`
-	TomePriceMultiplier 	float64 	`json:"tomePriceMultiplier,string"`
+	TomeCostMultiplier 	 	float64 	`json:"tomeCostMultiplier,string"`
 }
 
 var leagues map[League]*LeagueData
@@ -37,10 +37,10 @@ func LoadLeagues(raw []byte) {
 	util.Must(json.Unmarshal(raw, container))
 
 	leagues = map[League]*LeagueData{}
-	for _, leagueData := range container.PvPLeagues {
-		league := League(leagueData.RankTier)
+	for i, _ := range container.PvPLeagues {
+		league := League(container.PvPLeagues[i].RankTier)
 
-		leagues[league] = &leagueData
+		leagues[league] = &container.PvPLeagues[i]
 	}
 }
 

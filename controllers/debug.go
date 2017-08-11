@@ -37,6 +37,7 @@ func DebugAddTome(context *util.Context) {
 	tome.DataID = tomeDataId
 	tome.State = models.TomeLocked
 	tome.UnlockTime = 0
+	tome.League = data.GetLeague(data.GetRank(player.RankPoints).Level)
 
 	player.SetDirty(models.PlayerDataMask_Tomes)
 	player.Save(context)
