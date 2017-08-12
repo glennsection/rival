@@ -210,9 +210,7 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 func RemoveMember(context *util.Context, player *Player, guild *Guild) (err error) {
 	guild.MemberCount--
 
-
 	//TODO Check guild role before removing
-
 	err = guild.Save(context)
 
 	player.GuildID = bson.ObjectId("")
