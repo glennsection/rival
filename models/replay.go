@@ -78,7 +78,8 @@ func CreateReplay(context *util.Context, info string, data string) (err error) {
 
 func GetReplayInfosByUser(context *util.Context, userId bson.ObjectId) (replayInfos []*ReplayInfo, err error) {
 	// find replay infos by user ID
-	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).All(&replayInfos)
+	//err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).All(&replayInfos)
+	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).Sort("-t0").Limit(10).All(&replayInfos)
 	return
 }
 
