@@ -47,7 +47,8 @@ type StoreItemData struct {
 	Cost                    float64
 
 	Priority 				OfferPriority
-	League 					int
+	League 					League
+	LevelRequirement 		int
 	AvailableDate 			int64
 	ExpirationDate 			int64
 	Duration 				int
@@ -67,6 +68,7 @@ type StoreItemDataClient struct {
 
 	Priority 				string 		  `json:"priority"`
 	League 					string 		  `json:"league"`
+	LevelRequirement 		string 		  `json:"levelRequirement"`
 	AvailableDate 			string 		  `json:"availableDate"`
 	ExpirationDate 			string 		  `json:"expirationDate"`
 	Duration 				string 		  `json:"duration"`
@@ -136,10 +138,17 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	}
 
 	// server League
-	if num, err := strconv.ParseInt(client.League, 10, 32); err == nil {
-		storeItemData.League = int(num)
+	if client.League != "" {
+		storeItemData.League = GetLeagueByID(client.League)
 	} else {
-		storeItemData.League = 0
+		storeItemData.League = NoLeagueRequirement
+	}
+
+	// server level requirement
+	if num, err := strconv.ParseInt(client.LevelRequirement, 10, 64); err == nil {
+		storeItemData.LevelRequirement = int(num)
+	} else {
+		storeItemData.LevelRequirement = 0
 	}
 
 	// server AvailableDate
