@@ -68,8 +68,19 @@ func DeleteGuild(context *util.Context) {
 	guild,err := models.GetGuildById(context, player.GuildID)
 	util.Must(err)
 
-	err2 := guild.Delete(context)
-	util.Must(err2)
+	var memberPlayers []*models.Player
+	err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
+	util.Must(err)
+
+	// Remove all members except for owner first
+	for _, memberPlayer := range memberPlayers {
+		if (memberPlayer.ID != player.ID) {
+			RemoveMemberDeleteGuild(context, guild, memberPlayer)
+		}
+	}
+
+	//Remove owner and delete the guild
+	models.RemoveMember(context, player, guild)
 }
 
 func GetGuildById(context *util.Context) {
@@ -154,6 +165,14 @@ func RemoveMember(context *util.Context) {
 
 	SendNotification(context, player, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
+}
+
+func RemoveMemberDeleteGuild(context *util.Context, guild *models.Guild, player *models.Player) {
+
+	err2 := models.RemoveMember(context, player, guild)
+	util.Must(err2)
+
+	SendNotification(context, player, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
 
 func PromoteGuildMember(context *util.Context) {
