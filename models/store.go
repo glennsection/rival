@@ -152,7 +152,12 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 
 func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate int64) bool {
 	// first confirm the offer is available in the player's current league
-	if storeItemData.League != 0 && storeItemData.League != player.GetRankTier() {
+	if storeItemData.League != data.NoLeagueRequirement && storeItemData.League != data.GetLeague(data.GetRank(player.RankPoints).Level) {
+		return false
+	}
+
+	// ensure the player is at a high enough level to buy this item
+	if(storeItemData.LevelRequirement > player.GetLevel()) {
 		return false
 	}
 
@@ -232,7 +237,7 @@ func (player *Player) getStoreCards() {
 
 	// get individual card offers
 	var cardTypes []string
-	if player.GetRankTier() == 6 {
+	if data.ChampionsLeague == data.GetLeague(data.GetRank(player.RankPoints).Level) {
 		cardTypes = []string{"COMMON", "COMMON", "RARE", "EPIC", "LEGENDARY"}
 	} else {
 		cardTypes = []string{"COMMON", "COMMON", "RARE", "EPIC"}

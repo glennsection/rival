@@ -8,8 +8,8 @@ import(
 
 type League int
 const (
-	_ 		 				League 		= iota 
-	WoodLeague 							//leagues start at 1
+	NoLeagueRequirement	 				League 		= iota 
+	WoodLeague 							
 	BronzeLeague
 	SilverLeague
 	GoldLeague
