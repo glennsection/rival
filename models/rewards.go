@@ -111,23 +111,34 @@ func (player *Player)CreateReward(rewardData *data.RewardData, league data.Leagu
 		Type: rewardData.Type,
 	}
 
-	volumeMultiplier := data.GetLeagueData(league).TomeVolumeMultiplier
+	volumeMultiplier := 1.0
+	standardCurrencyMultiplier := 1.0
+	premiumCurrencyMultiplier := 1.0
+
+	if(rewardData.UseMultipliers) {
+		volumeMultiplier = data.GetLeagueData(league).TomeVolumeMultiplier
+		standardCurrencyMultiplier = data.GetLeagueData(league).StandardCurrencyMultiplier
+		premiumCurrencyMultiplier = data.GetLeagueData(league).PremiumCurrencyMultiplier
+	}
 	
-	reward.getCurrencyRewards(rewardData)
+	reward.getCurrencyRewards(rewardData, standardCurrencyMultiplier, premiumCurrencyMultiplier)
 	reward.getCardRewards(rewardData, player.GetLevel(), volumeMultiplier)
 	reward.getOverflowAmounts(player)
 
 	return reward
 }
 
-func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData) {
+func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData, standardMultiplier float64, premiumMultiplier float64) {
 
 	minPremiumCurrency, maxPremiumCurrency := rewardData.GetBoundsForPremiumCurrency()
 	minStandardCurrency, maxStandardCurrency := rewardData.GetBoundsForStandardCurrency()
 
+	minStandardCurrency = int(float64(minStandardCurrency) * standardMultiplier)
+	maxStandardCurrency = int(float64(maxStandardCurrency) * standardMultiplier)
+	minPremiumCurrency = int(float64(minPremiumCurrency) * premiumMultiplier)
+	maxPremiumCurrency = int(float64(maxPremiumCurrency) * premiumMultiplier)
+
 	rand.Seed(time.Now().UTC().UnixNano())
-
-
 
 	if maxPremiumCurrency == minPremiumCurrency {
 		reward.PremiumCurrency = maxPremiumCurrency
