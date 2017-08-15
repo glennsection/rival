@@ -15,6 +15,7 @@ type ReplayInfo struct {
 	ID         bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	UserID     bson.ObjectId `bson:"us" json:"-"`
 	CreatedAt  time.Time     `bson:"t0" json:"created"`
+	Rank       int           `bson:"rk" json:"rank"`
 	Info       string        `bson:"in" json:"info"`
 }
 
@@ -52,11 +53,12 @@ func ensureIndexReplay(database *mgo.Database) {
 	}))
 }
 
-func CreateReplay(context *util.Context, info string, data string) (err error) {
+func CreateReplay(context *util.Context, info string, data string, rank int) (err error) {
 	// init replay info
 	replayInfo := &ReplayInfo {
 		UserID: context.UserID,
 		Info:   info,
+		Rank:   rank,
 	}
 
 	// save replay info
@@ -73,6 +75,12 @@ func CreateReplay(context *util.Context, info string, data string) (err error) {
 
 	// save replay data
 	err = replayData.Save(context)
+	return
+}
+
+func GetTopReplays(context *util.Context, userId bson.ObjectId) (replayInfos []*ReplayInfo, err error) {
+	// find replay infos by user ID
+	err = context.DB.C(ReplayInfoCollectionName).Find(nil).Sort("-rk").Limit(5).All(&replayInfos)
 	return
 }
 

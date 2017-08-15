@@ -8,7 +8,7 @@ import(
 
 type League int
 const (
-	NoLeagueRequirement	 				League 		= iota 
+	NoLeagueRequirement	 		League 		= iota 
 	WoodLeague 							
 	BronzeLeague
 	SilverLeague
@@ -18,12 +18,14 @@ const (
 )
 
 type LeagueData struct {
-	ID 						string 		`json:"id"`
-	RankTier 				int 		`json:"rankTier,string"`
-	RankMin 				int 		`json:"rankMin,string"`
-	RankMax 				int 		`json:"rankMax,string"`
-	TomeVolumeMultiplier 	float64 	`json:"tomeVolumeMultiplier,string"`
-	TomeCostMultiplier 	 	float64 	`json:"tomeCostMultiplier,string"`
+	ID 							string 		`json:"id"`
+	RankTier 					int 		`json:"rankTier,string"`
+	RankMin 					int 		`json:"rankMin,string"`
+	RankMax 					int 		`json:"rankMax,string"`
+	TomeVolumeMultiplier 		float64 	`json:"tomeVolumeMultiplier,string"`
+	StandardCurrencyMultiplier 	float64 	`json:"standardCurrencyMultiplier,string"`
+	PremiumCurrencyMultiplier 	float64 	`json:"premiumCurrencyMultiplier,string"`
+	TomeCostMultiplier 	 		float64 	`json:"tomeCostMultiplier,string"`
 }
 
 var leagues map[League]*LeagueData
