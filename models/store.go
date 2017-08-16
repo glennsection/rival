@@ -22,7 +22,9 @@ type StoreHistory struct {
 	Cards 	 					[]StoreItem 				`bson:"co"`
 	SpecialOffer 				StoreItem 					`bson:"so"`
 	SpecialOfferQueue 			OfferQueue 					`bson:"oq"`
-	SpecialOfferHistory 		map[string]OfferHistory		`bson:"ed"`
+	OneTimePurchaseHistory 		map[string]OfferHistory		`bson:"ed"`
+	NextPeriodicOffer			int64 	 					`bson:"po"`
+	PeriodicOfferIndex 			int 						`bson:"pi"`
 }
 
 type StoreItem struct {
@@ -84,16 +86,18 @@ func (player *Player) InitStore() {
 	player.Store = StoreHistory {
 		LastUpdate: 0,
 		SpecialOffer: defaultSpecialOffer,
-		SpecialOfferHistory: map[string]OfferHistory {},
+		OneTimePurchaseHistory: map[string]OfferHistory {},
+		PeriodicOfferIndex: 0,
+		NextPeriodicOffer: 0,
 	}
 }
 
 func (player *Player) RecordSpecialOfferPurchase() {
 	id := player.Store.SpecialOffer.Name
 
-	offerHistory := player.Store.SpecialOfferHistory[id]
+	offerHistory := player.Store.OneTimePurchaseHistory[id]
 	offerHistory.Purchased = true
-	player.Store.SpecialOfferHistory[id] = offerHistory
+	player.Store.OneTimePurchaseHistory[id] = offerHistory
 
 	player.Store.SpecialOffer.ExpirationDate = 0
 }
@@ -169,7 +173,7 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 
 	if storeItemData.Category == data.StoreCategorySpecialOffers {
 		// check to see if the user has ever purchased this item before or if it already exists in their queue
-		if _, hasEntry := player.Store.SpecialOfferHistory[storeItemData.Name]; hasEntry || player.Store.SpecialOfferQueue.Contains(data.ToDataId(storeItemData.Name)) {
+		if _, hasEntry := player.Store.OneTimePurchaseHistory[storeItemData.Name]; hasEntry || player.Store.SpecialOfferQueue.Contains(data.ToDataId(storeItemData.Name)) {
 			return false
 		}
 
@@ -194,6 +198,8 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 			}
 		}
 
+		player.getPeriodicOffer(currentDate)
+
 		//if we have any available offers in our queue, pop the highest priority one
 		if !player.Store.SpecialOfferQueue.IsEmpty() {
 			specialOfferData := data.GetStoreItemData(player.Store.SpecialOfferQueue.Pop())
@@ -213,7 +219,7 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 			}
 
 			//create an OfferHistory record for the offer
-			player.Store.SpecialOfferHistory[specialOfferData.Name] = OfferHistory {
+			player.Store.OneTimePurchaseHistory[specialOfferData.Name] = OfferHistory {
 				ExpirationDate: expirationDate,
 				Purchased: false,
 			}
@@ -223,6 +229,34 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 	}
 
 	return nil
+}
+
+func (player *Player) getPeriodicOffer(currentDate int64) {
+	if(currentDate < player.Store.NextPeriodicOffer) {
+		return
+	}
+
+	periodicOffers := data.GetPeriodicOfferTable()
+	attempts := 0
+
+	//we want to ensure that our index is valid before we begin since the offer table length is subject to change
+	player.Store.PeriodicOfferIndex %= len(periodicOffers)
+
+	for attempts < len(periodicOffers) {
+		offerId := periodicOffers[player.Store.PeriodicOfferIndex]
+		storeItemData := data.GetStoreItemData(offerId)
+		
+		player.Store.PeriodicOfferIndex = (player.Store.PeriodicOfferIndex + 1) % len(periodicOffers)
+		attempts++
+
+		if player.canPurchase(storeItemData, currentDate) {
+			player.Store.SpecialOfferQueue.Push(data.ToDataId(storeItemData.Name))
+			player.Store.NextPeriodicOffer = util.TimeToTicks(util.GetCurrentDate().AddDate(0, 0, data.GameplayConfig.PeriodicOfferCooldown))
+			return
+		} 
+	}
+
+	return
 }
 
 func (player *Player) getStoreCards() {
