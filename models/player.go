@@ -140,6 +140,9 @@ func (player *Player) loadDefaults() (err error) {
 
 	//set starting victory tome count
 	player.VictoryTomeCount = 0
+	for i,_ := range player.Tomes {
+		player.Tomes[i] = GetEmptyTome()
+	}
 
 	// setup store data
 	player.InitStore()
