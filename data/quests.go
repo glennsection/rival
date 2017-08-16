@@ -6,50 +6,56 @@ import (
 	"bloodtales/util"
 )
 
+type QuestPeriod int
+const (
+	QuestPeriodDaily QuestPeriod = iota
+	QuestPeriodWeekly
+	QuestPeriodEvent
+)
+
 type QuestType int
 const (
-	QuestType_Daily QuestType = iota
-	QuestType_Weekly
-	QuestType_Event
+	QuestTypeBattle QuestType = iota
 )
 
-type QuestLogicType int
-const (
-	QuestLogicType_Battle QuestLogicType = iota
-)
-
-type QuestData struct { // must be embedded in all structs implementing QuestData
-	ID						string 				`json:"id"`
-	Description 			string 				`json:"description"`
-	LogicType 				QuestLogicType 		
-	Type 					QuestType 			
-	RewardID 				DataId 				
+type QuestData struct {
+	Name					string 				`json:"id"`
+	Period 					QuestPeriod
+	Type 					QuestType
+	RewardID 				DataId
 	Disposable 				bool 				`json:"disposable"`		
 	Time 					int64 				`json:"time"`
 	PercentChance			float32 			`json:"percentChance"`
-	NextID                  string              `json:"nextId"`
-	Objectives 				map[string]interface{}	
+	Objectives 				[]int				`json:"objectives"`
+
+	Properties 				map[string]interface{}	`json:"properties"`
 }
 
 type QuestDataClientAlias QuestData
 type QuestDataClient struct {
-	// Quests
-	LogicType 				string 				`json:"questLogicType"`
+	Period 					string 				`json:"period"`
 	Type 					string 				`json:"type"`
-	RewardID 				string 				`json:"rewardID"`
-
-	// Victory Quests
-	VictoryCount 			int 				`json:"victoryCount"`
-	RequiresVictory 		bool 				`json:"requireVictory"`
-	WinAsLeader 			bool 				`json:"asLeader"`
-	UseRandomCard 			bool 				`json:"useRandomCard"`
-	CardID 					string 				`json:"cardID"`
+	RewardID 				string 				`json:"rewardId"`
 
 	*QuestDataClientAlias
 }
 
-var quests map[DataId]QuestData
+// data map
+var quests map[DataId]*QuestData
 
+// supported periods per quest slot
+var supportedQuestPeriods [][]QuestPeriod
+
+func GetQuestData(id DataId) *QuestData {
+	return quests[id]
+}
+
+// implement Data interface
+func (data *QuestData) GetDataName() string {
+	return data.Name
+}
+
+// internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type QuestDataParsed struct {
 	QuestTypes []QuestData
 }
@@ -67,37 +73,25 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 	}
 
 	// quest type
-	switch client.Type {
+	switch client.Period {
 
 	case "Daily":
-		quest.Type = QuestType_Daily
+		quest.Period = QuestPeriodDaily
 
 	case "Weekly":
-		quest.Type = QuestType_Weekly
+		quest.Period = QuestPeriodWeekly
 
 	default:
-		quest.Type = QuestType_Event
+		quest.Period = QuestPeriodEvent
 
 	}
 
 	// reward id
 	quest.RewardID = ToDataId(client.RewardID)
 
-	// assign objectives
-	quest.Objectives = map[string]interface{}{}
-	switch client.LogicType {
-
-	case "Battle":
-		quest.LogicType = QuestLogicType_Battle
-		quest.Objectives["completionCondition"] = client.VictoryCount
-		quest.Objectives["requiresVictory"] = client.RequiresVictory
-		quest.Objectives["asLeader"] = client.WinAsLeader
-		quest.Objectives["useRandomCard"] = client.UseRandomCard
-		quest.Objectives["cardId"] = client.CardID
-
-	default:
-
-	}
+	// assign objectives and properties
+	quest.Objectives = client.Objectives
+	quest.Properties = client.Properties
 
 	return nil
 }
@@ -108,21 +102,34 @@ func LoadQuestData(raw []byte) {
 	container := &QuestDataParsed{}
 	util.Must(json.Unmarshal(raw, container))
 
-	quests = map[DataId]QuestData {}
-	for _, quest := range container.QuestTypes {
-		id, err := mapDataName(quest.ID)
+	quests = map[DataId]*QuestData {}
+	for i, quest := range container.QuestTypes {
+		id, err := mapDataName(quest.Name)
 		util.Must(err)
 
 		// insert into table
-		quests[id] = quest
+		quests[id] = &container.QuestTypes[i]
 	}
+
+	// supported quest periods
+	supportedQuestPeriods = make([][]QuestPeriod, 3, 3)
+	supportedQuestPeriods[0] = []QuestPeriod { QuestPeriodDaily }
+	supportedQuestPeriods[1] = []QuestPeriod { QuestPeriodDaily }
+	supportedQuestPeriods[2] = []QuestPeriod { QuestPeriodWeekly }
 }
 
-func GetQuestData(id DataId) QuestData {
-	return quests[id]
+func (questData *QuestData) IsSupported(index int) bool {
+	if index >= 0 && index < len(supportedQuestPeriods) {
+		for _, period := range supportedQuestPeriods[index] {
+			if period == questData.Period {
+				return true
+			}
+		}
+	}
+	return false
 }
 
-func GetRandomQuestData(condition func(DataId, QuestData) bool) (dataId DataId, questData QuestData) {
+func GetRandomQuestData(condition func(DataId, *QuestData) bool) (dataId DataId, questData *QuestData) {
 	for id, quest := range quests {
 		if condition(id, quest) { // condition should be defined {return true} for any quest to be returned
 			dataId = id

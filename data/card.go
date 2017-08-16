@@ -9,13 +9,11 @@ import (
 )
 
 type CardData struct {
-	// TODO ?->  ID int `json:"databaseId"`
 	Name                    string        `json:"id"`
 	Portrait                string        `json:"portrait"`
 	Rarity                  string        `json:"rarity"`
 	Tier                    int           `json:"tier,string"`
 	Type                    string        `json:"type"`
-	//Units                   []string      `json:"units"`
 	UnitCount               int           `json:"numUnits,string"`
 	ManaCost                int           `json:"manaCost,string"`
 	Cooldown                int           `json:"cooldown,string"`

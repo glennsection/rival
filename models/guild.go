@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -10,6 +11,7 @@ import (
 )
 
 const GuildCollectionName = "guilds"
+const GuildCreationCost = 500
 
 type GuildRole int
 
@@ -30,15 +32,15 @@ type Guild struct {
 	Rating      int           `bson:"rt" json:"rating"`
 	MemberCount int           `bson:"ms" json:"memberCount"`
 
-	WinCount    int           `bson:"wc" json:"winCount"`
-	LossCount   int           `bson:"lc" json:"lossCount"`
-	MatchCount  int           `bson:"mc" json:"matchCount"`
+	WinCount   int `bson:"wc" json:"winCount"`
+	LossCount  int `bson:"lc" json:"lossCount"`
+	MatchCount int `bson:"mc" json:"matchCount"`
 }
 
 // client model
 type GuildClientAlias Guild
 type GuildClient struct {
-	Members []*PlayerClient   `json:"members"`
+	Members []*PlayerClient `json:"members"`
 
 	*GuildClientAlias
 }
@@ -186,13 +188,13 @@ func CreateGuild(context *util.Context, owner *Player, name string, iconId strin
 func AddMember(context *util.Context, player *Player, guild *Guild) (err error) {
 	guild.MemberCount++
 
-	if (guild.MemberCount > data.GameplayConfig.GuildMemberLimit) {
+	if guild.MemberCount > data.GameplayConfig.GuildMemberLimit {
 		err := util.NewError("Guild is Full.")
 		util.Must(err)
 		return err
 	}
 
-	if (player.GuildID.Valid()) {
+	if player.GuildID.Valid() {
 		err := util.NewError("Player is already in a guild")
 		util.Must(err)
 		return err
@@ -217,7 +219,7 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 	player.Save(context)
 	player.SetDirty(PlayerDataMask_Guild)
 
-	if (guild.MemberCount <= 0) {
+	if guild.MemberCount <= 0 {
 		guild.Delete(context)
 	}
 
@@ -232,7 +234,7 @@ func PromoteGuildUser(context *util.Context, player *Player, guild *Guild) (err 
 	player.Save(context)
 	player.SetDirty(PlayerDataMask_Guild)
 
-	return 
+	return
 }
 
 func DemoteGuildUser(context *util.Context, player *Player, guild *Guild) (err error) {
@@ -242,7 +244,7 @@ func DemoteGuildUser(context *util.Context, player *Player, guild *Guild) (err e
 	player.Save(context)
 	player.SetDirty(PlayerDataMask_Guild)
 
-	return 
+	return
 }
 
 func UpdateGuildIcon(context *util.Context, player *Player, guild *Guild, iconId string) (err error) {
