@@ -48,7 +48,7 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 		client["numRewarded"] = reward.NumRewarded
 	}
 
-	if reward.PremiumCurrency > 0 {
+	if reward.PremiumCurrency > 0 || reward.StandardCurrency > 0 {
 		client["premiumCurrency"] = reward.PremiumCurrency
 		client["standardCurrency"] = reward.StandardCurrency
 	}
