@@ -28,18 +28,20 @@ type Device struct {
 
 // user data
 type User struct {
-	ID           bson.ObjectId `bson:"_id,omitempty" json:"-"`
-	Admin        bool          `bson:"ad" json:"-"`
-	Username     string        `bson:"un,omitempty" json:"-"`
-	Password     []byte        `bson:"ps,omitempty" json:"-"`
-	Email        string        `bson:"em,omitempty" json:"-"`
-	CreatedTime  time.Time     `bson:"t0" json:"created"`
+	ID              bson.ObjectId `bson:"_id,omitempty" json:"-"`
+	Admin           bool          `bson:"ad" json:"-"`
+	Username        string        `bson:"un,omitempty" json:"-"`
+	Password        []byte        `bson:"ps,omitempty" json:"-"`
+	Email           string        `bson:"em,omitempty" json:"-"`
+	CreatedTime     time.Time     `bson:"t0" json:"created"`
 
-	Credentials  []Credential  `bson:"cds,omitempty" json:"-"`
-	Devices      []Device      `bson:"dvs" json"-"`
+	Credentials     []Credential  `bson:"cds,omitempty" json:"-"`
+	Devices         []Device      `bson:"dvs" json"-"`
 
-	Tag          string        `bson:"tag" json:"tag"`
-	Name         string        `bson:"nm" json"name"`
+	Tag             string        `bson:"tag" json:"tag"`
+	Name            string        `bson:"nm" json"name"`
+
+	LastSocketTime  time.Time     `bson:"lsk" json:"-"`
 }
 
 func ensureIndexUser(database *mgo.Database) {

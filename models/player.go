@@ -1,10 +1,10 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"time"
+	"io/ioutil"
+	"encoding/json"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

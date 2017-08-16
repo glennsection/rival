@@ -20,8 +20,8 @@ func init() {
 	ensureIndexPlayer(db)
 	ensureIndexTracking(db)
 	ensureIndexMatch(db)
-	ensureIndexNotification(db);
-	ensureIndexFriends(db);
+	ensureIndexNotification(db)
+	ensureIndexFriends(db)
 
-	util.EnsureIndexFault(db);
+	util.EnsureIndexFault(db)
 }
