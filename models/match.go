@@ -429,7 +429,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		player.Rating += playerResults.Rating
 
 		// update battle quests
-		player.UpdateQuests(nil, data.QuestLogicType_Battle)
+		player.UpdateQuests(nil, data.QuestTypeBattle)
 
 		// save player
 		err = player.Save(context)

@@ -26,7 +26,7 @@ func CompleteQuest(context *util.Context) {
 
 	player.UpdateQuests(context)
 
-	questId := player.QuestSlots[index].QuestInstance.DataID //cache for analytics
+	questId := player.Quests[index].QuestID //cache for analytics
 
 	reward, success, err := player.CollectQuest(index, context)
 	util.Must(err)
@@ -68,12 +68,12 @@ func ClearQuest(context *util.Context) {
 		return
 	}
 
-	if player.QuestSlots[index].State == models.QuestState_Ready || player.QuestSlots[index].State == models.QuestState_Cooldown {
+	if !player.Quests[index].Active {
 		context.Fail("Cannot clear quest at this time")
 		return
 	}
 
-	player.QuestSlots[index].State = models.QuestState_Ready
+	player.Quests[index].Active = false
 	player.AssignRandomQuest(index)
 	player.QuestClearTime = util.TimeToTicks(util.GetTomorrowDate())
 	player.Save(context)
@@ -82,7 +82,7 @@ func ClearQuest(context *util.Context) {
 func RefreshQuests(context *util.Context) {
 	player := GetPlayer(context)
 
-	if len(player.QuestSlots) < 3 {
+	if len(player.Quests) < 3 {
 		player.SetupQuestDefaults()
 		player.Save(context)
 	} else {
@@ -98,7 +98,7 @@ func validateQuestRequest(context *util.Context) (*models.Player, int, bool) {
 	index, err := strconv.Atoi(context.Params.GetRequiredString("index"))
 	util.Must(err)
 
-	if index < 0 || index > len(player.QuestSlots) {
+	if index < 0 || index > len(player.Quests) {
 		success = false
 		context.Fail("Invalid Index")
 	}

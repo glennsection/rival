@@ -24,7 +24,7 @@ type Tome struct {
 	DataID     data.DataId `bson:"id" json:"tomeId"`
 	State      TomeState   `bson:"st" json:"state"`
 	UnlockTime int64       `bson:"tu" json:"unlockTime"`
-	League 	   data.League `bson:"cl"`
+	League 	   data.League `bson:"cl" json:"-"`
 }
 
 // client model
