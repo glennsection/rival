@@ -8,13 +8,13 @@ import(
 
 type League int
 const (
-	NoLeagueRequirement	 		League 		= iota 
-	WoodLeague 							
-	BronzeLeague
-	SilverLeague
-	GoldLeague
-	PlatinumLeague
-	ChampionsLeague
+	NoLeague 			 		League 		= iota 
+	LeagueOne 							
+	LeagueTwo
+	LeagueThree
+	LeagueFour
+	LeagueFive
+	LeagueSix
 )
 
 type LeagueData struct {
@@ -57,7 +57,7 @@ func GetLeague(rank int) League {
 		}
 	}
 
-	return WoodLeague
+	return NoLeague
 }
 
 func GetLeagueByID(id string) League {
@@ -67,5 +67,5 @@ func GetLeagueByID(id string) League {
 		}
 	}
 
-	return WoodLeague
+	return NoLeague
 }

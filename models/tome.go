@@ -155,7 +155,7 @@ func GetEmptyTome() (tome Tome) {
 		DataID:     data.ToDataId(""),
 		State:      TomeEmpty,
 		UnlockTime: 0,
-		League: 	data.WoodLeague,
+		League: 	data.LeagueOne,
 	}
 	return
 }
