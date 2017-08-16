@@ -20,7 +20,7 @@ type Quest struct {
 
 type QuestClientAlias Quest
 type QuestClient struct {
-	QuestID 				string 				`json:"id"`
+	QuestID 			string 					`json:"id"`
 
 	*QuestClientAlias
 }
@@ -30,8 +30,12 @@ func (quest *Quest) MarshalJSON() ([]byte, error) {
 	// create client model
 	client := &QuestClient {
 		QuestID:          data.ToDataName(quest.QuestID),
+
 		QuestClientAlias: (*QuestClientAlias)(quest),
 	}
+
+	// client uses relative times
+	client.ExpireTime = quest.ExpireTime - util.TimeToTicks(time.Now().UTC())
 
 	// marshal with client model
 	return json.Marshal(client)
@@ -253,13 +257,14 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 		quest.ExpireTime = util.TimeToTicks(util.GetTomorrowDate())
 
 	case data.QuestPeriodWeekly:
-		currentDate := util.GetCurrentDate()
-		expirationDate := currentDate
+		// currentDate := util.GetCurrentDate()
+		// expirationDate := currentDate
 
-		for expirationDate == currentDate || expirationDate.Weekday() != time.Monday {
-			expirationDate = expirationDate.AddDate(0, 0, 1)
-		}
+		// for expirationDate == currentDate || expirationDate.Weekday() != time.Monday {
+		// 	expirationDate = expirationDate.AddDate(0, 0, 1)
+		// }
 
+		expirationDate := util.GetDateOfNextWeekday(time.Monday, false)
 		quest.ExpireTime = util.TimeToTicks(expirationDate)
 
 	default: //events
