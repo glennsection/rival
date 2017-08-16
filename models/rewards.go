@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"encoding/json"
 	"math/rand"
 	"time"
@@ -36,7 +35,6 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 	}
 
 	// cards
-	fmt.Println(fmt.Sprintf("Cards in reward: %d", len(reward.Cards)))
 	if len(reward.Cards) > 0 {
 		cards := make([]string, len(reward.Cards))
 

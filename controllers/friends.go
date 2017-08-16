@@ -57,7 +57,7 @@ func sendFriendNotification(context *util.Context, tag string, notificationType 
 	for key, value := range data {
 		socketData[key] = value
 	}
-	system.SocketSend(friendUser.ID, notificationType, socketData)
+	system.SocketSend(context, friendUser.ID, notificationType, socketData)
 }
 
 func prepareFriendNotification(context *util.Context, notification *models.Notification) {

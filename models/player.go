@@ -1,10 +1,10 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"time"
+	"io/ioutil"
+	"encoding/json"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -140,6 +140,9 @@ func (player *Player) loadDefaults() (err error) {
 
 	//set starting victory tome count
 	player.VictoryTomeCount = 0
+	for i,_ := range player.Tomes {
+		player.Tomes[i] = GetEmptyTome()
+	}
 
 	// setup store data
 	player.InitStore()

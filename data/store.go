@@ -48,7 +48,7 @@ type StoreItemData struct {
 	Cost                    float64
 
 	Priority 				OfferPriority
-	League 					League
+	Leagues 				map[League]interface{} //should be used as a hashset, interface value will always be nil
 	LevelRequirement 		int
 	AvailableDate 			int64
 	ExpirationDate 			int64
@@ -69,7 +69,7 @@ type StoreItemDataClient struct {
 	Cost                    float64       	`json:"cost,string"`
 
 	Priority 				string 		  	`json:"priority"`
-	League 					string 		  	`json:"league"`
+	Leagues 				string 		  	`json:"leagues"`
 	LevelRequirement 		string 		  	`json:"levelRequirement"`
 	AvailableDate 			string 		  	`json:"availableDate"`
 	ExpirationDate 			string 		  	`json:"expirationDate"`
@@ -124,7 +124,7 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	storeItemData.RewardIDs = make([]DataId, 0)
 
 	clientRewards := util.StringToStringArray(client.RewardIDs)
-	for _,id := range clientRewards {
+	for _, id := range clientRewards {
 		storeItemData.RewardIDs = append(storeItemData.RewardIDs, ToDataId(id))
 	}
 
@@ -151,11 +151,12 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 		}
 	}
 
-	// server League
-	if client.League != "" {
-		storeItemData.League = GetLeagueByID(client.League)
-	} else {
-		storeItemData.League = NoLeagueRequirement
+	// server Leagues
+	storeItemData.Leagues = map[League]interface{}{}
+
+	clientLeagues := util.StringToStringArray(client.Leagues)
+	for _, league := range clientLeagues {
+		storeItemData.Leagues[GetLeagueByID(league)] = nil
 	}
 
 	// server level requirement

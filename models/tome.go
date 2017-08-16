@@ -56,7 +56,9 @@ func (tome *Tome) MarshalJSON() ([]byte, error) {
 		client.State = "Unlocked"
 	}
 
-	client.League = data.GetLeagueData(tome.League).ID
+	if client.DataID != "INVALID" {
+		client.League = data.GetLeagueData(tome.League).ID
+	}
 
 	// marshal with client model
 	return json.Marshal(client)
@@ -155,7 +157,7 @@ func GetEmptyTome() (tome Tome) {
 		DataID:     data.ToDataId(""),
 		State:      TomeEmpty,
 		UnlockTime: 0,
-		League: 	data.WoodLeague,
+		League: 	data.LeagueOne,
 	}
 	return
 }
