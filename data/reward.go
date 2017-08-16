@@ -22,7 +22,7 @@ type RewardData struct {
 	ID 					string 			`json:"id"`
 	ItemID 				string 			`json:"itemId"`
 	Type 				RewardType 
-	UseMultipliers 		bool 			
+	UseMultipliers 		bool 	 		`json:"useMultipliers,string"`		
 
 	LegendaryCards 		int 			
 	EpicCards 	 		int 			
@@ -45,7 +45,6 @@ type RewardData struct {
 type RewardDataClientAlias RewardData
 type RewardDataClient struct {
 	Type 				string 			`json:"rewardType"`	
-	UseMultipliers 		string 			`json:"useMultipliers"`
 
 	LegendaryCards 		string 			`json:"legendaryCards"`
 	EpicCards 	 		string 			`json:"epicCards"`
@@ -91,9 +90,6 @@ func (reward *RewardData)UnmarshalJSON(raw []byte) error {
 	if reward.Type, err = StringToRewardType(client.Type); err != nil {
 		return err
 	}
-
-	// use multipliers -- HACK -- won't deserialize correctly with ,string struct tag for some reason
-	reward.UseMultipliers = !(client.UseMultipliers == "False" || client.UseMultipliers == "false" || client.UseMultipliers == "FALSE" || client.UseMultipliers == "")
 
 	 // card amounts  
 	var i int64

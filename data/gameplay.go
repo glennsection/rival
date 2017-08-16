@@ -9,7 +9,10 @@ import (
 type GameplayConfiguration struct {
 	FreeTomeUnlockTime 			int  		`json:"freeTomeUnlockTime"` //seconds
 	BattleTomeCooldown 			int 		`json:"battleTomeCooldown"` //seconds
-	LegendaryCardCurrencyValue 	int
+
+	LegendaryCardCurrencyValue 	int			`json:"legendaryCardCurrencyValue"`
+
+	PeriodicOfferCooldown 		int 		`json:"periodicOfferCooldown"` //days
 
 	GuildMemberLimit			int			`json:"guildMemberLimit"`
 }

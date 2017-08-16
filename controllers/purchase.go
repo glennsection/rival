@@ -44,7 +44,7 @@ func Purchase(context *util.Context) {
 
 	// if this is a special offer, ensure the player has not already purchased it
 	if storeItem.Category == data.StoreCategorySpecialOffers {
-		if offerHistory, hasEntry := player.Store.SpecialOfferHistory[storeItem.Name]; hasEntry && offerHistory.Purchased {
+		if offerHistory, hasEntry := player.Store.OneTimePurchaseHistory[storeItem.Name]; hasEntry && offerHistory.Purchased {
 			context.Fail("Item is a one-time offer. Cannot purchase again.")
 			return
 		}

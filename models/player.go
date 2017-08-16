@@ -59,6 +59,7 @@ type Player struct {
 	ArenaTomeUnlockTime 	int64 			`bson:"au" json:"arenaTomeUnlockTime"`
 	FreeTomes          		int    			`bson:"ft" json:"freeTomes"`
 	FreeTomeUnlockTime 		int64  			`bson:"fu" json:"freeTomeUnlockTime"`
+	VictoryTomeCount 		int 			`bson:"vt"`
 
 	QuestSlots     			[]QuestSlot 	`bson:"qu" json:"quests"`
 	QuestClearTime 			int64       	`bson:"qc" json:"questClearTime"`
@@ -136,6 +137,9 @@ func (player *Player) loadDefaults() (err error) {
 	if err != nil {
 		return
 	}
+
+	//set starting victory tome count
+	player.VictoryTomeCount = 0
 
 	// setup store data
 	player.InitStore()
@@ -393,10 +397,12 @@ func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *To
 	index, tome = player.GetEmptyTomeSlot()
 
 	if tome != nil {
-		tome.DataID = data.GetNextVictoryTomeID(player.WinCount)
+		tome.DataID = data.GetNextVictoryTomeID(player.VictoryTomeCount)
 		tome.State = TomeLocked
 		tome.UnlockTime = 0
 		tome.League = data.GetLeague(data.GetRank(player.RankPoints).Level)
+
+		player.VictoryTomeCount++
 	}
 
 	return index, tome

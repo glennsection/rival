@@ -40,3 +40,18 @@ func GetCurrentDate() time.Time {
 func GetTomorrowDate() time.Time {
 	return GetCurrentDate().AddDate(0, 0, 1)
 }
+
+func GetDateOfNextWeekday(weekday time.Weekday, includeToday bool) time.Time {
+	currentDate := GetCurrentDate()
+	targetDate := currentDate
+
+	if includeToday && targetDate.Weekday() == weekday {
+		return targetDate
+	}
+
+	for targetDate == currentDate || targetDate.Weekday() != weekday {
+		targetDate = targetDate.AddDate(0, 0, 1)
+	}
+
+	return targetDate
+}
