@@ -109,6 +109,7 @@ func GetGuildByTag(context *util.Context) {
 	context.SetData("guild", guild)
 }
 
+/// Returns Guild Clients for right now
 func GetGuilds(context *util.Context) {
 	// parse parameters
 	name := context.Params.GetString("name", "")
@@ -126,10 +127,18 @@ func GetGuilds(context *util.Context) {
 	} else {
 		util.Must(context.DB.C(models.GuildCollectionName).Find(nil).All(&guilds))
 	}
-	//util.Must(context.DB.C(models.GuildCollectionName).Find(bson.M{"nm": bson.M{"$eq": "MikeMasterGuild"}}).All(&guilds))
+
+	var guildClients []*models.GuildClient
+	for _, guild := range guilds {
+		guildClient, err2 := guild.CreateGuildClient(context)
+		util.Must(err2)
+
+		guildClients = append(guildClients, guildClient)
+
+	}
 
 	// result
-	context.SetData("guilds", guilds)
+	context.SetData("guilds", guildClients)
 }
 
 func AddMember(context *util.Context) {
