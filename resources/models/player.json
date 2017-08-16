@@ -228,13 +228,26 @@
     ],
     "decks": [
         {
-            "leaderCardId": "CARD_MERC_CAPTAIN",
+            "leaderCardId": "CARD_GOLEM",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_SPELL_FROST_ORB",
-                "CARD_BOMB_ZOMBIE",
-                "CARD_LIGHTNING_SWORD",
+                "CARD_GREMLINS",
+                "CARD_MERC_CAPTAIN",
+                "CARD_SPELL_SPIKES",
+                "CARD_SKULL_SWARM",
+                "CARD_HELLHOUND",
+                "CARD_DWARVES"
+            ]
+        },
+        {
+            "leaderCardId": "CARD_ARMORED_SKELETON",
+            "cardIds": [
+                "CARD_GOLEM",
+                "CARD_MERC_SOLDIERS",
+                "CARD_GREMLINS",
+                "CARD_MERC_CAPTAIN",
+                "CARD_SPELL_SPIKES",
                 "CARD_SKULL_SWARM",
                 "CARD_HELLHOUND",
                 "CARD_DWARVES"
@@ -245,22 +258,9 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_SPELL_FROST_ORB",
-                "CARD_BOMB_ZOMBIE",
-                "CARD_LIGHTNING_SWORD",
-                "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
-                "CARD_DWARVES"
-            ]
-        },
-        {
-            "leaderCardId": "CARD_MERC_CAPTAIN",
-            "cardIds": [
-                "CARD_ARMORED_SKELETON",
-                "CARD_MERC_SOLDIERS",
-                "CARD_SPELL_FROST_ORB",
-                "CARD_BOMB_ZOMBIE",
-                "CARD_LIGHTNING_SWORD",
+                "CARD_GREMLINS",
+                "CARD_GOLEM",
+                "CARD_SPELL_SPIKES",
                 "CARD_SKULL_SWARM",
                 "CARD_HELLHOUND",
                 "CARD_DWARVES"
