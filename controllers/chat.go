@@ -45,7 +45,7 @@ func sendChatNotification(context *util.Context, channel string, message string)
 
 	// notify receiver
 	socketData := map[string]interface{} { "notification": notification, "player": playerClient }
-	system.SocketSend(receiverUserID, notificationType, socketData)
+	system.SocketSend(context, receiverUserID, notificationType, socketData)
 }
 
 func prepareChatNotification(context *util.Context, notification *models.Notification) {

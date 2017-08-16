@@ -257,13 +257,6 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 		quest.ExpireTime = util.TimeToTicks(util.GetTomorrowDate())
 
 	case data.QuestPeriodWeekly:
-		// currentDate := util.GetCurrentDate()
-		// expirationDate := currentDate
-
-		// for expirationDate == currentDate || expirationDate.Weekday() != time.Monday {
-		// 	expirationDate = expirationDate.AddDate(0, 0, 1)
-		// }
-
 		expirationDate := util.GetDateOfNextWeekday(time.Monday, false)
 		quest.ExpireTime = util.TimeToTicks(expirationDate)
 

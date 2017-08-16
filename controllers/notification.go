@@ -112,7 +112,7 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 		// notify sender
 		if notification.SenderID.Valid() {
 			senderUserID := models.GetUserIdByPlayerId(context, notification.SenderID)
-			system.SocketSend(senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
+			system.SocketSend(context, senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
 		}
 
 
@@ -123,7 +123,7 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 		// notify sender
 		if notification.SenderID.Valid() {
 			senderUserID := models.GetUserIdByPlayerId(context, notification.SenderID)
-			system.SocketSend(senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
+			system.SocketSend(context, senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
 		}
 
 
@@ -142,12 +142,12 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 			for _, memberPlayer := range memberPlayers {
 				// notify receiver
 				socketData := map[string]interface{}{"notificationId": notification.ID}
-				system.SocketSend(memberPlayer.UserID, "GuildBattle-clear", socketData)
+				system.SocketSend(context, memberPlayer.UserID, "GuildBattle-clear", socketData)
 			}
 
 			if notification.SenderID.Valid() {
 				senderUserID := models.GetUserIdByPlayerId(context, notification.SenderID)
-				system.SocketSend(senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
+				system.SocketSend(context, senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
 			}
 		}
 

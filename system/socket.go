@@ -2,7 +2,9 @@ package system
 
 import (
 	"time"
+	"encoding/json"
 
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/gorilla/websocket"
 
@@ -31,6 +33,8 @@ const (
 	bufferSize = 512
 )
 
+const SocketCollectionName = "sockets"
+
 // socket message
 type SocketMessage struct {
 	Message         string                  `json:"m"`
@@ -46,6 +50,17 @@ type SocketClient struct {
 	send            chan SocketMessage
 }
 
+// socket model
+type SocketModel struct {
+	ID              bson.ObjectId			`bson:"_id,omitempty" json:"-"`
+	CreatedAt       time.Time				`bson:"t0" json:"-"`
+	ExpiresAt       time.Time				`bson:"exp" json:"-"`
+	UserID          bson.ObjectId			`bson:"us,omitempty" json:"-"`
+	Message         string					`bson:"ms" json:"message"`
+	Data            map[string]interface{}  `bson:"-" json:"data"`
+	JsonData        string					`bson:"dt" json:"-"`
+}
+
 // internal globals
 var (
 	clients         map[bson.ObjectId]*SocketClient = make(map[bson.ObjectId]*SocketClient)
@@ -59,7 +74,7 @@ var (
 )
 
 // context socket send
-func SocketSend(userID bson.ObjectId, message string, data map[string]interface{}) {
+func SocketSend(context *util.Context, userID bson.ObjectId, message string, data map[string]interface{}) {
 	if userID.Valid() {
 		if client, ok := clients[userID]; ok {
 			client.send <- SocketMessage {
@@ -78,12 +93,25 @@ func SocketSend(userID bson.ObjectId, message string, data map[string]interface{
 			}
 		}
 	}
+
+	// put message into DB
+	rawJsonData, _ := json.Marshal(data)
+	socketModel := &SocketModel {
+		UserID: userID,
+		Message: message,
+		JsonData: string(rawJsonData),
+	}
+	socketModel.save(context)
 }
 
 // socket broadcast handler
 func init() {
 	// handle route
-	App.HandleAPI("/socket", TokenAuthentication, socketHandler)
+	App.HandleAPI("/socket/connect", TokenAuthentication, socketConnectHandler)
+	App.HandleAPI("/socket/poll", TokenAuthentication, socketPollHandler)
+
+	// indexes
+	ensureIndexSocket()
 
 	// start main listening routine
 	go func() {
@@ -133,8 +161,36 @@ func init() {
 	}()
 }
 
-// socket route handler
-func socketHandler(context *util.Context) {
+func ensureIndexSocket() {
+	// no-sql database
+	db := util.GetDatabaseConnection()
+	defer db.Session.Close()
+	defer func() {
+		// handle any panic errors
+		if err := recover(); err != nil {
+			util.LogError("Occurred during database initialization", err)
+		}
+	}()
+
+	c := db.C(SocketCollectionName)
+
+	// user index
+	util.Must(c.EnsureIndex(mgo.Index {
+		Key:        []string { "us", "t0" },
+		Background: true,
+		Sparse:     true,
+	}))
+
+	// expiration
+	util.Must(c.EnsureIndex(mgo.Index{
+		Key:         []string { "exp" },
+		Background:  true,
+		ExpireAfter: time.Second,
+	}))
+}
+
+// socket route handlers
+func socketConnectHandler(context *util.Context) {
 	// upgrade to web socket connection
 	connection, err := upgrader.Upgrade(context.ResponseWriter, context.Request, nil)
 	if err != nil {
@@ -167,6 +223,56 @@ func socketHandler(context *util.Context) {
 
 	// prevent further writes
 	context.SetResponseWritten()
+}
+
+func socketPollHandler(context *util.Context) {
+	user := GetUser(context)
+
+	// query conditions
+	query := bson.M { "$and": 
+		[]bson.M {
+			bson.M {
+				"$or": []bson.M {
+					bson.M { "us": context.UserID },
+					bson.M { "us": bson.M { "$exists": false} },
+				},
+			},
+			bson.M { "t0": bson.M { "$gt": user.LastSocketTime } },
+		},
+	}
+
+	// get all recently received socket messages
+	var socketModels []*SocketModel
+	err := context.DB.C(SocketCollectionName).Find(query).Sort("t0").All(&socketModels)
+	util.Must(err)
+
+	// check if any messages were found
+	socketMessageCount := len(socketModels)
+	if socketMessageCount > 0 {
+		// update last socket time in user
+		user.LastSocketTime = socketModels[socketMessageCount - 1].CreatedAt
+		user.Save(context)
+	}
+
+	// unmarshal json data
+	for _, socketModel := range socketModels {
+		if socketModel.JsonData != "" {
+			util.Must(json.Unmarshal([]byte(socketModel.JsonData), &socketModel.Data))
+		}
+	}
+
+	// send messages to client
+	context.SetData("messages", socketModels)
+}
+
+func (socketModel *SocketModel) save(context *util.Context) (err error) {
+	socketModel.ID = bson.NewObjectId()
+	socketModel.CreatedAt = time.Now()
+	socketModel.ExpiresAt = time.Now().Add(time.Hour * time.Duration(24))
+
+	// insert socket model in database
+	err = context.DB.C(SocketCollectionName).Insert(socketModel)
+	return
 }
 
 // socket client write

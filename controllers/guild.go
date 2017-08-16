@@ -267,7 +267,7 @@ func SendNotification(context *util.Context, receiverPlayer *models.Player, noti
 
 	// notify receiver
 	socketData := map[string]interface{}{"notification": notification, "senderPlayer": senderPlayerClient, "playerData": playerData, "playerDataMask": dirtyMask}
-	system.SocketSend(receiverPlayer.UserID, notificationType, socketData)
+	system.SocketSend(context, receiverPlayer.UserID, notificationType, socketData)
 }
 
 func SendGuildChatNotification(context *util.Context, notificationType string, message string, dirtyMask util.Bits, acceptName string, acceptAction string, declineName string,
@@ -329,11 +329,11 @@ func SendGuildChatNotification(context *util.Context, notificationType string, m
 
 			// notify receiver
 			socketDataDirty := map[string]interface{}{"notification": notification, "player": playerClient, "playerData": playerData, "playerDataMask": dirtyMask}
-			system.SocketSend(memberPlayer.UserID, notificationType, socketDataDirty)
+			system.SocketSend(context, memberPlayer.UserID, notificationType, socketDataDirty)
 		} else {
 			// notify receiver
 			socketData := map[string]interface{}{"notification": notification, "player": playerClient}
-			system.SocketSend(memberPlayer.UserID, notificationType, socketData)
+			system.SocketSend(context, memberPlayer.UserID, notificationType, socketData)
 		}
 	}
 }
@@ -382,7 +382,7 @@ func SendReplayGuildNotification(context *util.Context, replayInfoId string, mes
 	for _, memberPlayer := range memberPlayers {
 		// notify receiver
 		socketData := map[string]interface{}{"notification": notification, "player": playerClient}
-		system.SocketSend(memberPlayer.UserID, notificationType, socketData)
+		system.SocketSend(context, memberPlayer.UserID, notificationType, socketData)
 	}
 }
 
