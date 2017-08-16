@@ -41,6 +41,7 @@ type StoreItemData struct {
 
 	ItemID                  string
 	Category                StoreCategory
+	Periodic 				bool
 	RewardIDs 				[]DataId
 
 	Currency                CurrencyType
@@ -57,26 +58,26 @@ type StoreItemData struct {
 // client data
 type StoreItemDataClientAlias StoreItemData
 type StoreItemDataClient struct {
-	Name                    string        `json:"id"`
+	Name                    string        	`json:"id"`
 
-	ItemID                  string        `json:"itemId"`
-	Category                string        `json:"category"`
-	RewardIDs				string 	  	  `json:"rewardIds"`
+	ItemID                  string        	`json:"itemId"`
+	Category                string        	`json:"category"`
+	Periodic 				bool 		  	`json:"periodic,string"`
+	RewardIDs				string 	  	  	`json:"rewardIds"`
 
-	Currency                string        `json:"currency"`
-	Cost                    float64       `json:"cost,string"`
+	Currency                string        	`json:"currency"`
+	Cost                    float64       	`json:"cost,string"`
 
-	Priority 				string 		  `json:"priority"`
-	League 					string 		  `json:"league"`
-	LevelRequirement 		string 		  `json:"levelRequirement"`
-	AvailableDate 			string 		  `json:"availableDate"`
-	ExpirationDate 			string 		  `json:"expirationDate"`
-	Duration 				string 		  `json:"duration"`
+	Priority 				string 		  	`json:"priority"`
+	League 					string 		  	`json:"league"`
+	LevelRequirement 		string 		  	`json:"levelRequirement"`
+	AvailableDate 			string 		  	`json:"availableDate"`
+	ExpirationDate 			string 		  	`json:"expirationDate"`
+	Duration 				string 		  	`json:"duration"`
 }
 
-type CardPurchaseCost struct {
-	Rarity 					string 		  `json:"rarity"`
-	Cost 					string 		  `json:"cost"`
+type PeriodicOfferClient struct {
+	ID 						string 			`json:"id"`
 }
 
 // store item data map
@@ -84,6 +85,12 @@ var storeItems map[DataId]*StoreItemData
 
 // special offer data map
 var specialOffers map[DataId]*StoreItemData
+
+// periodic offer data map
+var periodicOffers map[DataId]*StoreItemData
+
+// periodic offer table
+var periodicOfferTable []DataId
 
 // implement Data interface
 func (data *StoreItemData) GetDataName() string {
@@ -93,6 +100,10 @@ func (data *StoreItemData) GetDataName() string {
 // internal parsing data (TODO - ideally we'd just remove this top-layer from the JSON files)
 type StoreParsed struct {
 	Store []StoreItemData
+}
+
+type PeriodicOfferTableParsed struct {
+	PeriodicOfferTable []PeriodicOfferClient
 }
 
 // custom unmarshalling
@@ -124,6 +135,9 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	if storeItemData.Category, err = StringToStoreCategory(client.Category); err != nil {
 		panic(err)
 	} 
+
+	// server periodic
+	storeItemData.Periodic = client.Periodic
 
 	// server currency
 	if storeItemData.Currency, err = StringToCurrencyType(client.Currency); err != nil {
@@ -192,6 +206,8 @@ func LoadStore(raw []byte) {
 	// enter into system data
 	storeItems = map[DataId]*StoreItemData {}
 	specialOffers = map[DataId]*StoreItemData {}
+	periodicOffers = map[DataId]*StoreItemData {}
+
 	for i, storeItem := range container.Store {
 		name := storeItem.GetDataName()
 
@@ -200,11 +216,32 @@ func LoadStore(raw []byte) {
 		util.Must(err)
 
 		// insert into appropriate table
-		if storeItem.Category == StoreCategorySpecialOffers {
-			specialOffers[id] = &container.Store[i]
+		if storeItem.Periodic {
+			periodicOffers[id] = &container.Store[i]
 		} else {
-			storeItems[id] = &container.Store[i]
+			if storeItem.Category == StoreCategorySpecialOffers {
+				specialOffers[id] = &container.Store[i]
+			} else {
+				storeItems[id] = &container.Store[i]
+			}
 		}
+	}
+}
+
+func LoadPeriodicOfferTable(raw []byte) {
+	// parse
+	container := &PeriodicOfferTableParsed {}
+	util.Must(json.Unmarshal(raw, container))
+
+	//enter into system data
+	periodicOfferTable = make([]DataId, len(container.PeriodicOfferTable))
+
+	for i, offer := range container.PeriodicOfferTable {
+		//convert to data id
+		id := ToDataId(offer.ID)
+
+		// set val in slice
+		periodicOfferTable[i] = id
 	}
 }
 
@@ -212,10 +249,14 @@ func LoadStore(raw []byte) {
 func GetStoreItemData(id DataId) (store *StoreItemData) {
 	if storeItem, contains := storeItems[id]; contains {
 		return storeItem
-	} else {
-		if specialOffer, contains := specialOffers[id]; contains {
-			return specialOffer
-		}
+	}
+
+	if specialOffer, contains := specialOffers[id]; contains {
+		return specialOffer
+	} 
+	
+	if periodicOffer, contains := periodicOffers[id]; contains {
+		return periodicOffer
 	}
 
 	return nil
@@ -227,6 +268,14 @@ func GetStoreItemDataCollection() (map[DataId]*StoreItemData) {
 
 func GetSpecialOfferCollection() (map[DataId]*StoreItemData) {
 	return specialOffers
+}
+
+func GetPeriodicOfferCollection() (map[DataId]*StoreItemData) {
+	return periodicOffers
+}
+
+func GetPeriodicOfferTable() []DataId {
+	return periodicOfferTable
 }
 
 func StoreCategoryToString(val StoreCategory) (string, error) {

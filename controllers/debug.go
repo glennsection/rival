@@ -157,7 +157,7 @@ func DebugRefreshStore(context *util.Context) {
 func DebugClearStoreHistory(context *util.Context) {
 	player := GetPlayer(context)
 
-	player.Store.SpecialOfferHistory = map[string]models.OfferHistory {}
+	player.Store.OneTimePurchaseHistory = map[string]models.OfferHistory {}
 
 	player.Save(context)
 }
