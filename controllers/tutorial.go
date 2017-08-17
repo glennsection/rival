@@ -14,6 +14,8 @@ func UpdateTutorialProgress(context *util.Context) {
 	// parse parameters
 	name := context.Params.GetRequiredString("name")
 	complete := context.Params.GetRequiredBool("complete")
+	page := context.Params.GetRequiredInt("page")
+	progress := context.Params.GetRequiredInt("progress")
 
 	// get player
 	player := GetPlayer(context)
@@ -21,6 +23,6 @@ func UpdateTutorialProgress(context *util.Context) {
 	//validate params
 	//TODO
 
-	err := models.UpdateTutorial(context, player, name, complete)
+	err := models.UpdateTutorial(context, player, name, complete, page, progress)
 	util.Must(err)
 }
