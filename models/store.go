@@ -108,6 +108,9 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 	year, month, day := time.Now().UTC().Date() 
 	currentDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC))
 
+	// first update our offer queue
+	player.UpdateSpecialOfferQueue(currentDate)
+
 	// get a special offer if one is currently available to the player
 	currentSpecialOffer := player.getSpecialOffer(currentDate)
 	if currentSpecialOffer != nil {
@@ -192,16 +195,6 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 	} 
 
 	if currentDate > player.Store.LastUpdate {
-		// Populate our special offer queue
-		specialOffers := data.GetSpecialOfferCollection()
-		for _, specialOfferData := range specialOffers {
-			if player.canPurchase(specialOfferData, currentDate) {
-				player.Store.SpecialOfferQueue.Push(data.ToDataId(specialOfferData.Name))
-			}
-		}
-
-		player.getPeriodicOffer(currentDate)
-
 		//if we have any available offers in our queue, pop the highest priority one
 		if !player.Store.SpecialOfferQueue.IsEmpty() {
 			specialOfferData := data.GetStoreItemData(player.Store.SpecialOfferQueue.Pop())
@@ -231,6 +224,18 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 	}
 
 	return nil
+}
+
+func (player *Player)UpdateSpecialOfferQueue(currentDate int64) {
+	// Populate our special offer queue
+	specialOffers := data.GetSpecialOfferCollection()
+	for _, specialOfferData := range specialOffers {
+		if player.canPurchase(specialOfferData, currentDate) {
+			player.Store.SpecialOfferQueue.Push(data.ToDataId(specialOfferData.Name))
+		}
+	}
+
+	player.getPeriodicOffer(currentDate)
 }
 
 func (player *Player) getPeriodicOffer(currentDate int64) {

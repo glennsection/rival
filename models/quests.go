@@ -271,7 +271,7 @@ func (player *Player) UpdateQuests(context *util.Context, questTypes ...data.Que
 	currentTime := util.TimeToTicks(time.Now().UTC())
 
 	//instead of iterating over n questTypes 3 times (once per slot), add the n questTypes into a map so
-	//we only incur O(1) time per slot to see if its updatable, reducing our total complexity to O(n)
+	//we only incur O(1) time per slot to see if its updatable
 	updatables := map[data.QuestType]int{}
 	for i, questType := range questTypes {
 		updatables[questType] = i
