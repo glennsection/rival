@@ -31,16 +31,25 @@ func UpgradeCard(context *util.Context) {
 	}
 
 	card := &player.Cards[index]
+	cardData := card.GetData()
+	maxLevel := data.GetMaxLevel(cardData.Rarity)
+
+	if card.Level == maxLevel {
+		context.Fail("Cannot upgrade any further")
+		return
+	}
+
 	levelData := data.GetCardProgressionData(card.GetData().Rarity, card.Level)
 
 	if player.StandardCurrency < levelData.Cost {
 		context.Fail("Insufficient funds")
 		return
-	} else {
-		if card.CardCount < levelData.CardsNeeded  {
-			context.Fail("Requirements not met")
-			return
-		}
+	} 
+
+	if (card.CardCount < levelData.CardsNeeded) || 
+	(card.Level == (maxLevel - 1) && (card.WinCount < cardData.AwakenGamesNeeded || card.LeaderWinCount < cardData.AwakenLeaderGamesNeeded)) {
+		context.Fail("Requirements not met")
+		return
 	}
 
 	player.StandardCurrency -= levelData.Cost
@@ -100,7 +109,7 @@ func CraftCard(context *util.Context) {
 	cardsSupplied := 0
 	for cardId, num := range consumableCards {
 		dataId := data.ToDataId(cardId)
-		if card, hasCard := player.HasCard(dataId); hasCard && card.CardCount >= num {
+		if card := player.GetCard(dataId); card != nil && card.CardCount >= num {
 			cardsSupplied += num
 			// deduct the cards supplied - if we fail later, we won't update the db and the change wont stick
 			card.CardCount -= num

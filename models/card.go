@@ -86,16 +86,6 @@ func (card *Card) GetPotentialLevel() (level int) {
 	return level
 }
 
-func (player *Player) HasCard(id data.DataId) (*Card, bool) {
-	for i, card := range player.Cards {
-		if card.DataID == id {
-			return &player.Cards[i], true
-		}
-	}
-
-	return nil, false
-}
-
 func (player *Player) AddCards(id data.DataId, num int) {
 	//update the card if we already have it, otherwise instantiate a new one and add it in
 	for i, card := range player.Cards {

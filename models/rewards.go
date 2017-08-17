@@ -302,8 +302,8 @@ func (reward *Reward)getOverflowForIndex(player *Player, index int) int {
 
 	if rarity == "LEGENDARY" {
 		maxCards := data.GetMaxCardCount(rarity)
-		if cardRef,hasCard := player.HasCard(id); hasCard && (cardRef.CardCount + reward.NumRewarded[index]) >= maxCards {
-			return cardRef.CardCount + reward.NumRewarded[index] - maxCards
+		if card := player.GetCard(id); card != nil && (card.CardCount + reward.NumRewarded[index]) >= maxCards {
+			return card.CardCount + reward.NumRewarded[index] - maxCards
 		} 
 	}
 
