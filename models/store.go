@@ -267,11 +267,6 @@ func (player *Player) getPeriodicOffer(currentDate int64) {
 }
 
 func (player *Player) getStoreCards() {
-
-	for i := range player.Cards {
-		player.Cards[i].PurchaseCount = 0
-	}
-
 	player.Store.Cards = make([]StoreItem, 0)
 
 	rand.Seed(time.Now().UnixNano())
