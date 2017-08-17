@@ -67,6 +67,7 @@ type Player struct {
 	GuildID   				bson.ObjectId 	`bson:"gd,omitempty" json:"-"`
 	GuildRole 				GuildRole     	`bson:"gr,omitempty" json:"-"`
 
+	TutorialDisabled		bool			`bson:"td" json:"tutorialDisabled"`
 	Tutorial 				[]Tutorial 		`bson:"tl" json:"tutorial"`
 
 	DirtyMask 				util.Bits 		`bson:"-" json:"-"`
@@ -127,9 +128,12 @@ func GetPlayerByTag(context *util.Context, tag string) (player *Player, err erro
 	return
 }
 
-func (player *Player) loadDefaults() (err error) {
+func (player *Player) loadDefaults(development bool) (err error) {
 	// template file path for initial player data
 	path := "./resources/models/player.json"
+	if development {
+		path = "./resources/models/player-development.json"
+	}
 
 	// read template file
 	var file []byte
@@ -155,11 +159,11 @@ func (player *Player) loadDefaults() (err error) {
 	return
 }
 
-func CreatePlayer(userID bson.ObjectId) (player *Player, err error) {
+func CreatePlayer(userID bson.ObjectId, development bool) (player *Player, err error) {
 	player = &Player{}
 
 	// load initial player data values
-	err = player.loadDefaults()
+	err = player.loadDefaults(development)
 	if err != nil {
 		return
 	}
@@ -216,9 +220,9 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 	return
 }
 
-func (player *Player) Reset(context *util.Context) (err error) {
+func (player *Player) Reset(context *util.Context, development bool) (err error) {
 	// reset player data values
-	err = player.loadDefaults()
+	err = player.loadDefaults(development)
 	if err != nil {
 		return
 	}
@@ -567,6 +571,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 	}
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Tutorial) {
+		dataMap["tutorialDisabled"] = player.TutorialDisabled
 		dataMap["tutorial"] = player.Tutorial
 	}
 

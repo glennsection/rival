@@ -160,19 +160,20 @@ func EditUser(context *util.Context) {
 func ResetUser(context *util.Context) {
 	// parse parameters
 	userID := context.Params.GetId("userId")
+	development := context.Params.GetBool("development", false)
 
 	if userID.Valid() {
 		player, err := models.GetPlayerByUser(context, userID)
 		if player == nil {
 			// create new player for user
-			player, err = models.CreatePlayer(userID)
+			player, err = models.CreatePlayer(userID, development)
 			util.Must(err)
 
 			util.Must(player.Save(context))
 		} else {
 			util.Must(err)
 
-			util.Must(player.Reset(context))
+			util.Must(player.Reset(context, development))
 		}
 
 		context.Redirect(fmt.Sprintf("/admin/users/edit?userId=%s", userID.Hex()), 302)
@@ -182,7 +183,7 @@ func ResetUser(context *util.Context) {
 		context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
 
 		for _, player := range players {
-			player.Reset(context)
+			player.Reset(context, development)
 		}
 
 		context.Redirect("/admin/users", 302)
