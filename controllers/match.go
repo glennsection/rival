@@ -24,7 +24,9 @@ func MatchClear(context *util.Context) {
 
 func MatchFind(context *util.Context) {
 	// parse parameters
-	matchType := models.MatchType(context.Params.GetInt("type", int(models.MatchRanked)))
+	matchTypeName := context.Params.GetString("type", "Ranked")
+
+	matchType := models.GetMatchType(matchTypeName)
 
 	player := GetPlayer(context)
 

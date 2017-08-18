@@ -144,5 +144,6 @@
     "questClearTime": 0,
     "quests": [],
     "friends": [],
-    "tutorial": []
+    "tutorial": [],
+    "tutorialDisabled": false
 }
