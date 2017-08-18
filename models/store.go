@@ -92,7 +92,7 @@ func (player *Player) InitStore() {
 	}
 }
 
-func (player *Player) RecordSpecialOfferPurchase() {
+func (player *Player) RecordOneTimeOfferPurchase() {
 	id := player.Store.SpecialOffer.Name
 
 	offerHistory := player.Store.OneTimePurchaseHistory[id]
@@ -130,7 +130,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 	// Next retrieve the rest of the store's currently available offerings
 	costMultiplier := data.GetLeagueData(data.GetLeague(data.GetRank(player.RankPoints).Level)).TomeCostMultiplier
 
-	storeItems := data.GetStoreItemDataCollection()
+	storeItems := data.GetRegularStoreCollection()
 	for _, storeItemData := range storeItems {
 		if !player.canPurchase(storeItemData, currentDate) {
 			continue
@@ -176,7 +176,7 @@ func (player *Player) canPurchase(storeItemData *data.StoreItemData, currentDate
 		return false
 	}
 
-	if storeItemData.Category == data.StoreCategorySpecialOffers {
+	if storeItemData.Category == data.StoreCategoryOneTimeOffers {
 		// check to see if the user has ever purchased this item before or if it already exists in their queue
 		if _, hasEntry := player.Store.OneTimePurchaseHistory[storeItemData.Name]; hasEntry || player.Store.SpecialOfferQueue.Contains(data.ToDataId(storeItemData.Name)) {
 			return false
@@ -228,10 +228,10 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 
 func (player *Player)UpdateSpecialOfferQueue(currentDate int64) {
 	// Populate our special offer queue
-	specialOffers := data.GetSpecialOfferCollection()
-	for _, specialOfferData := range specialOffers {
-		if player.canPurchase(specialOfferData, currentDate) {
-			player.Store.SpecialOfferQueue.Push(data.ToDataId(specialOfferData.Name))
+	oneTimeOffers := data.GetOneTimeOfferCollection()
+	for _, oneTimeOfferData := range oneTimeOffers {
+		if player.canPurchase(oneTimeOfferData, currentDate) {
+			player.Store.SpecialOfferQueue.Push(data.ToDataId(oneTimeOfferData.Name))
 		}
 	}
 
