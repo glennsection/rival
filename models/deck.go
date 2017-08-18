@@ -99,6 +99,7 @@ func (player *Player)UpdateDeckVictoryStats() {
 
 	if card := player.GetCard(deck.LeaderCardID); card != nil && card.Level >= (data.GetMaxLevel(card.GetData().Rarity) - 1 ) {
 		card.LeaderWinCount += 1
+		card.WinCount += 1
 	}
 
 	for _, id := range deck.CardIDs {

@@ -60,7 +60,7 @@ func MatchResult(context *util.Context) {
 	util.Must(err)
 
 	if reward != nil {
-		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars, models.PlayerDataMask_Quests)
+		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars, models.PlayerDataMask_Quests, models.PlayerDataMask_Cards)
 		context.SetData("reward", reward)
 	}
 }
