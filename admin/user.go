@@ -173,6 +173,12 @@ func ResetUser(context *util.Context) {
 		} else {
 			util.Must(err)
 
+			// clear user name
+			user, err := models.GetUserById(context, userID)
+			util.Must(err)
+			user.Name = ""
+			util.Must(user.Save(context))
+
 			util.Must(player.Reset(context, development))
 		}
 
@@ -183,6 +189,12 @@ func ResetUser(context *util.Context) {
 		context.DB.C(models.PlayerCollectionName).Find(nil).All(&players)
 
 		for _, player := range players {
+			// clear user name
+			user, err := models.GetUserById(context, player.UserID)
+			util.Must(err)
+			user.Name = ""
+			util.Must(user.Save(context))
+
 			player.Reset(context, development)
 		}
 
