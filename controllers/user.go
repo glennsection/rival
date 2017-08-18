@@ -54,6 +54,11 @@ func UserLogin(context *util.Context) {
 		} else {
 			util.Must(err)
 
+			// clear user name
+			user := system.GetUser(context)
+			user.Name = ""
+			util.Must(user.Save(context))
+
 			util.Must(player.Reset(context, development))
 		}
 	}

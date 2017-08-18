@@ -144,6 +144,36 @@ func (match *Match) UnmarshalJSON(raw []byte) error {
 	return nil
 }
 
+func GetMatchType(matchName string) MatchType {
+	switch matchName {
+	case "Unranked":
+		return MatchUnranked
+	case "Ranked":
+		return MatchRanked
+	case "Elite":
+		return MatchElite
+	case "Tournament":
+		return MatchTournament
+	default:
+		return MatchRanked
+	}
+}
+
+func GetMatchTypeName(matchType MatchType) string {
+	switch matchType {
+	default:
+		return "Invalid"
+	case MatchUnranked:
+		return "Unranked"
+	case MatchRanked:
+		return "Ranked"
+	case MatchElite:
+		return "Elite"
+	case MatchTournament:
+		return "Tournament"
+	}
+}
+
 func GetMatchById(context *util.Context, id bson.ObjectId) (match *Match, err error) {
 	err = context.DB.C(MatchCollectionName).Find(bson.M { "_id": id } ).One(&match)
 	return
@@ -452,7 +482,7 @@ func (match *Match) ProcessMatchResults(outcome MatchOutcome, host *Player, gues
 	// update according to match type
 	switch match.Type {
 
-	case MatchRanked:
+	case MatchRanked, MatchTournament: // TODO - tournaments should use different ranking eventually
 		// update stats
 		rankChange := int(outcome)
 
@@ -494,7 +524,7 @@ func (match *Match) ProcessMatchResults(outcome MatchOutcome, host *Player, gues
 		matchResult.Host.Rating = r1
 		matchResult.Guest.Rating = r2
 
-	case MatchTournament:
+	//case MatchTournament:
 		// TODO
 
 	}
@@ -524,18 +554,7 @@ func (match *Match) GetGuest(context *util.Context) (player *Player, err error) 
 }
 
 func (match *Match) GetTypeName() string {
-	switch match.Type {
-	default:
-		return "Invalid"
-	case MatchUnranked:
-		return "Unranked"
-	case MatchRanked:
-		return "Ranked"
-	case MatchElite:
-		return "Elite"
-	case MatchTournament:
-		return "Tournament"
-	}
+	return GetMatchTypeName(match.Type)
 }
 
 func (match *Match) GetStateName() string {
