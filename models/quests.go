@@ -152,7 +152,7 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 	}
 
 	questData := data.GetQuestData(quest.QuestID)
-	reward := player.GetReward(questData.RewardID, quest.League)
+	reward := player.GetReward(questData.RewardID, quest.League, player.GetLevel())
 
 	quest.Collected += 1
 

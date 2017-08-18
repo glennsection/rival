@@ -43,6 +43,7 @@ type StoreItemData struct {
 	ItemID                  string
 	Category                StoreCategory
 	RewardIDs 				[]DataId
+	RewardLevel 			int
 
 	Currency                CurrencyType
 	Cost                    float64
@@ -63,6 +64,7 @@ type StoreItemDataClient struct {
 	ItemID                  string        	`json:"itemId"`
 	Category                string        	`json:"category"`
 	RewardIDs				string 	  	  	`json:"rewardIds"`
+	RewardLevel 			string 			`json:"rewardLevel"`
 
 	Currency                string        	`json:"currency"`
 	Cost                    float64       	`json:"cost,string"`
@@ -125,6 +127,13 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	clientRewards := util.StringToStringArray(client.RewardIDs)
 	for _, id := range clientRewards {
 		storeItemData.RewardIDs = append(storeItemData.RewardIDs, ToDataId(id))
+	}
+
+	// server reward level
+	if num, err := strconv.ParseInt(client.RewardLevel, 10, 64); err == nil {
+		storeItemData.RewardLevel = int(num)
+	} else {
+		storeItemData.RewardLevel = 0
 	}
 
 	var err error
