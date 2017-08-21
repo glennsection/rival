@@ -54,6 +54,7 @@ type StoreItemData struct {
 	AvailableDate 			int64
 	ExpirationDate 			int64
 	Duration 				int
+	Cooldown 				int
 }
 
 // client data
@@ -75,6 +76,7 @@ type StoreItemDataClient struct {
 	AvailableDate 			string 		  	`json:"availableDate"`
 	ExpirationDate 			string 		  	`json:"expirationDate"`
 	Duration 				string 		  	`json:"duration"`
+	Cooldown 				string 			`json:"cooldown"`
 }
 
 type PeriodicOfferClient struct {
@@ -198,6 +200,13 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 		storeItemData.Duration = int(num)
 	} else {
 		storeItemData.Duration = 1
+	}
+
+	// server cooldown
+	if num, err := strconv.ParseInt(client.Cooldown, 10, 32); err == nil {
+		storeItemData.Cooldown = int(num)
+	} else {
+		storeItemData.Cooldown = -1
 	}
 
 	return nil
