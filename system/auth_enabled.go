@@ -16,7 +16,7 @@ func init() {
 	// init admin user
 	admin, _ := models.GetUserByUsernameAndDatabase(db, config.Config.Authentication.AdminUsername)
 	if admin == nil {
-		models.InsertUserWithUsernameAndDatabase(db, config.Config.Authentication.AdminUsername, config.Config.Authentication.AdminPassword, true)
+		models.InsertUserWithUsernameAndDatabase(db, config.Config.Authentication.AdminUsername, config.Config.Authentication.AdminPassword, "UTC", true)
 	}
 }
 

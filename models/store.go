@@ -266,7 +266,7 @@ func (player *Player) getPeriodicOffer(currentDate int64) {
 
 		if player.canPurchase(storeItemData, currentDate) {
 			player.Store.SpecialOfferQueue.Push(data.ToDataId(storeItemData.Name))
-			player.Store.NextPeriodicOffer = util.TimeToTicks(util.GetCurrentDate().AddDate(0, 0, data.GameplayConfig.PeriodicOfferCooldown))
+			player.Store.NextPeriodicOffer = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, data.GameplayConfig.PeriodicOfferCooldown))
 			return
 		} 
 	}

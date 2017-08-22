@@ -37,6 +37,7 @@ const (
 type Player struct {
 	ID         				bson.ObjectId 	`bson:"_id,omitempty" json:"-"`
 	UserID     				bson.ObjectId 	`bson:"us" json:"-"`
+	TimeZone 				string 			`bson:"-" json:"-"`
 	LastTime   				time.Time     	`bson:"tz" json:"-"`
 	Name       				string        	`bson:"-" json:"name"`
 	Tag        				string        	`bson:"-" json:"tag"`
