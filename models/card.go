@@ -13,7 +13,6 @@ type Card struct {
 	CardCount      			int           `bson:"nm" json:"cardCount"`
 	WinCount       			int           `bson:"wc" json:"winCount"`
 	LeaderWinCount 			int           `bson:"wl" json:"leaderWinCount"`
-	PurchaseCount 			int 		  `bson:"pc"`
 }
 
 // client model
@@ -85,16 +84,6 @@ func (card *Card) GetPotentialLevel() (level int) {
 	}
 
 	return level
-}
-
-func (player *Player) HasCard(id data.DataId) (*Card, bool) {
-	for i, card := range player.Cards {
-		if card.DataID == id {
-			return &player.Cards[i], true
-		}
-	}
-
-	return nil, false
 }
 
 func (player *Player) AddCards(id data.DataId, num int) {

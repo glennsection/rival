@@ -149,7 +149,11 @@ func DebugSetRank(context *util.Context) {
 func DebugRefreshStore(context *util.Context) {
 	player := GetPlayer(context)
 
-	player.Store.LastUpdate = 0
+	player.Store.SpecialOffer.ExpirationDate = 0
+
+	for i, _ := range player.Store.Cards {
+		player.Store.Cards[i].ExpirationDate = 0
+	}
 
 	player.Save(context)
 }
@@ -158,6 +162,5 @@ func DebugClearStoreHistory(context *util.Context) {
 	player := GetPlayer(context)
 
 	player.Store.OneTimePurchaseHistory = map[string]models.OfferHistory {}
-
-	player.Save(context)
+	DebugRefreshStore(context)
 }

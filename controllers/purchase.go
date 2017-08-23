@@ -42,8 +42,8 @@ func Purchase(context *util.Context) {
 		return
 	}
 
-	// if this is a special offer, ensure the player has not already purchased it
-	if storeItem.Category == data.StoreCategorySpecialOffers {
+	// if this is a one time offer, ensure the player has not already purchased it
+	if storeItem.Category == data.StoreCategoryOneTimeOffers {
 		if offerHistory, hasEntry := player.Store.OneTimePurchaseHistory[storeItem.Name]; hasEntry && offerHistory.Purchased {
 			context.Fail("Item is a one-time offer. Cannot purchase again.")
 			return
@@ -89,7 +89,10 @@ func Purchase(context *util.Context) {
 
 	// add rewards
 	if storeItem.Category != data.StoreCategoryCards {
-		rewards := player.GetRewards(storeItem.RewardIDs, data.GetLeague(data.GetRank(player.RankPoints).Level))
+		rewardLevel := data.GetStoreItemData(data.ToDataId(id)).RewardLevel
+		if rewardLevel <= 0 { rewardLevel = player.GetLevel() }
+
+		rewards := player.GetRewards(storeItem.RewardIDs, data.GetLeague(data.GetRank(player.RankPoints).Level), rewardLevel)
 
 		for _, reward := range rewards {
 			player.AddRewards(reward, nil)
@@ -106,14 +109,7 @@ func Purchase(context *util.Context) {
 	// handle store item category
 	switch storeItem.Category {
 
-	case data.StoreCategoryPremiumCurrency:
-		player.SetDirty(models.PlayerDataMask_Currency)
-
-	case data.StoreCategoryStandardCurrency:
-		player.SetDirty(models.PlayerDataMask_Currency)
-
 	case data.StoreCategoryTomes:
-		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
 	
 		// analytics
 		tome := data.GetTome(data.ToDataId(storeItem.ItemID))
@@ -129,14 +125,13 @@ func Purchase(context *util.Context) {
 		
 	case data.StoreCategoryCards:
 		player.HandleCardPurchase(storeItem, bulk)
-		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 		context.SetData("storeItem", storeItem) //include the updated store item
 
-	case data.StoreCategorySpecialOffers:
-		player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
-		player.RecordSpecialOfferPurchase()
+	case data.StoreCategoryOneTimeOffers:
+		player.RecordOneTimeOfferPurchase()
 	}
 
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 
 	if util.HasSQLDatabase() {
 		InsertTrackingSQL(context, "purchase", currentTime, storeItem.Name, currencyType, 1, purchasePrice, bson.M { "time": currentTime,

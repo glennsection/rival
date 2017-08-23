@@ -75,7 +75,7 @@ func ClearQuest(context *util.Context) {
 
 	player.Quests[index].Active = false
 	player.AssignRandomQuest(index)
-	player.QuestClearTime = util.TimeToTicks(util.GetTomorrowDate())
+	player.QuestClearTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1)) // tomorrow
 	player.Save(context)
 }
 

@@ -59,22 +59,24 @@ func (reward *Reward) MarshalJSON() ([]byte, error) {
 	return json.Marshal(client) 
 }
 
-func (player *Player) GetReward(rewardId data.DataId, league data.League) *Reward {
+func (player *Player)GetReward(rewardId data.DataId, league data.League, tier int) *Reward {
 	rewardData := data.GetRewardData(rewardId)
-	return player.CreateReward(rewardData, league)
+	reward := CreateReward(rewardData, league, tier)
+	player.checkForOverflow(reward)
+	return reward
 }
 
-func (player *Player) GetRewards(rewardIds []data.DataId, league data.League) []*Reward {
+func (player *Player)GetRewards(rewardIds []data.DataId, league data.League, tier int) []*Reward {
 	rewards := make([]*Reward, 0)
 
 	for _, id := range rewardIds {
-		rewards = append(rewards, player.GetReward(id, league))
+		rewards = append(rewards, player.GetReward(id, league, tier))
 	}
 
 	return rewards
 }
 
-func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward {
+func (player *Player)CreateCraftingReward(numCards int, rarity string) *Reward {
 	reward := &Reward {
 		Cards: make([]data.DataId, 0),
 		NumRewarded: make([]int, 0),
@@ -103,7 +105,7 @@ func (player *Player) CreateCraftingReward(numCards int, rarity string) *Reward 
 	return reward
 }
 
-func (player *Player)CreateReward(rewardData *data.RewardData, league data.League) *Reward {
+func CreateReward(rewardData *data.RewardData, league data.League, tier int) *Reward {
 	reward := &Reward{
 		ItemID: rewardData.ItemID,
 		Type: rewardData.Type,
@@ -120,8 +122,7 @@ func (player *Player)CreateReward(rewardData *data.RewardData, league data.Leagu
 	}
 	
 	reward.getCurrencyRewards(rewardData, standardCurrencyMultiplier, premiumCurrencyMultiplier)
-	reward.getCardRewards(rewardData, player.GetLevel(), volumeMultiplier)
-	reward.getOverflowAmounts(player)
+	reward.getCardRewards(rewardData, tier, volumeMultiplier)
 
 	return reward
 }
@@ -219,21 +220,9 @@ func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *in
 	roll := float32(rand.Intn(100)) + rand.Float32()
 	rarity := ""
 
-	//first determine if we rolled successfully
-	if roll <= (rewardData.RareChance + rewardData.EpicChance + rewardData.LegendaryChance) {
-		rarity = "RARE"
-	}	
-	if roll <= (rewardData.EpicChance + rewardData.LegendaryChance) {
-		rarity = "EPIC"
-	}
-	if roll <= rewardData.LegendaryChance {
-		rarity = "LEGENDARY"
-	}
-	if rarity == "" {
-		return
-	}
+	var possibleCards []data.DataId
 
-	possibleCards := data.GetCards(func(card *data.CardData) bool {
+	getCardsFunc := func(card *data.CardData) bool {
 		id := data.ToDataId(card.Name)
 		for _, cardId := range reward.Cards {
 			if id == cardId { // ensure we don't already have this card
@@ -242,8 +231,21 @@ func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *in
 		}
 
 		return card.Rarity == rarity && card.Tier <= tier
-	})
+	}
 
+	//first determine if we rolled successfully
+	if roll <= rewardData.LegendaryChance {
+		rarity = "LEGENDARY"
+		possibleCards = data.GetCards(getCardsFunc)
+	}
+	if len(possibleCards) == 0 && roll <= (rewardData.EpicChance + rewardData.LegendaryChance) {
+		rarity = "EPIC"
+		possibleCards = data.GetCards(getCardsFunc)
+	}
+	if len(possibleCards) == 0 && roll <= (rewardData.RareChance + rewardData.EpicChance + rewardData.LegendaryChance) {
+		rarity = "RARE"
+		possibleCards = data.GetCards(getCardsFunc)
+	}	
 	if len(possibleCards) == 0 {
 		return
 	}
@@ -284,7 +286,7 @@ func (reward *Reward)getCard(possibleCards *[]data.DataId, lowerBound int, upper
 	return
 }
 
-func (reward *Reward)getOverflowAmounts(player *Player) {
+func (player *Player)checkForOverflow(reward *Reward) {
 	reward.OverflowAmounts = make([]int, len(reward.Cards))
 
 	for i,_ := range reward.OverflowAmounts {
@@ -302,8 +304,8 @@ func (reward *Reward)getOverflowForIndex(player *Player, index int) int {
 
 	if rarity == "LEGENDARY" {
 		maxCards := data.GetMaxCardCount(rarity)
-		if cardRef,hasCard := player.HasCard(id); hasCard && (cardRef.CardCount + reward.NumRewarded[index]) >= maxCards {
-			return cardRef.CardCount + reward.NumRewarded[index] - maxCards
+		if card := player.GetCard(id); card != nil && (card.CardCount + reward.NumRewarded[index]) >= maxCards {
+			return card.CardCount + reward.NumRewarded[index] - maxCards
 		} 
 	}
 

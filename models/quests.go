@@ -152,7 +152,7 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 	}
 
 	questData := data.GetQuestData(quest.QuestID)
-	reward := player.GetReward(questData.RewardID, quest.League)
+	reward := player.GetReward(questData.RewardID, quest.League, player.GetLevel())
 
 	quest.Collected += 1
 
@@ -254,10 +254,10 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 	switch questData.Period {
 
 	case data.QuestPeriodDaily:
-		quest.ExpireTime = util.TimeToTicks(util.GetTomorrowDate())
+		quest.ExpireTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1)) //get tomorrow's date
 
 	case data.QuestPeriodWeekly:
-		expirationDate := util.GetDateOfNextWeekday(time.Monday, false)
+		expirationDate := util.GetDateOfNextWeekday(player.TimeZone, time.Monday, false)
 		quest.ExpireTime = util.TimeToTicks(expirationDate)
 
 	default: //events
@@ -271,7 +271,7 @@ func (player *Player) UpdateQuests(context *util.Context, questTypes ...data.Que
 	currentTime := util.TimeToTicks(time.Now().UTC())
 
 	//instead of iterating over n questTypes 3 times (once per slot), add the n questTypes into a map so
-	//we only incur O(1) time per slot to see if its updatable, reducing our total complexity to O(n)
+	//we only incur O(1) time per slot to see if its updatable
 	updatables := map[data.QuestType]int{}
 	for i, questType := range questTypes {
 		updatables[questType] = i

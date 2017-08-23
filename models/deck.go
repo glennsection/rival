@@ -93,3 +93,18 @@ func (deck *Deck) SetLeaderCard(card data.DataId) {
 	//the card is not in the deck
 	deck.LeaderCardID = card
 }
+
+func (player *Player)UpdateDeckVictoryStats() {
+	deck := &player.Decks[player.CurrentDeck]
+
+	if card := player.GetCard(deck.LeaderCardID); card != nil && card.Level >= (data.GetMaxLevel(card.GetData().Rarity) - 1 ) {
+		card.LeaderWinCount += 1
+		card.WinCount += 1
+	}
+
+	for _, id := range deck.CardIDs {
+		if card := player.GetCard(id); card != nil && card.Level >= (data.GetMaxLevel(card.GetData().Rarity) - 1 ) {
+			card.WinCount += 1
+		}
+	}
+}

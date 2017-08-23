@@ -185,7 +185,7 @@ func (tome *Tome) StartUnlocking() {
 func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
 	tomeData := data.GetTome(tome.DataID)
 
-	reward = player.GetReward(tomeData.RewardID, tome.League)
+	reward = player.GetReward(tomeData.RewardID, tome.League, player.GetLevel())
 
 	*tome = GetEmptyTome()
 
@@ -251,7 +251,7 @@ func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, 
 
 	player.FreeTomes--
 
-	tomeReward = player.GetReward(data.ToDataId("TOME_FREE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level))
+	tomeReward = player.GetReward(data.ToDataId("TOME_FREE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level), player.GetLevel())
 	err = player.AddRewards(tomeReward, context)
 
 	return
@@ -265,7 +265,7 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 	player.ArenaPoints = 0
 	player.ArenaTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(data.GameplayConfig.BattleTomeCooldown) * time.Second))
 
-	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level))
+	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level), player.GetLevel())
 	err = player.AddRewards(tomeReward, context)
 
 	return

@@ -28,6 +28,7 @@ type Guild struct {
 	Name        string        `bson:"nm" json:"name"`
 	Tag         string        `bson:"tg" json:"tag"`
 	Icon        string        `bson:"ic" json:"icon"`
+	Description string        `bson:"ds" json:"description"`
 	XP          int           `bson:"xp" json:"xp"`
 	Rating      int           `bson:"rt" json:"rating"`
 	MemberCount int           `bson:"ms" json:"memberCount"`
@@ -154,7 +155,7 @@ func (guild *Guild) initialize() {
 	guild.MatchCount = 0
 }
 
-func CreateGuild(context *util.Context, owner *Player, name string, iconId string) (guild *Guild, err error) {
+func CreateGuild(context *util.Context, owner *Player, name string, iconId string, description string) (guild *Guild, err error) {
 	// init guild
 	guild = &Guild{}
 	guild.initialize()
@@ -165,6 +166,7 @@ func CreateGuild(context *util.Context, owner *Player, name string, iconId strin
 	guild.MemberCount = 1
 	guild.Tag = util.GenerateTag()
 	guild.Icon = iconId
+	guild.Description = description
 
 	// save guild
 	err = guild.Save(context)

@@ -34,6 +34,7 @@ type User struct {
 	Password        []byte        `bson:"ps,omitempty" json:"-"`
 	Email           string        `bson:"em,omitempty" json:"-"`
 	CreatedTime     time.Time     `bson:"t0" json:"created"`
+	TimeZone 		string 		  `bson:"tz" json:"timeZone"` 	
 
 	Credentials     []Credential  `bson:"cds,omitempty" json:"-"`
 	Devices         []Device      `bson:"dvs" json"-"`
@@ -108,7 +109,8 @@ func InsertUserWithDevice(context *util.Context, uuid string, credentials []Cred
 			Device { ID: uuid },
 		},
 		Tag: tag,
-		CreatedTime: time.Now(),
+		CreatedTime: time.Now().UTC(),
+		TimeZone: context.Params.GetString("timeZone", "UTC"),
 	}
 
 	err = context.DB.C(UserCollectionName).Insert(user)
@@ -118,17 +120,18 @@ func InsertUserWithDevice(context *util.Context, uuid string, credentials []Cred
 func InsertUserWithUsername(context *util.Context, username string, password string) (user *User, err error) {
 	// TODO check for existing user?  - prevented by database
 
-	return InsertUserWithUsernameAndDatabase(context.DB, username, password, false)
+	return InsertUserWithUsernameAndDatabase(context.DB, username, password, context.Params.GetString("timeZone", "UTC"), false)
 }
 
-func InsertUserWithUsernameAndDatabase(database *mgo.Database, username string, password string, admin bool) (user *User, err error) {
+func InsertUserWithUsernameAndDatabase(database *mgo.Database, username string, password string, timeZone string, admin bool) (user *User, err error) {
 	// create user
 	user = &User {
 		ID: bson.NewObjectId(),
 		Username: username,
 		Name: username,
 		Admin: admin,
-		CreatedTime: time.Now(),
+		CreatedTime: time.Now().UTC(),
+		TimeZone: timeZone,
 	}
 	user.HashPassword(password)
 

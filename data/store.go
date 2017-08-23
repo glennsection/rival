@@ -23,7 +23,8 @@ const (
 	StoreCategoryStandardCurrency
 	StoreCategoryTomes
 	StoreCategoryCards
-	StoreCategorySpecialOffers
+	StoreCategoryOneTimeOffers
+	StoreCategoryPeriodicOffers
 )
 
 type OfferPriority int
@@ -41,8 +42,8 @@ type StoreItemData struct {
 
 	ItemID                  string
 	Category                StoreCategory
-	Periodic 				bool
 	RewardIDs 				[]DataId
+	RewardLevel 			int
 
 	Currency                CurrencyType
 	Cost                    float64
@@ -53,6 +54,7 @@ type StoreItemData struct {
 	AvailableDate 			int64
 	ExpirationDate 			int64
 	Duration 				int
+	Cooldown 				int
 }
 
 // client data
@@ -62,8 +64,8 @@ type StoreItemDataClient struct {
 
 	ItemID                  string        	`json:"itemId"`
 	Category                string        	`json:"category"`
-	Periodic 				bool 		  	`json:"periodic,string"`
 	RewardIDs				string 	  	  	`json:"rewardIds"`
+	RewardLevel 			string 			`json:"rewardLevel"`
 
 	Currency                string        	`json:"currency"`
 	Cost                    float64       	`json:"cost,string"`
@@ -74,6 +76,7 @@ type StoreItemDataClient struct {
 	AvailableDate 			string 		  	`json:"availableDate"`
 	ExpirationDate 			string 		  	`json:"expirationDate"`
 	Duration 				string 		  	`json:"duration"`
+	Cooldown 				string 			`json:"cooldown"`
 }
 
 type PeriodicOfferClient struct {
@@ -84,7 +87,7 @@ type PeriodicOfferClient struct {
 var storeItems map[DataId]*StoreItemData
 
 // special offer data map
-var specialOffers map[DataId]*StoreItemData
+var oneTimeOffers map[DataId]*StoreItemData
 
 // periodic offer data map
 var periodicOffers map[DataId]*StoreItemData
@@ -128,6 +131,13 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 		storeItemData.RewardIDs = append(storeItemData.RewardIDs, ToDataId(id))
 	}
 
+	// server reward level
+	if num, err := strconv.ParseInt(client.RewardLevel, 10, 64); err == nil {
+		storeItemData.RewardLevel = int(num)
+	} else {
+		storeItemData.RewardLevel = 0
+	}
+
 	var err error
 	err = nil
 
@@ -136,16 +146,13 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 		panic(err)
 	} 
 
-	// server periodic
-	storeItemData.Periodic = client.Periodic
-
 	// server currency
 	if storeItemData.Currency, err = StringToCurrencyType(client.Currency); err != nil {
 		panic(err)
 	}
 
 	// server priority
-	if storeItemData.Category == StoreCategorySpecialOffers {
+	if storeItemData.Category == StoreCategoryOneTimeOffers || storeItemData.Category == StoreCategoryPeriodicOffers {
 		if storeItemData.Priority, err = StringToOfferPriority(client.Priority); err != nil {
 			panic(err)
 		}
@@ -192,7 +199,14 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	if num, err := strconv.ParseInt(client.Duration, 10, 32); err == nil {
 		storeItemData.Duration = int(num)
 	} else {
-		storeItemData.Duration = 0
+		storeItemData.Duration = 1
+	}
+
+	// server cooldown
+	if num, err := strconv.ParseInt(client.Cooldown, 10, 32); err == nil {
+		storeItemData.Cooldown = int(num)
+	} else {
+		storeItemData.Cooldown = -1
 	}
 
 	return nil
@@ -206,7 +220,7 @@ func LoadStore(raw []byte) {
 
 	// enter into system data
 	storeItems = map[DataId]*StoreItemData {}
-	specialOffers = map[DataId]*StoreItemData {}
+	oneTimeOffers = map[DataId]*StoreItemData {}
 	periodicOffers = map[DataId]*StoreItemData {}
 
 	for i, storeItem := range container.Store {
@@ -217,14 +231,15 @@ func LoadStore(raw []byte) {
 		util.Must(err)
 
 		// insert into appropriate table
-		if storeItem.Periodic {
+		switch storeItem.Category {
+		case StoreCategoryPeriodicOffers:
 			periodicOffers[id] = &container.Store[i]
-		} else {
-			if storeItem.Category == StoreCategorySpecialOffers {
-				specialOffers[id] = &container.Store[i]
-			} else {
-				storeItems[id] = &container.Store[i]
-			}
+			break;
+		case StoreCategoryOneTimeOffers:
+			oneTimeOffers[id] = &container.Store[i]
+			break;
+		default:
+			storeItems[id] = &container.Store[i]
 		}
 	}
 }
@@ -252,7 +267,7 @@ func GetStoreItemData(id DataId) (store *StoreItemData) {
 		return storeItem
 	}
 
-	if specialOffer, contains := specialOffers[id]; contains {
+	if specialOffer, contains := oneTimeOffers[id]; contains {
 		return specialOffer
 	} 
 	
@@ -263,12 +278,12 @@ func GetStoreItemData(id DataId) (store *StoreItemData) {
 	return nil
 }
 
-func GetStoreItemDataCollection() (map[DataId]*StoreItemData) {
+func GetRegularStoreCollection() (map[DataId]*StoreItemData) {
 	return storeItems
 }
 
-func GetSpecialOfferCollection() (map[DataId]*StoreItemData) {
-	return specialOffers
+func GetOneTimeOfferCollection() (map[DataId]*StoreItemData) {
+	return oneTimeOffers
 }
 
 func GetPeriodicOfferCollection() (map[DataId]*StoreItemData) {
@@ -289,8 +304,10 @@ func StoreCategoryToString(val StoreCategory) (string, error) {
 		return "Cards", nil
 	case StoreCategoryStandardCurrency:
 		return "StandardCurrency", nil
-	case StoreCategorySpecialOffers:
-		return "SpecialOffers", nil
+	case StoreCategoryOneTimeOffers:
+		return "OneTimeOffers", nil
+	case StoreCategoryPeriodicOffers:
+		return "PeriodicOffers", nil
 	}
 	
 	return "", errors.New("Invalid value passed as StoreCategory")
@@ -306,11 +323,13 @@ func StringToStoreCategory(val string) (StoreCategory, error) {
 		return StoreCategoryCards, nil
 	case "StandardCurrency":
 		return StoreCategoryStandardCurrency, nil
-	case "SpecialOffers":
-		return StoreCategorySpecialOffers, nil
+	case "OneTimeOffers":
+		return StoreCategoryOneTimeOffers, nil
+	case "PeriodicOffers":
+		return StoreCategoryPeriodicOffers, nil
 	}
 
-	return StoreCategorySpecialOffers, errors.New(fmt.Sprintf("Cannot convert %s to StoreCategory", val))
+	return StoreCategoryPeriodicOffers, errors.New(fmt.Sprintf("Cannot convert %s to StoreCategory", val))
 }
 
 func CurrencyTypeToString(val CurrencyType) (string, error) {

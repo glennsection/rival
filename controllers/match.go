@@ -24,7 +24,9 @@ func MatchClear(context *util.Context) {
 
 func MatchFind(context *util.Context) {
 	// parse parameters
-	matchType := models.MatchType(context.Params.GetInt("type", int(models.MatchRanked)))
+	matchTypeName := context.Params.GetString("type", "Ranked")
+
+	matchType := models.GetMatchType(matchTypeName)
 
 	player := GetPlayer(context)
 
@@ -60,7 +62,7 @@ func MatchResult(context *util.Context) {
 	util.Must(err)
 
 	if reward != nil {
-		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars, models.PlayerDataMask_Quests)
+		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars, models.PlayerDataMask_Quests, models.PlayerDataMask_Cards)
 		context.SetData("reward", reward)
 	}
 }

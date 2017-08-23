@@ -40,20 +40,26 @@ func UserConnect(context *util.Context) {
 func UserLogin(context *util.Context) {
 	// parse parameters
 	reset := context.Params.GetBool("reset", false)
+	development := context.Params.GetBool("development", false)
 
 	// reset player data, if requested
 	if reset {
 		player, err := models.GetPlayerByUser(context, context.UserID)
 		if player == nil {
 			// create new player for user
-			player, err = models.CreatePlayer(context.UserID)
+			player, err = models.CreatePlayer(context.UserID, development)
 			util.Must(err)
 
 			util.Must(player.Save(context))
 		} else {
 			util.Must(err)
 
-			util.Must(player.Reset(context))
+			// clear user name
+			user := system.GetUser(context)
+			user.Name = ""
+			util.Must(user.Save(context))
+
+			util.Must(player.Reset(context, development))
 		}
 	}
 

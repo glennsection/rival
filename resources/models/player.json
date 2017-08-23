@@ -9,168 +9,7 @@
     "premiumCurrency": 100,
     "cards": [
         {
-            "cardId": "CARD_MERC_CAPTAIN",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_ARMORED_SKELETON",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_MERC_SOLDIERS",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_SPELL_FROST_ORB",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_BOMB_ZOMBIE",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_LIGHTNING_SWORD",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_SKULL_SWARM",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_HELLHOUND",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_DWARVES",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_SPELL_SPIKES",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_FARMER",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_FARMER_HOUSE",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_MARKSMAN",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
             "cardId": "CARD_GOLEM",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_DARK_MAGE",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_AUTOMATON",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_WILDLING_ARCHER",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_EARTH_ELEMENTAL",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_MANA_GENERATOR",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_MYSTIC",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_VAMPIRE",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_GARGOYLE",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_WEREWOLF",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_FRANKENSTEIN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -184,42 +23,49 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_BUBBLE_SHIELD",
+            "cardId": "CARD_MERC_SOLDIERS",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_SOUL_BINDER",
+            "cardId": "CARD_ARMORED_SKELETON",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_VALKYRIE_FEATHER",
+            "cardId": "CARD_SPELL_SPIKES",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_GIANT",
+            "cardId": "CARD_HELLHOUND",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_EYE",
+            "cardId": "CARD_SKULL_SWARM",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_PARRY_KNIGHT",
+            "cardId": "CARD_MERC_CAPTAIN",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_DWARVES",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -298,5 +144,6 @@
     "questClearTime": 0,
     "quests": [],
     "friends": [],
-    "tutorial": []
+    "tutorial": [],
+    "tutorialDisabled": false
 }
