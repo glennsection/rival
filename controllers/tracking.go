@@ -136,7 +136,7 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 		util.Must(err)
 	case "tutorialCompleted":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, 
-			sqlEvent.GetIntField("description"),  count, amount)
+			sqlEvent.GetStrField("description"),  count, amount)
 		util.Must(err)
 	case "purchase":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, description, count, amount)
