@@ -86,6 +86,19 @@ func (card *Card) GetPotentialLevel() (level int) {
 	return level
 }
 
+func (player *Player) AddUncollectedCards(deck Deck) {
+
+	if card := player.GetCard(deck.LeaderCardID); card == nil {
+		player.UncollectedCards = append(player.UncollectedCards, deck.LeaderCardID)
+	}
+
+	for _, id := range deck.CardIDs {
+		if card := player.GetCard(id); card == nil {
+			player.UncollectedCards = append(player.UncollectedCards, id)
+		}
+	}
+}
+
 func (player *Player) AddCards(id data.DataId, num int) {
 	//update the card if we already have it, otherwise instantiate a new one and add it in
 	for i, card := range player.Cards {
@@ -104,6 +117,15 @@ func (player *Player) AddCards(id data.DataId, num int) {
 	}
 
 	player.Cards = append(player.Cards, card)
+
+	for i, _ := range player.UncollectedCards {
+		if id == player.UncollectedCards[i] {
+			length := len(player.UncollectedCards)
+
+			player.UncollectedCards[i] = player.UncollectedCards[length - 1]
+			player.UncollectedCards = player.UncollectedCards[:(length - 1)]
+		}
+	}
 }
 
 func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {

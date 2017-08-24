@@ -52,7 +52,7 @@ type Player struct {
 	StandardCurrency   		int    			`bson:"cs" json:"standardCurrency"`
 	PremiumCurrency    		int    			`bson:"cp" json:"premiumCurrency"`
 	Cards              		[]Card 			`bson:"cd" json:"cards"`
-	UncollectedCards   		[]Card 			`bson:"uc" json:"uncollectedCards"`
+	UncollectedCards   		[]data.DataId	`bson:"uc" json:"uncollectedCards"`
 	Decks              		[]Deck 			`bson:"ds" json:"decks"`
 	CurrentDeck        		int    			`bson:"dc" json:"currentDeck"`
 	Tomes              		[]Tome 			`bson:"tm" json:"tomes"`
@@ -520,7 +520,13 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Cards) {
 		dataMap["cards"] = player.Cards
-		dataMap["uncollectedCards"] = player.UncollectedCards
+
+		uncollectedCards := make([]string, 0)
+		for _, id := range player.UncollectedCards {
+			uncollectedCards = append(uncollectedCards, data.ToDataName(id))
+		}
+
+		dataMap["uncollectedCards"] = uncollectedCards
 	}
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Deck) {
