@@ -236,6 +236,8 @@ func (player *Player) Reset(context *util.Context, development bool) (err error)
 	context.Cache.Set(fmt.Sprintf("UserName:%s", userID), nil)
 	context.Cache.RemoveScore("Leaderboard", playerID)
 
+	player.GuildID = bson.ObjectId("")
+
 	// update database
 	return player.Save(context)
 }
