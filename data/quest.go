@@ -18,24 +18,35 @@ const (
 	QuestTypeBattle QuestType = iota
 )
 
-type QuestData struct {
-	Name					string 				`json:"id"`
-	Period 					QuestPeriod
-	Type 					QuestType
-	RewardID 				DataId
-	Disposable 				bool 				`json:"disposable"`		
-	Time 					int64 				`json:"time"`
-	PercentChance			float32 			`json:"percentChance"`
-	Objectives 				[]int				`json:"objectives"`
+type QuestPhaseData struct {
+	Objective 			int						`json:"objective"`
+	RewardID 			DataId
+}
 
-	Properties 				map[string]interface{}	`json:"properties"`
+type QuestData struct {
+	Name				string 					`json:"id"`
+	Period 				QuestPeriod
+	Type 				QuestType
+	Disposable 			bool 					`json:"disposable"`		
+	Time 				int64 					`json:"time"`
+	PercentChance		float32 				`json:"percentChance"`
+	Phases 				[]QuestPhaseData
+
+	Properties 			map[string]interface{}	`json:"properties"`
+}
+
+type QuestPhaseDataClientAlias QuestPhaseData
+type QuestPhaseDataClient struct {
+	RewardID 			string 					`json:"rewardId"`
+
+	*QuestPhaseDataClientAlias
 }
 
 type QuestDataClientAlias QuestData
 type QuestDataClient struct {
-	Period 					string 				`json:"period"`
-	Type 					string 				`json:"type"`
-	RewardID 				string 				`json:"rewardId"`
+	Period 				string 					`json:"period"`
+	Type 				string 					`json:"type"`
+	Phases 				[]QuestPhaseDataClient	`json:"phases"`
 
 	*QuestDataClientAlias
 }
@@ -86,11 +97,14 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 
 	}
 
-	// reward id
-	quest.RewardID = ToDataId(client.RewardID)
+	// phases
+	quest.Phases = make([]QuestPhaseData, len(client.Phases))
+	for i, _ := range client.Phases {
+		quest.Phases[i].RewardID = ToDataId(client.Phases[i].RewardID)
+		quest.Phases[i].Objective = client.Phases[i].Objective
+	}
 
 	// assign objectives and properties
-	quest.Objectives = client.Objectives
 	quest.Properties = client.Properties
 
 	return nil

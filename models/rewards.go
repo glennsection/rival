@@ -11,6 +11,7 @@ import (
 
 //server model
 type Reward struct {
+	Data				*data.RewardData
 	ItemID 				string
 	Type 				data.RewardType
 	Cards 				[]data.DataId
@@ -105,6 +106,7 @@ func CreateCraftingReward(numCards int, rarity string) *Reward {
 
 func CreateReward(rewardData *data.RewardData, league data.League, tier int) *Reward {
 	reward := &Reward{
+		Data: rewardData,
 		ItemID: rewardData.ItemID,
 		Type: rewardData.Type,
 	}
