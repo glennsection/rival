@@ -426,6 +426,10 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		// process results
 		matchResult = match.ProcessMatchResults(outcome, host, guest, hostScore, guestScore)
 
+		//process uncollected cards
+		host.AddUncollectedCards(guest.Decks[guest.CurrentDeck])
+		guest.AddUncollectedCards(host.Decks[host.CurrentDeck])
+
 		// set results to cache
 		SetMatchResult(context, roomID, matchResult)
 	}
