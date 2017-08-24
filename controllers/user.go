@@ -51,6 +51,13 @@ func UserLogin(context *util.Context) {
 			util.Must(err)
 
 			util.Must(player.Save(context))
+			
+			// analytics tracking
+			if util.HasSQLDatabase() {
+				InsertTrackingSQL(context, "playerCreated", 0, "","", 0, 0, nil)
+			}else{
+				InsertTracking(context, "playerCreated", nil, 0)
+			}
 		} else {
 			util.Must(err)
 
@@ -60,6 +67,13 @@ func UserLogin(context *util.Context) {
 			util.Must(user.Save(context))
 
 			util.Must(player.Reset(context, development))
+			
+			// analytics tracking
+			if util.HasSQLDatabase() {
+				InsertTrackingSQL(context, "playerReset", 0, "","", 0, 0, nil)
+			}else{
+				InsertTracking(context, "playerReset", nil, 0)
+			}
 		}
 	}
 
