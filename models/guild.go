@@ -218,6 +218,37 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 	err = guild.Save(context)
 
 	player.GuildID = bson.ObjectId("")
+
+	// if Owner leaves find another player to make owner. Starting at highest rating
+	if (player.GuildRole == GuildOwner && guild.MemberCount > 0) {
+		fmt.Printf("Assigning a new owner")
+		var memberPlayers []*Player
+		err = context.DB.C(PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
+		util.Must(err)
+
+		// Find member of highest rank
+		highestRank := GuildMember
+		var highestRankPlayer *Player
+		for _, memberPlayer := range memberPlayers {
+			if memberPlayer.ID != player.ID {
+				if (highestRankPlayer == nil) {
+					highestRankPlayer = memberPlayer
+					highestRank = memberPlayer.GuildRole
+				} else if (memberPlayer.GuildRole > highestRank) {
+					highestRankPlayer = memberPlayer
+					highestRank = memberPlayer.GuildRole
+				}
+			}
+		}
+
+		if (highestRankPlayer.GuildID.Valid()) {
+			fmt.Printf("new owner %s", highestRankPlayer.Name)
+			highestRankPlayer.GuildRole = GuildOwner
+			highestRankPlayer.Save(context)
+			highestRankPlayer.SetDirty(PlayerDataMask_Guild)
+		}
+	}
+
 	player.Save(context)
 	player.SetDirty(PlayerDataMask_Guild)
 
@@ -227,6 +258,8 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 
 	return
 }
+
+
 
 func PromoteGuildUser(context *util.Context, player *Player, guild *Guild) (err error) {
 	newGuildRole := PromoteGuildRole(player.GuildRole)
