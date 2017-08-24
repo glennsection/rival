@@ -43,7 +43,7 @@ func (quest *Quest) MarshalJSON() ([]byte, error) {
 
 func (quest *Quest) GetCurrentObjective() (int) {
 	questData := data.GetQuestData(quest.QuestID)
-	return questData.Objectives[quest.Collected]
+	return questData.Phases[quest.Collected].Objective
 }
 
 func (quest *Quest) Update(player *Player) {
@@ -118,7 +118,7 @@ func checkDeckConditions(currentDeck Deck, cardId data.DataId, asLeader bool) bo
 func (quest *Quest) IsCollectable() bool {
 	questData := data.GetQuestData(quest.QuestID)
 
-	steps := len(questData.Objectives)
+	steps := len(questData.Phases)
 	if quest.Collected < steps {
 		currentObjective := quest.GetCurrentObjective()
 		progress := quest.Properties["progress"].(int)
@@ -130,7 +130,7 @@ func (quest *Quest) IsCollectable() bool {
 func (quest *Quest) IsCompleted() bool {
 	questData := data.GetQuestData(quest.QuestID)
 
-	steps := len(questData.Objectives)
+	steps := len(questData.Phases)
 	return quest.Collected >= steps
 }
 
@@ -152,7 +152,7 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 	}
 
 	questData := data.GetQuestData(quest.QuestID)
-	reward := player.GetReward(questData.RewardID, quest.League, player.GetLevel())
+	reward := player.GetReward(questData.Phases[quest.Collected].RewardID, quest.League, player.GetLevel())
 
 	quest.Collected += 1
 
