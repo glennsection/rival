@@ -70,7 +70,7 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	client["rewardIds"] = util.StringArrayToString(clientRewards)
 
 	if storeItem.ExpirationDate > 0 {
-		client["expirationDate"] = strconv.FormatInt(storeItem.ExpirationDate-util.TimeToTicks(time.Now().UTC()), 10)
+		client["expirationDate"] = strconv.FormatInt(storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC()), 10)
 	}
 
 	return json.Marshal(client)
@@ -287,8 +287,7 @@ func (player *Player) getStoreCards() {
 		cardTypes = []string{"COMMON", "COMMON", "RARE", "EPIC"}
 	}
 
-	year, month, day := time.Now().UTC().Date()
-	expDate := util.TimeToTicks(time.Date(year, month, day, 0, 0, 0, 0, time.UTC).AddDate(0, 0, 1))
+	expDate := util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1))
 
 	for _, cardType := range cardTypes {
 

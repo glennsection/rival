@@ -43,13 +43,13 @@ func CompleteQuest(context *util.Context) {
 	currentTime := util.TimeToTicks(time.Now().UTC())
 
 	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "questComplete", currentTime, data.ToDataName(data.GetQuestData(questId).RewardID), data.ToDataName(questId), 1, 0, nil)
+		InsertTrackingSQL(context, "questComplete", currentTime, reward.Data.ID, data.ToDataName(questId), 1, 0, nil)
 
 		TrackRewardsSQL(context, reward, currentTime)	
 	} else{
 		InsertTracking(context, "questComplete", bson.M { "time":currentTime,
 													  "questId":data.ToDataName(questId),
-													  "rewardId":data.ToDataName(data.GetQuestData(questId).RewardID) }, 0)
+													  "rewardId":reward.Data.ID }, 0)
 
 		TrackRewards(context, reward)	
 	}

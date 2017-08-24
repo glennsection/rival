@@ -191,7 +191,7 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 	guild.MemberCount++
 
 	if guild.MemberCount > data.GameplayConfig.GuildMemberLimit {
-		err := util.NewError("Guild is Full.")
+		err := util.NewError(fmt.Sprintf("Guild is Full. Memeber limit: %d", data.GameplayConfig.GuildMemberLimit))
 		util.Must(err)
 		return err
 	}
@@ -231,7 +231,6 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 func PromoteGuildUser(context *util.Context, player *Player, guild *Guild) (err error) {
 	newGuildRole := PromoteGuildRole(player.GuildRole)
 
-	fmt.Printf("Inside PromoteGuildUser %s", player.Tag)
 	player.GuildRole = newGuildRole
 	player.Save(context)
 	player.SetDirty(PlayerDataMask_Guild)

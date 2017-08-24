@@ -11,6 +11,7 @@ import (
 
 //server model
 type Reward struct {
+	Data				*data.RewardData
 	ItemID 				string
 	Type 				data.RewardType
 	Cards 				[]data.DataId
@@ -76,7 +77,7 @@ func (player *Player)GetRewards(rewardIds []data.DataId, league data.League, tie
 	return rewards
 }
 
-func (player *Player)CreateCraftingReward(numCards int, rarity string) *Reward {
+func CreateCraftingReward(numCards int, rarity string) *Reward {
 	reward := &Reward {
 		Cards: make([]data.DataId, 0),
 		NumRewarded: make([]int, 0),
@@ -84,10 +85,8 @@ func (player *Player)CreateCraftingReward(numCards int, rarity string) *Reward {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	tier := player.GetLevel()
-
 	possibleCards := data.GetCards(func(card *data.CardData) bool {
-		return card.Rarity == rarity && card.Tier <= tier
+		return card.Rarity == rarity
 	})
 
 	for numCards > 0 {
@@ -107,6 +106,7 @@ func (player *Player)CreateCraftingReward(numCards int, rarity string) *Reward {
 
 func CreateReward(rewardData *data.RewardData, league data.League, tier int) *Reward {
 	reward := &Reward{
+		Data: rewardData,
 		ItemID: rewardData.ItemID,
 		Type: rewardData.Type,
 	}
