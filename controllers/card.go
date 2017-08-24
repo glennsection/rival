@@ -136,7 +136,7 @@ func CraftCard(context *util.Context) {
 	numCards := cardsSupplied / cardsNeeded
 	player.StandardCurrency -= baseCost * numCards
 
-	reward := player.CreateCraftingReward(numCards, rarity)
+	reward := models.CreateCraftingReward(numCards, rarity)
 	player.AddRewards(reward, nil)
 
 	cardsGained := map[string]int{} // used for analytics
