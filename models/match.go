@@ -426,10 +426,6 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		// process results
 		matchResult = match.ProcessMatchResults(outcome, host, guest, hostScore, guestScore)
 
-		//process uncollected cards
-		host.AddUncollectedCards(guest.Decks[guest.CurrentDeck])
-		guest.AddUncollectedCards(host.Decks[host.CurrentDeck])
-
 		// set results to cache
 		SetMatchResult(context, roomID, matchResult)
 	}
@@ -445,6 +441,17 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 			playerResults = &matchResult.Host
 		} else {
 			playerResults = &matchResult.Guest
+		}
+
+		var opponent *Player
+		if isHost {
+			opponent, err = match.GetGuest(context)
+		} else {
+			opponent, err = match.GetHost(context)
+		}
+
+		if err == nil { // add cards in the opponent's deck to the uncollected card slice
+			player.AddUncollectedCards(opponent.Decks[opponent.CurrentDeck])
 		}
 
 		if outcome != MatchSurrender {
