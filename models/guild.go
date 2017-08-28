@@ -11,7 +11,7 @@ import (
 )
 
 const GuildCollectionName = "guilds"
-const GuildCreationCost = 500
+const GuildCreationCost = 1000
 
 type GuildRole int
 
