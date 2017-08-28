@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"bloodtales/config"
 	"bloodtales/util"
 )
 
@@ -41,7 +40,8 @@ func init() {
 // load a particular file into a container
 func loadDataFile(fileName string, processor func([]byte)) {
 	// read file
-	pathUrl := fmt.Sprintf("%s/%s", config.Config.Resources.DataPath, fileName)
+	dataPath := util.Env.GetRequiredString("DATA_URL")
+	pathUrl := fmt.Sprintf("%s/%s", dataPath, fileName)
 
 	rawUrl, errUrl := http.Get(pathUrl)
 	defer rawUrl.Body.Close()

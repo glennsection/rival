@@ -21,8 +21,5 @@
 	},
 	"Logging": {
 		"Requests": "BriefLogging"
-	},
-	"Resources": {
-		"DataPath": "https://s3-us-west-1.amazonaws.com/bloodtalesdev/btMain/server"
 	}
 }
