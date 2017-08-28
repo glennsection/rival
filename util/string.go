@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"encoding/json"
@@ -42,6 +43,16 @@ func t_Truncate(value string, maxLength int) string {
 		value = value[:maxLength] + "..."
 	}
 	return value
+}
+
+func IsAlphaNumeric(s string, allowUnderscores bool) (match bool) {
+	if allowUnderscores {
+		match, _ = regexp.MatchString("^[a-zA-Z][a-zA-Z0-9_]*$", s)
+	} else {
+		match, _ = regexp.MatchString("^[a-zA-Z][a-zA-Z0-9]*$", s)
+	}
+	
+	return
 }
 
 func StringToStringArray(s string) ([]string) {

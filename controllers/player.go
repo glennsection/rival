@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bloodtales/data"
 	"fmt"
 
 	"bloodtales/util"
@@ -34,6 +35,11 @@ func GetPlayer(context *util.Context) (player *models.Player) {
 func SetPlayerName(context *util.Context) {
 	// parse parameters
 	name := context.Params.GetRequiredString("name")
+
+	if !util.IsAlphaNumeric(name, false) || len(name) < data.GameplayConfig.MinUsernameLength || len(name) > data.GameplayConfig.MaxUsernameLength {
+		context.Fail("Invalid Username")
+		return
+	}
 
 	// get user
 	user := system.GetUser(context)
