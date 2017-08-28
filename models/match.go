@@ -443,6 +443,17 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 			playerResults = &matchResult.Guest
 		}
 
+		var opponent *Player
+		if isHost {
+			opponent, err = match.GetGuest(context)
+		} else {
+			opponent, err = match.GetHost(context)
+		}
+
+		if err == nil { // add cards in the opponent's deck to the uncollected card slice
+			player.AddUncollectedCards(opponent.Decks[opponent.CurrentDeck])
+		}
+
 		if outcome != MatchSurrender {
 			previousArenaPoints := player.ArenaPoints
 			player.ModifyArenaPoints(playerResults.Score)

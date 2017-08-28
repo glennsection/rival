@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"math"
 	"sort"
-	"strconv"
 	"time"
 
 	"bloodtales/data"
@@ -70,7 +69,9 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	client["rewardIds"] = util.StringArrayToString(clientRewards)
 
 	if storeItem.ExpirationDate > 0 {
-		client["expirationDate"] = strconv.FormatInt(storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC()), 10)
+		// note: don't use format int here. it formats an int64 as an int32, which causes overflow
+		// and leads to negative values being delivered to the client
+		client["expirationDate"] = storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC())
 	}
 
 	return json.Marshal(client)
