@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"fmt"
+	"strings"
 
 	"gopkg.in/mgo.v2/bson"
 )
@@ -16,6 +17,7 @@ func handleGuild() {
 	handleGameAPI("/guild/delete", system.TokenAuthentication, DeleteGuild)
 	handleGameAPI("/guild/getGuilds", system.TokenAuthentication, GetGuilds)
 	handleGameAPI("/guild/getGuildById", system.TokenAuthentication, GetGuildById)
+	handleGameAPI("/guild/inviteGuild", system.TokenAuthentication, InviteToGuild)
 	handleGameAPI("/guild/addMember", system.TokenAuthentication, AddMember)
 	handleGameAPI("/guild/removeMember", system.TokenAuthentication, RemoveMember)
 	handleGameAPI("/guild/chat", system.TokenAuthentication, GuildChat)
@@ -135,11 +137,29 @@ func GetGuilds(context *util.Context) {
 		util.Must(err2)
 
 		guildClients = append(guildClients, guildClient)
-
 	}
 
 	// result
 	context.SetData("guilds", guildClients)
+}
+
+func InviteToGuild(context *util.Context) {
+	guildTag := context.Params.GetRequiredString("guildTag")
+	playerTag := context.Params.GetRequiredString("playerTag")
+
+	fmt.Printf("Inside of InviteToGuild")
+	receiverPlayer, err1 := models.GetPlayerByTag(context, playerTag)
+	util.Must(err1)
+
+	// guild
+	guild, err := models.GetGuildByTag(context, guildTag)
+	util.Must(err)
+
+	//TODO Build message with username and guild name
+	inviteMessage := []string{GetPlayer(context).Name, "Invited you to Guild:", guild.Name}
+	inviteData := map[string]interface{}{"guildTag": guildTag}
+
+	SendNotification(context, receiverPlayer, "GuildInvite", strings.Join(inviteMessage, " "), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", inviteData, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
 
 func AddMember(context *util.Context) {
