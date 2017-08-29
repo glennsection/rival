@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"math/rand"
 	"math"
 	"sort"
 	"time"
@@ -278,8 +277,6 @@ func (player *Player) getPeriodicOffer(currentDate int64) {
 func (player *Player) getStoreCards() {
 	player.Store.Cards = make([]StoreItem, 0)
 
-	rand.Seed(time.Now().UnixNano())
-
 	// get individual card offers
 	var cardTypes []string
 	if data.LeagueSix == data.GetLeague(data.GetRank(player.RankPoints).Level) {
@@ -322,7 +319,7 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) *StoreIt
 	sort.Sort(data.DataIdCollection(cardIds))
 
 	// select a card
-	cardId := cardIds[rand.Intn(len(cardIds))]
+	cardId := cardIds[util.RandomIntn(len(cardIds))]
 	card := data.GetCard(cardId)
 
 	storeCard := &StoreItem {
