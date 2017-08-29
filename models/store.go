@@ -69,8 +69,6 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	client["rewardIds"] = util.StringArrayToString(clientRewards)
 
 	if storeItem.ExpirationDate > 0 {
-		// note: don't use format int here. it formats an int64 as an int32, which causes overflow
-		// and leads to negative values being delivered to the client
 		client["expirationDate"] = storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC())
 	}
 
@@ -117,7 +115,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 	}
 
 	// next check to see if we need to generate new card offers
-	if len(player.Store.Cards) == 0 || currentDate > player.Store.Cards[0].ExpirationDate {
+	if len(player.Store.Cards) == 0 || currentDate >= player.Store.Cards[0].ExpirationDate {
 		player.getStoreCards()
 	}
 
