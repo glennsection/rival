@@ -34,6 +34,7 @@ func CreateGuild(context *util.Context) {
 	name := context.Params.GetRequiredString("name")
 	iconId := context.Params.GetRequiredString("iconId")
 	description := context.Params.GetString("description", "")
+	private := context.Params.GetBool("private", false)
 
 	// get player
 	player := GetPlayer(context)
@@ -68,7 +69,7 @@ func CreateGuild(context *util.Context) {
 	}
 
 	// create guild
-	guild, err := models.CreateGuild(context, player, name, iconId, description)
+	guild, err := models.CreateGuild(context, player, name, iconId, description, private)
 	util.Must(err)
 
 	SendNotification(context, player, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
