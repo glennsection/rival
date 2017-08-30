@@ -35,9 +35,6 @@ type Configuration struct {
 		CookieSecret      string           `json:"CookieSecret"`
 		OfflineTimeout    time.Duration    `json:"OfflineTimeout,int"`
 	}                                      `json:"Sessions"`
-	Resources struct {
-		DataPath          string           `json:"DataPath"`
-	}                                      `json:"Resources"`
 	Logging struct {
 		Requests          LogLevel         `json:"Requests"`
 	}                                      `json:"Logging"`

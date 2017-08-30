@@ -51,6 +51,7 @@ type Match struct {
 	GuestID         bson.ObjectId `bson:"id2,omitempty" json:"-"`
 	Type            MatchType     `bson:"tp" json:"-"`
 	RoomID          string        `bson:"rm" json:"roomId"`
+	Arena           string        `bson:"ar" json:"arena"`
 	State           MatchState    `bson:"st" json:"state"`
 	Outcome       	MatchOutcome  `bson:"oc" json:"outcome"`
 	HostScore       int           `bson:"s1" json:"hostScore"`
@@ -252,6 +253,7 @@ func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson
 		GuestID: guestID,
 		Type: matchType,
 		RoomID: roomID,
+		Arena: data.GetRandomArena(),
 		State: MatchActive,
 		StartTime: time.Now(),
 	}
@@ -291,6 +293,7 @@ func FindPublicMatch(context *util.Context, playerID bson.ObjectId, matchType Ma
 			HostID: playerID,
 			Type: matchType,
 			RoomID: util.GenerateUUID(),
+			Arena: data.GetRandomArena(),
 			State: MatchOpen,
 			StartTime: time.Now(),
 			Hosting: true,

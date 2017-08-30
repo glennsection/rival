@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"math/rand"
 	"math"
 	"sort"
 	"time"
@@ -69,8 +68,6 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	client["rewardIds"] = util.StringArrayToString(clientRewards)
 
 	if storeItem.ExpirationDate > 0 {
-		// note: don't use format int here. it formats an int64 as an int32, which causes overflow
-		// and leads to negative values being delivered to the client
 		client["expirationDate"] = storeItem.ExpirationDate - util.TimeToTicks(time.Now().UTC())
 	}
 
@@ -117,7 +114,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 	}
 
 	// next check to see if we need to generate new card offers
-	if len(player.Store.Cards) == 0 || currentDate > player.Store.Cards[0].ExpirationDate {
+	if len(player.Store.Cards) == 0 || currentDate >= player.Store.Cards[0].ExpirationDate {
 		player.getStoreCards()
 	}
 
@@ -278,8 +275,6 @@ func (player *Player) getPeriodicOffer(currentDate int64) {
 func (player *Player) getStoreCards() {
 	player.Store.Cards = make([]StoreItem, 0)
 
-	rand.Seed(time.Now().UnixNano())
-
 	// get individual card offers
 	var cardTypes []string
 	if data.LeagueSix == data.GetLeague(data.GetRank(player.RankPoints).Level) {
@@ -322,7 +317,7 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) *StoreIt
 	sort.Sort(data.DataIdCollection(cardIds))
 
 	// select a card
-	cardId := cardIds[rand.Intn(len(cardIds))]
+	cardId := cardIds[util.RandomIntn(len(cardIds))]
 	card := data.GetCard(cardId)
 
 	storeCard := &StoreItem {
