@@ -7,6 +7,8 @@ import (
 )
 
 type GameplayConfiguration struct {
+	Arenas                      []string    `json:"arenas"`
+
 	FreeTomeUnlockTime 			int  		`json:"freeTomeUnlockTime"` //seconds
 	BattleTomeCooldown 			int 		`json:"battleTomeCooldown"` //seconds
 
@@ -35,4 +37,9 @@ func LoadGameplayConfig(raw []byte) {
 	util.Must(json.Unmarshal(raw, &parsed))
 
 	GameplayConfig = parsed.Config
+}
+
+func GetRandomArena() string {
+	index := util.RandomIntn(len(GameplayConfig.Arenas))
+	return GameplayConfig.Arenas[index]
 }

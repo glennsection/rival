@@ -18,6 +18,7 @@ func handleGuild() {
 	handleGameAPI("/guild/delete", system.TokenAuthentication, DeleteGuild)
 	handleGameAPI("/guild/getGuilds", system.TokenAuthentication, GetGuilds)
 	handleGameAPI("/guild/getGuildById", system.TokenAuthentication, GetGuildById)
+	handleGameAPI("/guild/requestJoin", system.TokenAuthentication, RequestToJoin)
 	handleGameAPI("/guild/inviteGuild", system.TokenAuthentication, InviteToGuild)
 	handleGameAPI("/guild/addMember", system.TokenAuthentication, AddMember)
 	handleGameAPI("/guild/removeMember", system.TokenAuthentication, RemoveMember)
@@ -143,6 +144,27 @@ func GetGuilds(context *util.Context) {
 
 	// result
 	context.SetData("guilds", guildClients)
+}
+
+func RequestToJoin(context *util.Context) {
+	guildTag := context.Params.GetRequiredString("guildTag")
+	playerTag := context.Params.GetRequiredString("playerTag")
+
+	fmt.Printf("Inside of RequestToJoin")
+	player, err1 := models.GetPlayerByTag(context, playerTag)
+	util.Must(err1)
+
+	// guild
+	guild, err := models.GetGuildByTag(context, guildTag)
+	util.Must(err)
+
+	var buffer bytes.Buffer
+	buffer.WriteString(player.Name)
+	buffer.WriteString(" Request To Join the Guild")
+
+	requestData := map[string]interface{}{"requestType": "RequestToJoin", "playerTag": playerTag}
+
+	SendGuildChatNotification(context, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", requestData, time.Now().Add(time.Hour*time.Duration(168)), guild, false)
 }
 
 func InviteToGuild(context *util.Context) {
@@ -416,7 +438,7 @@ func SendReplayGuildNotification(context *util.Context, replayInfoId string, mes
 	replayInfo, err := models.GetReplayInfoById(context, bson.ObjectIdHex(replayInfoId))
 	util.Must(err)
 
-	data := bson.M{"replayInfo": replayInfo}
+	data := bson.M{"requestType": "ShareReplay", "replayInfo": replayInfo}
 
 	// create notification
 	notification := &models.Notification{
@@ -473,6 +495,15 @@ func respondGuildBattle(context *util.Context, notification *models.Notification
 		player := GetPlayer(context)
 		_, err := models.StartPrivateMatch(context, notification.SenderID, player.ID, models.MatchRanked, roomID)
 		util.Must(err)
+	}
+}
+
+func respondGuildJoinRequest(context *util.Context, notification *models.Notification, action string) {
+
+	if action == "accept" {
+		//TODO Do we need to send a popup or something here?
+		//TODO AddMember done in here instead of call from client
+		//SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 	}
 }
 

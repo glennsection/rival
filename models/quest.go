@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-	"math/rand"
 	"encoding/json"
 	
 	"bloodtales/data"
@@ -239,8 +238,7 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 
 		var cardId string
 		if questData.Properties["useRandomCard"].(bool) {
-			rand.Seed(time.Now().UnixNano())
-			cardId = data.ToDataName(player.Cards[rand.Intn(len(player.Cards))].DataID)
+			cardId = data.ToDataName(player.Cards[util.RandomIntn(len(player.Cards))].DataID)
 		} else {
 			cardId = questData.Properties["cardId"].(string)
 		}
