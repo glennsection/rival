@@ -152,5 +152,5 @@
     "quests": [],
     "friends": [],
     "tutorial": [],
-    "tutorialDisabled": false
+    "tutorialDisabled": true
 }
