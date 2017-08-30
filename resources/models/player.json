@@ -81,7 +81,7 @@
     ],
     "decks": [
         {
-            "leaderCardId": "CARD_MERC_SOLDIERS",
+            "leaderCardId": "CARD_EARTH_ELEMENTAL",
             "cardIds": [
                 "CARD_GOLEM",
                 "CARD_ARMORED_SKELETON",
@@ -90,7 +90,7 @@
                 "CARD_SKULL_SWARM",
                 "CARD_MERC_CAPTAIN",
                 "CARD_VAMPIRE",
-                "CARD_EARTH_ELEMENTAL"
+                "CARD_MERC_SOLDIERS"
             ]
         },
         {
