@@ -9,14 +9,14 @@
     "premiumCurrency": 100,
     "cards": [
         {
-            "cardId": "CARD_GOLEM",
+            "cardId": "CARD_VAMPIRE",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_GREMLINS",
+            "cardId": "CARD_LIGHTNING_SWORD",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -37,14 +37,14 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_SPELL_SPIKES",
+            "cardId": "CARD_MARKSMAN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_HELLHOUND",
+            "cardId": "CARD_GARGOYLE",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -65,7 +65,14 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_DWARVES",
+            "cardId": "CARD_GOLEM",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_EARTH_ELEMENTAL",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -74,42 +81,42 @@
     ],
     "decks": [
         {
-            "leaderCardId": "CARD_GOLEM",
+            "leaderCardId": "CARD_MERC_SOLDIERS",
             "cardIds": [
+                "CARD_GOLEM",
                 "CARD_ARMORED_SKELETON",
-                "CARD_MERC_SOLDIERS",
-                "CARD_GREMLINS",
-                "CARD_MERC_CAPTAIN",
-                "CARD_SPELL_SPIKES",
+                "CARD_MARKSMAN",
+                "CARD_GARGOYLE",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
-                "CARD_DWARVES"
+                "CARD_MERC_CAPTAIN",
+                "CARD_VAMPIRE",
+                "CARD_EARTH_ELEMENTAL"
             ]
         },
         {
-            "leaderCardId": "CARD_ARMORED_SKELETON",
+            "leaderCardId": "CARD_GARGOYLE",
             "cardIds": [
-                "CARD_GOLEM",
                 "CARD_MERC_SOLDIERS",
-                "CARD_GREMLINS",
-                "CARD_MERC_CAPTAIN",
-                "CARD_SPELL_SPIKES",
+                "CARD_LIGHTNING_SWORD",
+                "CARD_MARKSMAN",
+                "CARD_VAMPIRE",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
-                "CARD_DWARVES"
+                "CARD_MERC_CAPTAIN",
+                "CARD_GOLEM",
+                "CARD_EARTH_ELEMENTAL"
             ]
         },
         {
-            "leaderCardId": "CARD_MERC_CAPTAIN",
+            "leaderCardId": "CARD_SKULL_SWARM",
             "cardIds": [
-                "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_GREMLINS",
+                "CARD_ARMORED_SKELETON",
+                "CARD_LIGHTNING_SWORD",
+                "CARD_GARGOYLE",
+                "CARD_VAMPIRE",
+                "CARD_MERC_CAPTAIN",
                 "CARD_GOLEM",
-                "CARD_SPELL_SPIKES",
-                "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
-                "CARD_DWARVES"
+                "CARD_EARTH_ELEMENTAL"
             ]
         }
     ],
