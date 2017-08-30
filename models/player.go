@@ -56,6 +56,7 @@ type Player struct {
 	Decks              		[]Deck 			`bson:"ds" json:"decks"`
 	CurrentDeck        		int    			`bson:"dc" json:"currentDeck"`
 	Tomes              		[]Tome 			`bson:"tm" json:"tomes"`
+	ActiveTome 				Tome 			`bson:"at" json:"activeTome"`
 	ArenaPoints        		int    			`bson:"ap" json:"arenaPoints"`
 	ArenaTomeUnlockTime 	int64 			`bson:"au" json:"arenaTomeUnlockTime"`
 	FreeTomes          		int    			`bson:"ft" json:"freeTomes"`
@@ -143,11 +144,8 @@ func (player *Player) loadDefaults(development bool) (err error) {
 		return
 	}
 
-	//set starting victory tome count
-	player.VictoryTomeCount = 0
-	for i,_ := range player.Tomes {
-		player.Tomes[i] = GetEmptyTome()
-	}
+	// setup tomes
+	player.SetupTomeDefaults()
 
 	// setup store data
 	player.InitStore()
@@ -539,6 +537,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Tomes) {
 		dataMap["tomes"] = player.Tomes
+		dataMap["activeTome"] = player.ActiveTome
 		dataMap["arenaPoints"] = player.ArenaPoints
 		dataMap["arenaTomeUnlockTime"] = player.ArenaTomeUnlockTime - util.TimeToTicks(time.Now().UTC())
 		dataMap["freeTomes"] = player.FreeTomes

@@ -130,13 +130,13 @@
             "tomeId": "Invalid",
             "state": "Empty",
             "unlockTime": 0
-        },
-        {
-            "tomeId": "Invalid",
-            "state": "Empty",
-            "unlockTime": 0
         }
     ],
+    "activeTome": {
+        "tomeId": "Invalid",
+        "state": "Empty",
+        "unlockTime": 0
+    },
     "arenaPoints": 0,
     "arenaTomeUnlockTime": 0,
     "freeTomes": 0,

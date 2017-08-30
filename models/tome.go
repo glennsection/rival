@@ -152,8 +152,21 @@ func (tome *Tome) GetUnlockCost() int {
 	return int(math.Ceil(float64(tomeData.GemsToUnlock) * costMultiplier * (timeRemaining.Seconds() / float64(tomeData.TimeToUnlock))))
 }
 
-func GetEmptyTome() (tome Tome) {
-	tome = Tome{
+func (player *Player) SetupTomeDefaults() {
+	// set starting victory tome count
+	player.VictoryTomeCount = 0
+
+	// init victory tomes
+	player.Tomes = make([]Tome, 3)
+	for i,_ := range player.Tomes {
+		(&player.Tomes[i]).Clear()
+	}
+
+	(&player.ActiveTome).Clear()
+}
+
+func (tome *Tome) Clear() {
+	*tome = Tome{
 		DataID:     data.ToDataId(""),
 		State:      TomeEmpty,
 		UnlockTime: 0,
@@ -177,9 +190,13 @@ func (player *Player) GetEmptyTomeSlot() (index int, tome *Tome) {
 	return
 }
 
-func (tome *Tome) StartUnlocking() {
-	tome.State = TomeUnlocking
-	tome.UnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(data.GetTome(tome.DataID).TimeToUnlock) * time.Second))
+func (player *Player) StartUnlocking(index int) {
+	player.ActiveTome.DataID = player.Tomes[index].DataID
+	player.ActiveTome.State = TomeUnlocking
+	player.ActiveTome.UnlockTime = util.TimeToTicks(time.Now().Add(time.Duration(data.GetTome(player.ActiveTome.DataID).TimeToUnlock) * time.Second))
+	player.ActiveTome.League = player.Tomes[index].League
+
+	player.Tomes[index].Clear()
 }
 
 func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
@@ -187,7 +204,7 @@ func (player *Player) OpenTome(tome *Tome) (reward *Reward) {
 
 	reward = player.GetReward(tomeData.RewardID, tome.League, player.GetLevel())
 
-	*tome = GetEmptyTome()
+	tome.Clear()
 
 	return
 }
