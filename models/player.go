@@ -537,7 +537,7 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Tomes) {
 		dataMap["tomes"] = player.Tomes
-		dataMap["activeTome"] = player.ActiveTome
+		dataMap["activeTome"] = &player.ActiveTome
 		dataMap["arenaPoints"] = player.ArenaPoints
 		dataMap["arenaTomeUnlockTime"] = player.ArenaTomeUnlockTime - util.TimeToTicks(time.Now().UTC())
 		dataMap["freeTomes"] = player.FreeTomes
