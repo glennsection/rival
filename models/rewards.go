@@ -282,6 +282,7 @@ func (reward *Reward)getSpecificCards(rewardData *data.RewardData) {
 	for i, id := range rewardData.SpecificCards {
 		found := false
 
+		// first see if the card in question was already rolled for randomly
 		for j, _ := range reward.Cards {
 			found = id == reward.Cards[j]
 			if found {
@@ -290,6 +291,7 @@ func (reward *Reward)getSpecificCards(rewardData *data.RewardData) {
 			}
 		}
 
+		// if it wasn't, append it into the reward
 		if !found {
 			reward.Cards = append(reward.Cards, id)
 			reward.NumRewarded = append(reward.NumRewarded, rewardData.SpecificCounts[i])
