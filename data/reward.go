@@ -22,7 +22,10 @@ type RewardData struct {
 	ID 					string 			`json:"id"`
 	ItemID 				string 			`json:"itemId"`
 	Type 				RewardType 
-	UseMultipliers 		bool 	 		`json:"useMultipliers,string"`		
+	UseMultipliers 		bool 	 		`json:"useMultipliers,string"`	
+	
+	SpecificCards	 	[]DataId
+	SpecificCounts 		[]int 			
 
 	LegendaryCards 		int 			
 	EpicCards 	 		int 			
@@ -45,6 +48,9 @@ type RewardData struct {
 type RewardDataClientAlias RewardData
 type RewardDataClient struct {
 	Type 				string 			`json:"rewardType"`	
+
+	SpecificCards 		string 			`json:"specificCards"`
+	SpecificCounts 		string 			`json:"specificCounts"`
 
 	LegendaryCards 		string 			`json:"legendaryCards"`
 	EpicCards 	 		string 			`json:"epicCards"`
@@ -91,7 +97,31 @@ func (reward *RewardData)UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
-	 // card amounts  
+	// specific rewards
+	if client.SpecificCards != "" {
+		specificCards := util.StringToStringArray(client.SpecificCards)
+
+		reward.SpecificCards = make([]DataId, 0)
+		for _, id := range specificCards {
+			reward.SpecificCards = append(reward.SpecificCards, ToDataId(id))
+		}
+	}
+
+	if client.SpecificCounts != "" {
+		reward.SpecificCounts = util.StringToIntArray(client.SpecificCounts)
+
+		if len(reward.SpecificCards) > len(reward.SpecificCounts) {
+			for i := len(reward.SpecificCounts); i < len(reward.SpecificCards); i++ {
+				reward.SpecificCounts = append(reward.SpecificCounts, 0)
+			}
+		}
+
+		if len(reward.SpecificCards) < len(reward.SpecificCounts) {
+			reward.SpecificCounts = reward.SpecificCounts[:len(reward.SpecificCards)]
+		}
+	}
+
+	// card amounts  
 	var i int64
 
 	if client.LegendaryCards != "" {

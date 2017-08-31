@@ -119,6 +119,7 @@ func CreateReward(rewardData *data.RewardData, league data.League, tier int) *Re
 	
 	reward.getCurrencyRewards(rewardData, standardCurrencyMultiplier, premiumCurrencyMultiplier)
 	reward.getCardRewards(rewardData, tier, volumeMultiplier)
+	reward.getSpecificCards(rewardData)
 
 	return reward
 }
@@ -275,6 +276,25 @@ func (reward *Reward)getCard(possibleCards *[]data.DataId, lowerBound int, upper
 	reward.NumRewarded = append(reward.NumRewarded, cardsRewarded)
 
 	return
+}
+
+func (reward *Reward)getSpecificCards(rewardData *data.RewardData) {
+	for i, id := range rewardData.SpecificCards {
+		found := false
+
+		for j, _ := range reward.Cards {
+			found = id == reward.Cards[j]
+			if found {
+				reward.NumRewarded[j] += rewardData.SpecificCounts[i]
+				break
+			}
+		}
+
+		if !found {
+			reward.Cards = append(reward.Cards, id)
+			reward.NumRewarded = append(reward.NumRewarded, rewardData.SpecificCounts[i])
+		}
+	}
 }
 
 func (player *Player)checkForOverflow(reward *Reward) {
