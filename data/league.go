@@ -8,7 +8,7 @@ import(
 
 type League int
 const (
-	NoLeague 			 		League 		= iota 
+	LeagueZero 			 		League 		= iota 
 	LeagueOne 							
 	LeagueTwo
 	LeagueThree
@@ -57,7 +57,7 @@ func GetLeague(rank int) League {
 		}
 	}
 
-	return NoLeague
+	return LeagueZero
 }
 
 func GetLeagueByID(id string) League {
@@ -67,5 +67,5 @@ func GetLeagueByID(id string) League {
 		}
 	}
 
-	return NoLeague
+	return LeagueZero
 }

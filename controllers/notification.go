@@ -103,6 +103,7 @@ func prepareNotification(context *util.Context, notification *models.Notificatio
 }
 
 func respondNotification(context *util.Context, notification *models.Notification, action string) {
+	
 	switch notification.Type {
 
 	case "FriendRequest":
@@ -114,6 +115,7 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 			senderUserID := models.GetUserIdByPlayerId(context, notification.SenderID)
 			system.SocketSend(context, senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
 		}
+		break
 
 
 	case "FriendBattle":
@@ -126,6 +128,7 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 			system.SocketSend(context, senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
 		}
 
+		break
 
 	case "GuildBattle":
 		// handle Guild Battle
@@ -152,6 +155,34 @@ func respondNotification(context *util.Context, notification *models.Notificatio
 		}
 
 		break
+	}
+
+	requestType := notification.Data["requestType"]
+	switch requestType {
+		case "RequestToJoin":
+			// handle friend request
+			respondGuildJoinRequest(context, notification, action)
+		
+			// notify sender
+			if (notification.SenderID.Valid()) {
+				guild, err := models.GetGuildById(context, GetPlayer(context).GuildID)
+				util.Must(err)
+		
+				var memberPlayers []*models.Player
+				err = context.DB.C(models.PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
+				util.Must(err)
+		
+				for _, memberPlayer := range memberPlayers {
+					// notify receiver
+					socketData := map[string]interface{}{"notificationId": notification.ID}
+					system.SocketSend(context, memberPlayer.UserID, "GuildJoinRequest-clear", socketData)
+				}
+		
+				senderUserID := models.GetUserIdByPlayerId(context, notification.SenderID)
+				system.SocketSend(context, senderUserID, fmt.Sprintf("%s-%s", notification.Type, action), nil)
+			}
+		
+			break
 	}
 
 	// delete notification

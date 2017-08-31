@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bloodtales/data"
 	"fmt"
 	"time"
 
@@ -162,7 +163,7 @@ func respondFriendBattle(context *util.Context, notification *models.Notificatio
 	if action == "accept" {
 		// create private match
 		roomID := notification.Data["roomId"].(string)
-		_, err := models.StartPrivateMatch(context, notification.SenderID, notification.ReceiverID, models.MatchRanked, roomID)
+		_, err := models.StartPrivateMatch(context, notification.SenderID, notification.ReceiverID, models.MatchRanked, roomID, data.GetRandomArena())
 		util.Must(err)
 	}
 }
