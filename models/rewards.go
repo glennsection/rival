@@ -2,8 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"math/rand"
-	"time"
 
 	"bloodtales/util"
 	"bloodtales/data"
@@ -83,15 +81,13 @@ func CreateCraftingReward(numCards int, rarity string) *Reward {
 		NumRewarded: make([]int, 0),
 	}
 
-	rand.Seed(time.Now().UTC().UnixNano())
-
 	possibleCards := data.GetCards(func(card *data.CardData) bool {
 		return card.Rarity == rarity
 	})
 
 	for numCards > 0 {
 		// select a random character card
-		index := rand.Intn(len(possibleCards))
+		index := util.RandomIntn(len(possibleCards))
 		card := possibleCards[index]
 
 		// add the character card to the reward
@@ -137,26 +133,22 @@ func (reward *Reward)getCurrencyRewards(rewardData *data.RewardData, standardMul
 	minPremiumCurrency = int(float64(minPremiumCurrency) * premiumMultiplier)
 	maxPremiumCurrency = int(float64(maxPremiumCurrency) * premiumMultiplier)
 
-	rand.Seed(time.Now().UTC().UnixNano())
-
 	if maxPremiumCurrency == minPremiumCurrency {
 		reward.PremiumCurrency = maxPremiumCurrency
 	} else {
-		reward.PremiumCurrency = minPremiumCurrency + rand.Intn(maxPremiumCurrency - minPremiumCurrency + 1)
+		reward.PremiumCurrency = minPremiumCurrency + util.RandomIntn(maxPremiumCurrency - minPremiumCurrency + 1)
 	}
 	
 	if maxStandardCurrency == minStandardCurrency {
 		reward.StandardCurrency = maxStandardCurrency
 	} else {
-		reward.StandardCurrency = minStandardCurrency + rand.Intn(maxStandardCurrency - minStandardCurrency + 1)
+		reward.StandardCurrency = minStandardCurrency + util.RandomIntn(maxStandardCurrency - minStandardCurrency + 1)
 	}
 }
 
 func (reward *Reward)getCardRewards(rewardData *data.RewardData, tier int, volumeMultiplier float64) {
 	reward.Cards = make([]data.DataId, 0)
 	reward.NumRewarded = make([]int, 0)
-
-	rand.Seed(time.Now().UTC().UnixNano())
 
 	// first assign cards for the guaranteed rarities
 	reward.getCardsForRarity(rewardData, "LEGENDARY", int(float64(rewardData.LegendaryCards) * volumeMultiplier), tier, volumeMultiplier)
@@ -215,9 +207,8 @@ func (reward *Reward)getCardsForRarity(rewardData *data.RewardData, rarity strin
 	}
 }
 
-
 func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *int, tier int, volumeMultiplier float64) {
-	roll := float32(rand.Intn(100)) + rand.Float32()
+	roll := float32(util.RandomIntn(10000)) / 100
 	rarity := ""
 
 	var possibleCards []data.DataId
@@ -263,7 +254,7 @@ func (reward *Reward)rollForCard(rewardData *data.RewardData, remainingCards *in
 
 func (reward *Reward)getCard(possibleCards *[]data.DataId, lowerBound int, upperBound int) (cardsRewarded int) {
 	// select a random character card
-	index := rand.Intn(len(*possibleCards))
+	index := util.RandomIntn(len(*possibleCards))
 	card := (*possibleCards)[index]
 
 	// remove that card from the slice of possible character cards
@@ -276,7 +267,7 @@ func (reward *Reward)getCard(possibleCards *[]data.DataId, lowerBound int, upper
 	if upperBound <= lowerBound {
 		cardsRewarded = upperBound
 	} else {
-		cardsRewarded = rand.Intn(upperBound - lowerBound + 1) + lowerBound
+		cardsRewarded = util.RandomRange(lowerBound, upperBound)
 	}
 
 	// add the character card to the reward

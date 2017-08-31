@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"time"
+	"strconv"
 	"gopkg.in/mgo.v2/bson"
 
 	"bloodtales/data"
@@ -19,42 +20,37 @@ func handleTome() {
 }
 
 func UnlockTome(context *util.Context) {
-	//Validate the request
-	index, player, valid := ValidateTomeRequest(context)
-	if !valid {
+	// parse parameters
+	index := context.Params.GetRequiredInt("tomeId")
+
+	// initialize values
+	player := GetPlayer(context)
+
+	// make sure the tome exists
+	if index >= len(player.Tomes) || index < 0 || player.Tomes[index].State == models.TomeEmpty {
+		context.Fail("Tome does not exist")
 		return
 	}
 
-	// check to see if any tomes are unlocking
-	busy := false
-	for i := 0; i < len(player.Tomes); i++ {
-		if player.Tomes[i].State == models.TomeUnlocking {
-			busy = true
-		}
-	}
-
-	// start unlock if no other tomes are unlocking
-	if !busy {
-		(&player.Tomes[index]).StartUnlocking()
-
-		util.Must(player.Save(context))
-
-		player.SetDirty(models.PlayerDataMask_Tomes)
-	} else {
+	// check to see if a tome is unlocking
+	if player.ActiveTome.State == models.TomeUnlocking {
 		context.Fail("Already unlocking a tome.")
 	}
+
+	// start unlock
+	player.StartUnlocking(index)
+
+	util.Must(player.Save(context))
+
+	player.SetDirty(models.PlayerDataMask_Tomes)
 }
 
 func OpenTome(context *util.Context) {
-	//Validate the request
-	index, player, valid := ValidateTomeRequest(context)
-	if !valid {
-		return
-	}
+	player := GetPlayer(context)
 
 	// check to see if the tome is ready to open
-	(&player.Tomes[index]).UpdateTome()
-	if player.Tomes[index].State != models.TomeUnlocked {
+	(&player.ActiveTome).UpdateTome()
+	if player.ActiveTome.State != models.TomeUnlocked {
 		context.Fail("Tome not ready")
 		return
 	}
@@ -62,14 +58,14 @@ func OpenTome(context *util.Context) {
 	// analytics
 	currentTime := util.TimeToTicks(time.Now().UTC())
 	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "tomeOpened", currentTime, data.ToDataName(player.Tomes[index].DataID), 
+		InsertTrackingSQL(context, "tomeOpened", currentTime, data.ToDataName(player.ActiveTome.DataID), 
 			"Premium", 1, 0, nil)
 	}else{
-		InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(player.Tomes[index].DataID), 
+		InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(player.ActiveTome.DataID), 
 			"gemsSpent": 0}, 0)
 	}
 
-	reward, err := player.AddTomeRewards(context, &player.Tomes[index])
+	reward, err := player.AddTomeRewards(context, &player.ActiveTome)
 	util.Must(err)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
@@ -84,13 +80,28 @@ func OpenTome(context *util.Context) {
 }
 
 func RushTome(context *util.Context) {
-	//Validate the request
-	index, player, valid := ValidateTomeRequest(context)
-	if !valid {
-		return
+	// parse parameters
+	tomeId := context.Params.GetRequiredString("tomeId")
+
+	// initialize values
+	player := GetPlayer(context)
+	var tome *models.Tome
+
+	if tomeId == "active" {
+		tome = &(player.ActiveTome)
+	} else {
+		var index int
+		var err error
+
+		if index, err = strconv.Atoi(tomeId); err != nil || index >= len(player.Tomes) || index < 0 || player.Tomes[index].State == models.TomeEmpty {
+			context.Fail("Tome does not exist")
+			return
+		}
+
+		tome = &player.Tomes[index]
 	}
 
-	cost := player.Tomes[index].GetUnlockCost()
+	cost := tome.GetUnlockCost()
 
 	// check to see if the player has enough premium currency
 	if cost > player.PremiumCurrency {
@@ -101,17 +112,17 @@ func RushTome(context *util.Context) {
 	// analytics
 	currentTime := util.TimeToTicks(time.Now().UTC())
 	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "tomeOpened", currentTime, data.ToDataName(player.Tomes[index].DataID), 
+		InsertTrackingSQL(context, "tomeOpened", currentTime, data.ToDataName(tome.DataID), 
 			"Premium", 1, float64(cost), nil)
 	}else{
-		InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(player.Tomes[index].DataID), 
+		InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(tome.DataID), 
 			"gemsSpent": cost}, 0)
 	}
 	
 
 	player.PremiumCurrency -= cost
 
-	reward, err := player.AddTomeRewards(context, &player.Tomes[index])
+	reward, err := player.AddTomeRewards(context, tome)
 	util.Must(err)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
