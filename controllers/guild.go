@@ -470,6 +470,7 @@ func ShareReplayToGuild(context *util.Context) {
 func GuildBattle(context *util.Context) {
 	// parse parameters
 	message := context.Params.GetRequiredString("message")
+	arenaName := context.Params.GetRequiredString("arenaName")
 	//tag := context.Params.GetRequiredString("tag")
 
 	// generate Room ID
@@ -477,6 +478,7 @@ func GuildBattle(context *util.Context) {
 	//message := fmt.Sprintf("Battle Request from: %s", models.GetUserName(context, context.UserID))
 	data := map[string]interface{}{
 		"roomId": roomID,
+		"arenaName": arenaName,
 	}
 	expiresAt := time.Now().Add(time.Hour)
 
@@ -486,14 +488,16 @@ func GuildBattle(context *util.Context) {
 	//sendFriendNotification(context, tag, "FriendBattle", image, message, "Battle", "accept", "Decline", "decline", data, expiresAt)
 
 	context.SetData("roomId", roomID)
+	context.SetData("arenaName", arenaName)
 }
 
 func respondGuildBattle(context *util.Context, notification *models.Notification, action string) {
 	if action == "accept" {
 		// create private match
 		roomID := notification.Data["roomId"].(string)
+		arenaName := notification.Data["arenaName"].(string)
 		player := GetPlayer(context)
-		_, err := models.StartPrivateMatch(context, notification.SenderID, player.ID, models.MatchRanked, roomID)
+		_, err := models.StartPrivateMatch(context, notification.SenderID, player.ID, models.MatchRanked, roomID, arenaName)
 		util.Must(err)
 	}
 }

@@ -238,7 +238,7 @@ func ClearMatches(context *util.Context, playerIDs []bson.ObjectId, states ...Ma
  	return
 }
 
-func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson.ObjectId, matchType MatchType, roomID string) (match *Match, err error) {
+func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson.ObjectId, matchType MatchType, roomID string, arenaName string) (match *Match, err error) {
 	// check for existing match (TODO - verify that no room exists with this ID)
 	err = ClearMatches(context, []bson.ObjectId { hostID, guestID }, MatchOpen, MatchActive)
 	if err != nil {
@@ -253,7 +253,7 @@ func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson
 		GuestID: guestID,
 		Type: matchType,
 		RoomID: roomID,
-		Arena: data.GetRandomArena(),
+		Arena: arenaName,
 		State: MatchActive,
 		StartTime: time.Now(),
 	}
