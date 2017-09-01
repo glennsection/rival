@@ -53,7 +53,7 @@ func (tutorialReward *TutorialReward)UnmarshalJSON(raw []byte) error {
 		tutorialReward.RewardID = nil
 	}
 
-	if num, err := strconv.ParseInt(client.RankPoints, 10, 64); err != nil {
+	if num, err := strconv.ParseInt(client.RankPoints, 10, 64); err == nil {
 		tutorialReward.RankPoints = int(num)
 	} else {
 		tutorialReward.RankPoints = 0
