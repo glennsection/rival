@@ -31,6 +31,7 @@ func init() {
 	loadDataFile("GameData/ExcelConverted/PeriodicOfferTable.json", LoadPeriodicOfferTable)
 	loadDataFile("GameData/ExcelConverted/Rarity.json", LoadRarityData)
 	loadDataFile("GameData/Definitions/QuestTypes.txt", LoadQuestData)
+	loadDataFile("GameData/ExcelConverted/TutorialRewards.json", LoadTutorialRewards)
 	// ------------------------------------------
 
 	// template funcs

@@ -174,37 +174,37 @@ func (reward *RewardData)UnmarshalJSON(raw []byte) error {
 		if reward.LegendaryBounds = util.StringToIntArray(client.LegendaryBounds); len(reward.LegendaryBounds) != 2 {
 			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Legendary cards in reward %s", reward.ID)))
 		}
-	}
+	} else { reward.LegendaryBounds = []int{0,0} }
 
 	if reward.EpicCards > 0 || reward.RandomCards > 0 {
 		if reward.EpicBounds = util.StringToIntArray(client.EpicBounds); len(reward.EpicBounds) != 2 {
 			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Epic cards in reward %s", reward.ID)))
 		}
-	}
+	} else { reward.EpicBounds = []int{0,0} }
 
 	if reward.RareCards > 0 || reward.RandomCards > 0 {
 		if reward.RareBounds = util.StringToIntArray(client.RareBounds); len(reward.RareBounds) != 2 {
 			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Rare cards in reward %s", reward.ID)))
 		}
-	}
+	} else { reward.RareBounds = []int{0,0} }
 
 	if reward.RandomCards > 0 {
 		if reward.CommonBounds = util.StringToIntArray(client.CommonBounds); len(reward.CommonBounds) != 2 {
 			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Common cards in reward %s", reward.ID)))
 		}
-	}
+	} else { reward.CommonBounds = []int{0,0} }
 
 	if client.PremiumCurrency != "" {
 		if reward.PremiumCurrency = util.StringToIntArray(client.PremiumCurrency); len(reward.PremiumCurrency) != 2 {
 			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Premium currency in reward %s", reward.ID)))
 		}
-	}
+	} else { reward.PremiumCurrency = []int{0,0} }
 
 	if client.StandardCurrency != "" {
 		if reward.StandardCurrency = util.StringToIntArray(client.StandardCurrency); len(reward.StandardCurrency) != 2 {
 			panic(errors.New(fmt.Sprintf("Improperly formatted bounds for Standard currency in reward %s", reward.ID)))
 		}
-	}
+	} else { reward.StandardCurrency = []int{0,0} }
 
 	return nil
 }
