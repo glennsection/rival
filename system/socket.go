@@ -314,8 +314,12 @@ func (client *SocketClient) write() {
 			logSocket("Socket sent message to User ID: %v (%v)", client.userID, message.Message)
 
 		case <-ticker.C:
+			// write timeout
 			client.connection.SetWriteDeadline(time.Now().Add(writeWait))
+
+			// send ping message
 			if err := client.connection.WriteMessage(websocket.PingMessage, []byte {}); err != nil {
+				log.Errorf("Socket ping resulted in error for user: %v (%v)", client.userID, err)
 				return
 			}
 
