@@ -67,14 +67,20 @@ func (player *Player)ClaimTutorialReward(context *util.Context, name string) (to
 				return
 			}
 
+			player.Tutorial[i].Rewarded = true
 			tutorial = &player.Tutorial[i]
 			break
 		}
 	}
 
 	if tutorial == nil {
-		tutorial = &Tutorial{}
-		tutorial.initialize()
+		tutorial = &Tutorial{
+			Name: name,
+			Complete: false,
+			Page: 0,
+			Progress: 0,
+			Rewarded: true,
+		}
 		player.Tutorial = append(player.Tutorial, *tutorial)
 	}
 
@@ -101,7 +107,6 @@ func (player *Player)ClaimTutorialReward(context *util.Context, name string) (to
 
 	player.RankPoints += tutorialReward.RankPoints
 
-	tutorial.Rewarded = true
 	err = player.Save(context)
 
 	return
