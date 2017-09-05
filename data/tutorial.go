@@ -72,8 +72,6 @@ func LoadTutorialRewards(raw []byte) {
 	for i, _ := range container.TutorialRewards {
 		tutorialRewards[container.TutorialRewards[i].Name] = &container.TutorialRewards[i]
 	}
-
-	DebugTutRewards()
 }
 
 func GetTutorialReward(name string) *TutorialReward {
