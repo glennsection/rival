@@ -35,6 +35,9 @@ func ClaimTutorialReward(context *util.Context) {
 	// get player
 	player := GetPlayer(context)
 
+	// remember previous rank
+	context.SetData("previousRankPoints", player.RankPoints)
+
 	tome, reward, err := player.ClaimTutorialReward(context, name)
 	util.Must(err)
 
