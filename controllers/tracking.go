@@ -114,6 +114,10 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, sqlEvent.GetStrField("pageName"), 
 			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
 		util.Must(err)
+	case "tutorialPageExit":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, 
+			sqlEvent.GetStrField("description"),  sqlEvent.GetIntField("pageNumber"), sqlEvent.GetFloatField("duration"))
+		util.Must(err)
 	case "playerBattleSummary":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, 
 			sqlEvent.GetIntField("time"), sqlEvent.GetStrField("leaderCardId"), sqlEvent.GetStrField("endResult"), 
