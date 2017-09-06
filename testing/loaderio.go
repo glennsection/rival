@@ -3,7 +3,6 @@ package testing
 import (
 	"bloodtales/util"
 	"bloodtales/system"
-	"bloodtales/log"
 )
 
 func init() {
