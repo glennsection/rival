@@ -90,6 +90,8 @@ func (player *Player)ClaimTutorialReward(context *util.Context, name string) (to
 	}
 
 	if tutorialReward.TomeID != nil {
+		fmt.Println(fmt.Sprintf("Tutorial %s is rewarding %s", name, data.ToDataName(*tutorialReward.TomeID)))
+
 		_, tome = player.GetEmptyTomeSlot()
 		
 		if tome != nil {
