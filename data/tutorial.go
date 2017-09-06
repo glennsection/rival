@@ -69,8 +69,8 @@ func LoadTutorialRewards(raw []byte) {
 
 	tutorialRewards = map[string]*TutorialReward{}
 
-	for _, reward := range container.TutorialRewards {
-		tutorialRewards[reward.Name] = &reward
+	for i, _ := range container.TutorialRewards {
+		tutorialRewards[container.TutorialRewards[i].Name] = &container.TutorialRewards[i]
 	}
 }
 

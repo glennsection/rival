@@ -175,6 +175,13 @@ func InviteToGuild(context *util.Context) {
 	receiverPlayer, err1 := models.GetPlayerByTag(context, playerTag)
 	util.Must(err1)
 
+	// TODO Use a CONFIG Variable to define level restriction
+	if (receiverPlayer.GetLevel() < 3) {
+		levelErr := util.NewError("Player is not high enough level to join guilds")
+		util.Must(levelErr)
+		return
+	}
+
 	// guild
 	guild, err := models.GetGuildByTag(context, guildTag)
 	util.Must(err)
