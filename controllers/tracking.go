@@ -111,11 +111,11 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 	var err error
 	switch event {
 	case "navigation":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, sqlEvent.GetStrField("pageName"), 
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
 			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
 		util.Must(err)
 	case "tutorialPageExit":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, 
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
 			sqlEvent.GetStrField("description"),  sqlEvent.GetIntField("pageNumber"), sqlEvent.GetFloatField("duration"))
 		util.Must(err)
 	case "playerBattleSummary":
@@ -143,8 +143,12 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 			sqlEvent.GetIntField("towerKills"), sqlEvent.GetFloatField("totalUnitTime"), sqlEvent.GetIntField("totalUnits") )
 		util.Must(err)
 	case "tutorialCompleted":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, 
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
 			sqlEvent.GetStrField("description"),  count, amount)
+		util.Must(err)
+	case "applicationPaused":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
+			sqlEvent.GetStrField("description"),  sqlEvent.GetIntField("pageNumber"), sqlEvent.GetFloatField("duration"))
 		util.Must(err)
 	case "purchase":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, description, count, amount)
