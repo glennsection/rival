@@ -11,6 +11,13 @@ func Must(err error) {
 	}
 }
 
+func MustIgnoreNotFound(err error) {
+	// simply panic if error exists, and isn't "not found"
+	if err != nil && err.Error() != "not found" {
+		panic(err)
+	}
+}
+
 func IsNil(value interface{}) bool {
 	defer func() { recover() }()
 	return value == nil || reflect.ValueOf(value).IsNil()

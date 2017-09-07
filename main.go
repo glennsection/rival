@@ -5,6 +5,7 @@ import (
 	"bloodtales/util"
 	"bloodtales/controllers"
 	"bloodtales/admin"
+	_ "bloodtales/testing"
 )
 
 func main() {

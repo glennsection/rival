@@ -229,8 +229,32 @@ func (user *User) AppendCredentials(context *util.Context, credentials []Credent
 }
 
 func (user *User) GetCredentialsString() (string) {
-	credentialStrings := make([]string, len(user.Credentials))
-	for i, credential := range user.Credentials {
+	var deviceStrings []string
+	i := 0
+
+	if len(user.Credentials) > 0 {
+		deviceStrings = make([]string, len(user.Devices) + 1)
+		deviceStrings[i] = fmt.Sprintf("[*: %s]", formatCredentialsString(user.Credentials))
+		i += 1
+	} else {
+		deviceStrings = make([]string, len(user.Devices))
+	}
+
+	for _, device := range user.Devices {
+		if len(device.Credentials) > 0 {
+			deviceCredentials := formatCredentialsString(device.Credentials)
+			deviceStrings[i] = fmt.Sprintf("[%s: %s]", device.ID, deviceCredentials)
+		} else {
+			deviceStrings[i] = fmt.Sprintf("[%s]", device.ID)
+		}
+		i += 1
+	}
+	return strings.Join(deviceStrings, ", ")
+}
+
+func formatCredentialsString(credentials []Credential) (string) {
+	credentialStrings := make([]string, len(credentials))
+	for i, credential := range credentials {
 		credentialStrings[i] = fmt.Sprintf("%s: %s", credential.Provider, credential.ID)
 	}
 	return strings.Join(credentialStrings, ", ")

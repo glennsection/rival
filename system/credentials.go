@@ -20,6 +20,7 @@ func authenticateCredentials(context *util.Context, required bool) (err error) {
 		// login using player tag
 		if token == config.Config.Authentication.DebugToken {
 			user, err = models.GetUserByTag(context, tag)
+			util.MustIgnoreNotFound(err)
 
 			if user != nil {
 				SetUser(context, user)
@@ -53,6 +54,7 @@ func authenticateCredentials(context *util.Context, required bool) (err error) {
 
 			// find user with device UUID
 			user, err = models.GetUserByDevice(context, uuid)
+			util.MustIgnoreNotFound(err)
 
 			// check if we need to create or update a new user
 			if user != nil {
