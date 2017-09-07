@@ -2,6 +2,8 @@ package util
 
 import (
 	"reflect"
+
+	"gopkg.in/mgo.v2"
 )
 
 func Must(err error) {
