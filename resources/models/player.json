@@ -5,25 +5,11 @@
     "winCount": 0,
     "lossCount": 0,
     "matchCount": 0,
-    "standardCurrency": 2000,
+    "standardCurrency": 1000,
     "premiumCurrency": 100,
     "cards": [
         {
-            "cardId": "CARD_GOLEM",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_GREMLINS",
-            "level": 1,
-            "cardCount": 0,
-            "winCount": 0,
-            "leaderWinCount": 0
-        },
-        {
-            "cardId": "CARD_MERC_SOLDIERS",
+            "cardId": "CARD_MERC_CAPTAIN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -37,14 +23,28 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_SPELL_SPIKES",
+            "cardId": "CARD_MERC_SOLDIERS",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_HELLHOUND",
+            "cardId": "CARD_SPELL_FROST_ORB",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_BOMB_ZOMBIE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_LIGHTNING_SWORD",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -58,7 +58,112 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_MERC_CAPTAIN",
+            "cardId": "CARD_HELLHOUND",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_VAMPIRE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MARKSMAN",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GARGOYLE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GOLEM",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_EARTH_ELEMENTAL",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_WEREWOLF",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_DARK_MAGE",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_FRANKENSTEIN",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_GREMLINS",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_AUTOMATON",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MANA_GENERATOR",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_SPELL_SPIKES",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_FARMER",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_WILDLING_ARCHER",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_FARMER_HOUSE",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -70,30 +175,24 @@
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_MYSTIC",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
         }
     ],
     "decks": [
         {
-            "leaderCardId": "CARD_GOLEM",
+            "leaderCardId": "CARD_MERC_CAPTAIN",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_GREMLINS",
-                "CARD_MERC_CAPTAIN",
-                "CARD_SPELL_SPIKES",
-                "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
-                "CARD_DWARVES"
-            ]
-        },
-        {
-            "leaderCardId": "CARD_ARMORED_SKELETON",
-            "cardIds": [
-                "CARD_GOLEM",
-                "CARD_MERC_SOLDIERS",
-                "CARD_GREMLINS",
-                "CARD_MERC_CAPTAIN",
-                "CARD_SPELL_SPIKES",
+                "CARD_SPELL_FROST_ORB",
+                "CARD_BOMB_ZOMBIE",
+                "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
                 "CARD_HELLHOUND",
                 "CARD_DWARVES"
@@ -104,16 +203,28 @@
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
                 "CARD_MERC_SOLDIERS",
-                "CARD_GREMLINS",
-                "CARD_GOLEM",
-                "CARD_SPELL_SPIKES",
+                "CARD_SPELL_FROST_ORB",
+                "CARD_BOMB_ZOMBIE",
+                "CARD_LIGHTNING_SWORD",
+                "CARD_SKULL_SWARM",
+                "CARD_HELLHOUND",
+                "CARD_DWARVES"
+            ]
+        },
+        {
+            "leaderCardId": "CARD_MERC_CAPTAIN",
+            "cardIds": [
+                "CARD_ARMORED_SKELETON",
+                "CARD_MERC_SOLDIERS",
+                "CARD_SPELL_FROST_ORB",
+                "CARD_BOMB_ZOMBIE",
+                "CARD_LIGHTNING_SWORD",
                 "CARD_SKULL_SWARM",
                 "CARD_HELLHOUND",
                 "CARD_DWARVES"
             ]
         }
     ],
-    "uncollectedCards": [],
     "currentDeck": 0,
     "tomes": [
         {
@@ -130,13 +241,13 @@
             "tomeId": "Invalid",
             "state": "Empty",
             "unlockTime": 0
+        },
+        {
+            "tomeId": "Invalid",
+            "state": "Empty",
+            "unlockTime": 0
         }
     ],
-    "activeTome": {
-        "tomeId": "Invalid",
-        "state": "Empty",
-        "unlockTime": 0
-    },
     "arenaPoints": 0,
     "arenaTomeUnlockTime": 0,
     "freeTomes": 0,
@@ -145,5 +256,5 @@
     "quests": [],
     "friends": [],
     "tutorial": [],
-    "tutorialDisabled": false
+    "tutorialDisabled": true
 }
