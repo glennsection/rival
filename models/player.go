@@ -65,9 +65,11 @@ type Player struct {
 
 	Quests     				[]Quest 		`bson:"qu" json:"quests"`
 	QuestClearTime 			int64       	`bson:"qc" json:"questClearTime"`
+	
 
 	GuildID   				bson.ObjectId 	`bson:"gd,omitempty" json:"-"`
 	GuildRole 				GuildRole     	`bson:"gr,omitempty" json:"-"`
+	GuildJoinTime			time.Time		`bson:"gj" json:"-"`
 
 	TutorialDisabled		bool			`bson:"td" json:"tutorialDisabled"`
 	Tutorial 				[]Tutorial 		`bson:"tl" json:"tutorial"`
@@ -91,6 +93,7 @@ type PlayerClient struct {
 
 	GuildTag                string          `json:"guildTag"`
 	GuildRole 				string  		`json:"guildRole"`
+	GuildJoinTime			time.Time		`json:"guildJoinTime"`
 
 	Online     				bool  			`json:"online"`
 	LastOnline 				int64 			`json:"lastOnline"`

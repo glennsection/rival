@@ -1,6 +1,7 @@
 package models
 
 import (
+	"time"
 	"fmt"
 
 	"gopkg.in/mgo.v2"
@@ -179,6 +180,7 @@ func CreateGuild(context *util.Context, owner *Player, name string, iconId strin
 	// set guild and role for player
 	owner.GuildID = guild.ID
 	owner.GuildRole = GuildOwner
+	owner.GuildJoinTime = time.Now().UTC()
 	err = owner.Save(context)
 	if err != nil {
 		return
@@ -208,6 +210,7 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 
 	player.GuildID = guild.ID
 	player.GuildRole = GuildMember
+	player.GuildJoinTime = time.Now().UTC()
 	player.Save(context)
 	player.SetDirty(PlayerDataMask_Guild)
 	return
@@ -228,9 +231,10 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 		err = context.DB.C(PlayerCollectionName).Find(bson.M{"gd": guild.ID}).All(&memberPlayers)
 		util.Must(err)
 
-		// Find member of highest rank
+		// Find member of highest rank first
 		highestRank := GuildMember
 		var highestRankPlayer *Player
+		var highestRankPlayers []*Player
 		for _, memberPlayer := range memberPlayers {
 			if memberPlayer.ID != player.ID {
 				if (highestRankPlayer == nil) {
@@ -239,8 +243,31 @@ func RemoveMember(context *util.Context, player *Player, guild *Guild) (err erro
 				} else if (memberPlayer.GuildRole > highestRank) {
 					highestRankPlayer = memberPlayer
 					highestRank = memberPlayer.GuildRole
+					highestRankPlayers = highestRankPlayers[:0] //Clear matching member rank list since we have a higher rank
+					highestRankPlayers = append(highestRankPlayers, memberPlayer)
+				} else if (memberPlayer.GuildRole == highestRank) {
+					highestRankPlayers = append(highestRankPlayers, memberPlayer)
 				}
 			}
+		}
+
+		// Pick new owner based on UTC time join if multiple users of same highest rank
+		if (len(highestRankPlayers) > 1) {
+			var earliestJoinPlayer *Player
+			var longestSeconds float64
+			for _, memberPlayer := range highestRankPlayers {
+				if (earliestJoinPlayer == nil) {
+					earliestJoinPlayer = memberPlayer
+					longestSeconds = memberPlayer.GuildJoinTime.Sub(time.Now().UTC()).Seconds()
+				} else {
+					diff := memberPlayer.GuildJoinTime.Sub(time.Now().UTC())
+					if (diff.Seconds() > longestSeconds) {
+						earliestJoinPlayer = memberPlayer
+						longestSeconds = diff.Seconds()
+					}
+				}
+			}
+			highestRankPlayer = earliestJoinPlayer
 		}
 
 		if (highestRankPlayer.GuildID.Valid()) {
