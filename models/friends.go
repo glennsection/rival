@@ -42,7 +42,7 @@ func GetFriendsByPlayerId(context *util.Context, playerID bson.ObjectId, allowCr
 	// find friends by player ID
 	err = context.DB.C(FriendsCollectionName).Find(bson.M { "pid": playerID } ).One(&friends)
 
-	if err != nil && err.Error() == "not found" {
+	if err == mgo.ErrNotFound {
 		err = nil
 
 		if allowCreate {

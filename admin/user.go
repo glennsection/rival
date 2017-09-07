@@ -73,11 +73,7 @@ func EditUser(context *util.Context) {
 	util.Must(err)
 
 	player, err := models.GetPlayerByUser(context, userID)
-	if err != nil {
-		if err.Error() != "not found" {
-			panic(err)
-		}
-	}
+	util.MustIgnoreNotFound(err)
 
 	// handle request method
 	switch context.Request.Method {
