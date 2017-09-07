@@ -3,6 +3,10 @@ package util
 import (
 	"time"
 	"log"
+	"os"
+	"runtime"
+	"runtime/pprof"
+	_ "net/http/pprof"
 )
 
 type Profiler struct {
@@ -28,4 +32,30 @@ func Profile(name string, startTime time.Time) {
 	} else {
 		profiler.Handler(name, elapsedTime)
 	}
+}
+
+func StartCPUProfile() {
+	path := Env.GetString("PROFILE_CPU_PATH", "cpu.prf")
+
+	f, err := os.Create(path)
+	Must(err)
+
+	err = pprof.StartCPUProfile(f)
+	Must(err)
+}
+
+func StopCPUProfile() {
+	pprof.StopCPUProfile()
+}
+
+func WriteHeapProfile() {
+	path := Env.GetString("PROFILE_MEM_PATH", "mem.prf")
+
+	f, err := os.Create(path)
+	Must(err)
+	defer f.Close()
+
+	runtime.GC()
+	err = pprof.WriteHeapProfile(f)
+	Must(err)
 }
