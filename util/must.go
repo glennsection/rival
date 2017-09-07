@@ -13,7 +13,7 @@ func Must(err error) {
 
 func MustIgnoreNotFound(err error) {
 	// simply panic if error exists, and isn't "not found"
-	if err != nil && err.Error() != "not found" {
+	if err != nil && err != mgo.ErrNotFound {
 		panic(err)
 	}
 }
