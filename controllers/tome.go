@@ -68,7 +68,7 @@ func OpenTome(context *util.Context) {
 	reward, err := player.AddTomeRewards(context, &player.ActiveTome)
 	util.Must(err)
 
-	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
 
 	if util.HasSQLDatabase() {
@@ -125,7 +125,7 @@ func RushTome(context *util.Context) {
 	reward, err := player.AddTomeRewards(context, tome)
 	util.Must(err)
 
-	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
 
 	if util.HasSQLDatabase() {
@@ -155,7 +155,7 @@ func ClaimFreeTome(context *util.Context) {
 			"gemsSpent": 0}, 0)
 	}
 
-	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
 
 	if util.HasSQLDatabase() {
@@ -185,7 +185,7 @@ func ClaimArenaTome(context *util.Context) {
 			"gemsSpent": 0}, 0)
 	}
 
-	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes)
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
 
 	if util.HasSQLDatabase() {

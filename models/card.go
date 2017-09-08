@@ -118,6 +118,12 @@ func (player *Player) AddCards(id data.DataId, num int) {
 
 	player.Cards = append(player.Cards, card)
 
+	for i := range player.Decks {
+		if len(player.Decks[i].CardIDs) < 8 {
+			player.Decks[i].CardIDs = append(player.Decks[i].CardIDs, id)
+		}
+	}
+
 	for i, _ := range player.UncollectedCards {
 		if id == player.UncollectedCards[i] {
 			length := len(player.UncollectedCards)
