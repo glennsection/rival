@@ -1,12 +1,12 @@
 {
-    "xp": 5300,
+    "xp": 0,
     "rankPoints": 0,
     "rating": 1200,
     "winCount": 0,
     "lossCount": 0,
     "matchCount": 0,
-    "standardCurrency": 20000,
-    "premiumCurrency": 1000,
+    "standardCurrency": 1000,
+    "premiumCurrency": 100,
     "cards": [
         {
             "cardId": "CARD_MERC_CAPTAIN",
