@@ -486,6 +486,7 @@ func GuildBattle(context *util.Context) {
 	data := map[string]interface{}{
 		"roomId": roomID,
 		"arenaName": arenaName,
+		"matchStarted": false,
 	}
 	expiresAt := time.Now().Add(time.Hour)
 
@@ -499,13 +500,18 @@ func GuildBattle(context *util.Context) {
 }
 
 func respondGuildBattle(context *util.Context, notification *models.Notification, action string) {
-	if action == "accept" {
+	if action == "accept" && notification.Data["matchStarted"] == false{
 		// create private match
 		roomID := notification.Data["roomId"].(string)
 		arenaName := notification.Data["arenaName"].(string)
 		player := GetPlayer(context)
+		notification.Data["matchStarted"] = true
 		_, err := models.StartPrivateMatch(context, notification.SenderID, player.ID, models.MatchRanked, roomID, arenaName)
 		util.Must(err)
+	} else {
+		err := util.NewError("Guild Battle has Already Begun")
+		util.Must(err)
+		return
 	}
 }
 
