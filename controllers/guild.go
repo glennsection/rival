@@ -135,12 +135,25 @@ func GetGuilds(context *util.Context) {
 	}
 
 	var guildClients []*models.GuildClient
+	var deleteGuilds []*models.Guild
 	for _, guild := range guilds {
 		guildClient, err2 := guild.CreateGuildClient(context)
 		util.Must(err2)
 
-		guildClients = append(guildClients, guildClient)
+		// This should only need to be done because of resetting user data
+		if (len(guildClient.Members) == 0) {
+			deleteGuilds = append(deleteGuilds, guild)
+		} else {
+			guildClients = append(guildClients, guildClient)
+		}
+		
 	}
+
+	//Remove any empty guildds
+	for i := len(deleteGuilds)-1; i >= 0; i-- {
+		deleteGuilds[i].Delete(context)
+		fmt.Printf("Deleting Empty Guild")
+	 }
 
 	// result
 	context.SetData("guilds", guildClients)
