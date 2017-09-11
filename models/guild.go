@@ -181,13 +181,17 @@ func CreateGuild(context *util.Context, owner *Player, name string, iconId strin
 	owner.GuildID = guild.ID
 	owner.GuildRole = GuildOwner
 	owner.GuildJoinTime = time.Now().UTC()
+
+	// set initial guild tome unlock time for owner
+	owner.GuildTomeUnlockTime = util.TimeToTicks(util.GetDateInNDays(owner.TimeZone, 1))
+
 	err = owner.Save(context)
 	if err != nil {
 		return
 	}
 
 	// set dirty for return data
-	owner.SetDirty(PlayerDataMask_Guild)
+	owner.SetDirty(PlayerDataMask_Guild, PlayerDataMask_Tomes)
 	return
 }
 
@@ -205,6 +209,9 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 		util.Must(err)
 		return err
 	}
+
+	// set initial guild tome unlock time for owner
+	player.GuildTomeUnlockTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1))
 
 	err = guild.Save(context)
 
