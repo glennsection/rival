@@ -338,3 +338,7 @@ func (guild *Guild) GetLevel() int {
 	// TODO - different function for guilds?
 	return data.GetAccountLevel(guild.XP)
 }
+
+func (player *Player) IsInGuild() bool {
+	return player.GuildID != bson.ObjectId("")
+}
