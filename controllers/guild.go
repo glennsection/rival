@@ -521,6 +521,8 @@ func respondGuildBattle(context *util.Context, notification *models.Notification
 		notification.Data["matchStarted"] = true
 		_, err := models.StartPrivateMatch(context, notification.SenderID, player.ID, models.MatchRanked, roomID, arenaName)
 		util.Must(err)
+	} else if (action == "cancel") {
+		
 	} else {
 		err := util.NewError("Guild Battle has Already Begun")
 		util.Must(err)
