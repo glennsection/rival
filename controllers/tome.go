@@ -143,7 +143,7 @@ func ClaimArenaTome(context *util.Context) {
 
 func ClaimGuildTome(context *util.Context) {
 	player := GetPlayer(context)
-	reward, err := player.ClaimArenaTome(context)
+	reward, err := player.ClaimGuildTome(context)
 	util.Must(err)
 
 	if reward == nil {
