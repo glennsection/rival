@@ -61,6 +61,7 @@ type Player struct {
 	ArenaTomeUnlockTime 	int64 			`bson:"au" json:"arenaTomeUnlockTime"`
 	FreeTomes          		int    			`bson:"ft" json:"freeTomes"`
 	FreeTomeUnlockTime 		int64  			`bson:"fu" json:"freeTomeUnlockTime"`
+	GuildTomeUnlockTime 	int64 			`bson:"gu" json:"guildTomeUnlockTime"`
 	VictoryTomeCount 		int 			`bson:"vt"`
 
 	Quests     				[]Quest 		`bson:"qu" json:"quests"`
@@ -419,6 +420,10 @@ func (player *Player) AddVictoryTome(context *util.Context) (index int, tome *To
 	return index, tome
 }
 
+func (player *Player) GetLeague() data.League {
+	return data.GetLeague(data.GetRank(player.RankPoints).Level)
+}
+
 func (player *Player) GetDrawCount() int {
 	return player.MatchCount - player.WinCount - player.LossCount
 }
@@ -539,12 +544,15 @@ func (player *Player) MarshalDirty(context *util.Context) *map[string]interface{
 	}
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Tomes) {
+		currentTime := util.TimeToTicks(time.Now().UTC())
+
 		dataMap["tomes"] = player.Tomes
 		dataMap["activeTome"] = &player.ActiveTome
 		dataMap["arenaPoints"] = player.ArenaPoints
-		dataMap["arenaTomeUnlockTime"] = player.ArenaTomeUnlockTime - util.TimeToTicks(time.Now().UTC())
+		dataMap["arenaTomeUnlockTime"] = player.ArenaTomeUnlockTime - currentTime
 		dataMap["freeTomes"] = player.FreeTomes
-		dataMap["freeTomeUnlockTime"] = player.FreeTomeUnlockTime - util.TimeToTicks(time.Now().UTC())
+		dataMap["freeTomeUnlockTime"] = player.FreeTomeUnlockTime - currentTime
+		dataMap["guildTomeUnlockTime"] = player.GuildTomeUnlockTime - currentTime
 	}
 
 	if util.CheckMask(dirtyMask, PlayerDataMask_Stars) {
