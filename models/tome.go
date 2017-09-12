@@ -268,7 +268,7 @@ func (player *Player) ClaimFreeTome(context *util.Context) (tomeReward *Reward, 
 
 	player.FreeTomes--
 
-	tomeReward = player.GetReward(data.ToDataId("TOME_FREE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level), player.GetLevel())
+	tomeReward = player.GetReward(data.ToDataId("TOME_FREE_REWARD"), player.GetLeague(), player.GetLevel())
 	err = player.AddRewards(tomeReward, context)
 
 	return
@@ -282,7 +282,29 @@ func (player *Player) ClaimArenaTome(context *util.Context) (tomeReward *Reward,
 	player.ArenaPoints = 0
 	player.ArenaTomeUnlockTime = util.TimeToTicks(time.Now().UTC().Add(time.Duration(data.GameplayConfig.BattleTomeCooldown) * time.Second))
 
-	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"), data.GetLeague(data.GetRank(player.RankPoints).Level), player.GetLevel())
+	tomeReward = player.GetReward(data.ToDataId("TOME_BATTLE_REWARD"), player.GetLeague(), player.GetLevel())
+	err = player.AddRewards(tomeReward, context)
+
+	return
+}
+
+func (player *Player) ClaimGuildTome(context *util.Context) (tomeReward *Reward, err error) {
+	if !player.IsInGuild() || time.Now().UTC().Before(util.TicksToTime(player.GuildTomeUnlockTime)) { 
+		return
+	}
+
+	player.GuildTomeUnlockTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1))
+
+	var guild *Guild
+	guild, err = GetGuildById(context, player.GuildID)
+	multiplier := 1 + (float64(guild.MemberCount) / float64(data.GameplayConfig.GuildMemberLimit))
+
+	tomeReward = player.GetReward(data.ToDataId("TOME_GUILD_REWARD"), player.GetLeague(), player.GetLevel())
+
+	for i := range tomeReward.NumRewarded {
+		tomeReward.NumRewarded[i] = int(math.Floor(float64(tomeReward.NumRewarded[i]) * multiplier))
+	}
+
 	err = player.AddRewards(tomeReward, context)
 
 	return
