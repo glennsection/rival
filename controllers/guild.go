@@ -42,17 +42,20 @@ func CreateGuild(context *util.Context) {
 	player := GetPlayer(context)
 
 	//Make sure player has enough currency to purchase
-	if player.StandardCurrency < models.GuildCreationCost {
+	if player.StandardCurrency < data.GameplayConfig.GuildCreationCost {
 		context.Fail("Insufficient funds")
 		return
 	}
-	player.StandardCurrency -= models.GuildCreationCost
 
+	//Check name and description for validity
+	if (len(name) < data.GameplayConfig.MinGuildNameLength) {
+		context.Fail(fmt.Sprintf("Guild Name must be shorter than %d characters", data.GameplayConfig.MaxGuildNameLength))
+		return;
+	}
 	if (len(name) > data.GameplayConfig.MaxGuildNameLength) {
 		context.Fail(fmt.Sprintf("Guild Name must be shorter than %d characters", data.GameplayConfig.MaxGuildNameLength))
 		return;
 	}
-
 	if (len(description) > data.GameplayConfig.MaxGuildDescriptionLength) {
 		context.Fail(fmt.Sprintf("Guild Description must be shorter than %d characters", data.GameplayConfig.MaxGuildDescriptionLength))
 		return;
@@ -72,7 +75,7 @@ func CreateGuild(context *util.Context) {
 			},
 		}).All(&guilds))
 	}
-	fmt.Printf("Length of Guilds with same name: %d", len(guilds))
+
 	if len(guilds) > 0 {
 		//Return invalid name
 		err := util.NewError("Guild name is already taken. Please choose another")
@@ -83,6 +86,8 @@ func CreateGuild(context *util.Context) {
 	// create guild
 	guild, err := models.CreateGuild(context, player, name, iconId, description, private)
 	util.Must(err)
+
+	player.StandardCurrency -= data.GameplayConfig.GuildCreationCost
 
 	SendNotification(context, player, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
