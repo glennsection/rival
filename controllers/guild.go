@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/system"
 	"bloodtales/util"
@@ -46,6 +47,16 @@ func CreateGuild(context *util.Context) {
 		return
 	}
 	player.StandardCurrency -= models.GuildCreationCost
+
+	if (len(name) > data.GameplayConfig.MaxGuildNameLength) {
+		context.Fail(fmt.Sprintf("Guild Name must be shorter than %d characters", data.GameplayConfig.MaxGuildNameLength))
+		return;
+	}
+
+	if (len(description) > data.GameplayConfig.MaxGuildDescriptionLength) {
+		context.Fail(fmt.Sprintf("Guild Description must be shorter than %d characters", data.GameplayConfig.MaxGuildDescriptionLength))
+		return;
+	}
 
 	// TODO - make sure player doesn't already own a guild...
 
