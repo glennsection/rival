@@ -6,6 +6,7 @@ import (
 	"bloodtales/system"
 	"bloodtales/models"
 	"bloodtales/util"
+	"bloodtales/data"
 )
 
 func handleMatch() {
@@ -56,6 +57,8 @@ func MatchResult(context *util.Context) {
 
 	// remember previous rank
 	context.SetData("previousRankPoints", player.RankPoints)
+	oldRank := data.GetRank(player.RankPoints).Level
+	oldLeagueId := data.GetLeagueData(data.GetLeague(oldRank)).ID
 	
 	// update match as complete
 	_, reward, err := models.CompleteMatch(context, player, roomID, outcome, playerScore, opponentScore)
@@ -64,5 +67,15 @@ func MatchResult(context *util.Context) {
 	if reward != nil {
 		player.SetDirty(models.PlayerDataMask_Tomes, models.PlayerDataMask_Stars, models.PlayerDataMask_Quests, models.PlayerDataMask_Cards)
 		context.SetData("reward", reward)
+
+		newRank := data.GetRank(player.RankPoints).Level
+		newLeagueId := data.GetLeagueData(data.GetLeague(newRank)).ID
+		rankChange := float64(newRank - oldRank)
+
+		if util.HasSQLDatabase() {
+			InsertTrackingSQL(context, "rankUpdate", 0, newLeagueId, oldLeagueId, oldRank, rankChange, nil)
+		}else{
+			InsertTracking(context, "rankUpdate", bson.M { "newLeagueId": newLeagueId, "oldLeagueId": oldLeagueId, "oldRank": oldRank, "rankChange": rankChange }, 0)
+		}
 	}
 }
