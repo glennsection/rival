@@ -549,4 +549,6 @@ func UpdateGuildIcon(context *util.Context) {
 
 	err2 := models.UpdateGuildIcon(context, player, guild, iconId)
 	util.Must(err2)
+
+	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
