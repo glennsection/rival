@@ -40,6 +40,8 @@ const (
 type StoreItemData struct {
 	Name                    string
 
+	ProductID 				string
+
 	ItemID                  string
 	Category                StoreCategory
 	RewardIDs 				[]DataId
@@ -61,6 +63,8 @@ type StoreItemData struct {
 type StoreItemDataClientAlias StoreItemData
 type StoreItemDataClient struct {
 	Name                    string        	`json:"id"`
+
+	ProductID 				string 			`json:"productId"`
 
 	ItemID                  string        	`json:"itemId"`
 	Category                string        	`json:"category"`
@@ -120,6 +124,7 @@ func (storeItemData *StoreItemData) UnmarshalJSON(raw []byte) error {
 	}
 
 	storeItemData.Name = client.Name
+	storeItemData.ProductID = client.ProductID
 	storeItemData.ItemID = client.ItemID
 	storeItemData.Cost = client.Cost
 
