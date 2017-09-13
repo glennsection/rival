@@ -327,6 +327,7 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) *StoreIt
 
 	storeCard := &StoreItem {
 		Name: card.Name,
+		ProductID: "",
 		ItemID: card.Name,
 		Category: data.StoreCategoryCards,
 		Currency: data.CurrencyStandard,
