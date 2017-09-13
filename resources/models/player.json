@@ -51,7 +51,7 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_SPELL_SPIKES",
+            "cardId": "CARD_LIGHTNING_SWORD",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -67,7 +67,7 @@
                 "CARD_GREMLINS",
                 "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_LIGHTNING_SWORD"
             ]
         },
         {
@@ -78,7 +78,7 @@
                 "CARD_GREMLINS",
                 "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_LIGHTNING_SWORD"
             ]
         },
         {
@@ -89,7 +89,7 @@
                 "CARD_GREMLINS",
                 "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_LIGHTNING_SWORD"
             ]
         }
     ],

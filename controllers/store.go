@@ -10,10 +10,22 @@ func handleStore() {
 }
 
 func GetStoreOffers(context *util.Context) {
-	player := GetPlayer(context)
-	offers := map[string]interface{}{}
+    player := GetPlayer(context)
 
-	offers["storeItems"] = player.GetCurrentStoreOffers(context)
+    specialOffer := player.Store.SpecialOffer
+    cards := player.Store.Cards
 
-	context.Data = offers
+    context.SetData("storeItems", player.GetCurrentStoreOffers(context))
+
+    if(specialOffer.ExpirationDate != player.Store.SpecialOffer.ExpirationDate) {
+        context.SetData("newSpecialOffer", player.Store.SpecialOffer.Name)
+    }
+	
+	count := 0
+	for i := 0; i < len(cards) - 1; i++ {
+		if (cards[i].ExpirationDate != player.Store.Cards[i].ExpirationDate) {
+			count++
+		}
+	}
+	context.SetData("newCardsCount", count)
 }
