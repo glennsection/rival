@@ -56,7 +56,7 @@ func GetGuildRoleName(guildRole GuildRole) string {
 	case GuildElite:
 		return "Elite"
 	case GuildCoOwner:
-		return "CoOwner"
+		return "Co-Owner"
 	case GuildOwner:
 		return "Owner"
 	}
