@@ -49,7 +49,7 @@ func StopCPUProfile() {
 }
 
 func WriteHeapProfile() {
-	path := Env.GetString("PROFILE_MEM_PATH", "mem.prf")
+	path := Env.GetString("PROFILE_MEM_PATH", "heap.gz")
 
 	f, err := os.Create(path)
 	Must(err)

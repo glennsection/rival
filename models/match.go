@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"bloodtales/config"
 	"bloodtales/data"
 	"bloodtales/util"
 	"bloodtales/log"
@@ -73,6 +74,15 @@ type MatchClient struct {
 	State           string        `json:"state"`
 
 	*MatchClientAlias
+}
+
+// matchmaking ticket
+type MatchTicket struct {
+	PlayerID        string        `json:"pid"`
+	MMR             int           `json:"mmr"`
+	Type            MatchType     `json:"tp"`
+	StartTime       time.Time     `json:"t0"`
+	MatchID         string        `json:"mid"`
 }
 
 // cached match player results
@@ -203,7 +213,7 @@ func (matchResult *MatchResult) String() string {
 	return string(raw)
 }
 
-func GetMatchResultByMatchId(context *util.Context, roomID string) (matchResult *MatchResult, ok bool) {
+func GetMatchResult(context *util.Context, roomID string) (matchResult *MatchResult, ok bool) {
 	// get cache key
 	key := fmt.Sprintf("MatchResult:%s", roomID)
 
@@ -216,12 +226,60 @@ func SetMatchResult(context *util.Context, roomID string, matchResult *MatchResu
 	// get cache key
 	key := fmt.Sprintf("MatchResult:%s", roomID)
 
-	// get cached result
+	// set cached result
 	context.Cache.Set(key, matchResult)
+
+	// expire temp results after some time
+	if matchResult != nil {
+		context.Cache.Expire(key, config.Config.Matches.MatchResultExpire)
+	}
 }
 
 func ClearMatchResult(context *util.Context, roomID string) {
 	SetMatchResult(context, roomID, nil)
+}
+
+func (ticket *MatchTicket) String() string {
+	raw, err := json.Marshal(ticket)
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	return string(raw)
+}
+
+func GetMatchTicket(context *util.Context, playerID bson.ObjectId) (ticket *MatchTicket, ok bool) {
+	// get cache key
+	key := fmt.Sprintf("MatchTicket:%s", playerID.Hex())
+
+	// get cached ticket
+	ok = context.Cache.GetJSON(key, &ticket)
+	return
+}
+
+func AddMatchTicket(context *util.Context, ticket *MatchTicket) {
+	// get cache key
+	key := fmt.Sprintf("MatchTicket:%s", ticket.PlayerID)
+
+	// set cached ticket
+	context.Cache.Set(key, ticket)
+
+	// expire temp ticket after some time
+	context.Cache.Expire(key, config.Config.Matches.MatchTicketExpire)
+
+	// set MMR score
+	context.Cache.SetScore("MMR", ticket.PlayerID, ticket.MMR)
+}
+
+func ClearMatchTicket(context *util.Context, playerID bson.ObjectId) {
+	// get cache key
+	key := fmt.Sprintf("MatchTicket:%s", playerID.Hex())
+
+	// clear cached ticket
+	context.Cache.Set(key, nil)
+
+	// remove MMR score
+	context.Cache.RemoveScore("MMR", playerID.Hex())
 }
 
 func ClearMatches(context *util.Context, playerIDs []bson.ObjectId, states ...MatchState) (err error) {
@@ -258,50 +316,166 @@ func StartPrivateMatch(context *util.Context, hostID bson.ObjectId, guestID bson
 		StartTime: time.Now(),
 	}
 
+	// clear any match tickets
+	ClearMatchTicket(context, hostID)
+	ClearMatchTicket(context, guestID)
+
 	// update database
 	err = match.Save(context)
 	return
 }
 
-func FindPublicMatch(context *util.Context, playerID bson.ObjectId, matchType MatchType) (match *Match, err error) {
-	// verify that no other pending matches exist for player
-	err = ClearMatches(context, []bson.ObjectId { playerID }, MatchOpen, MatchActive)
-	if err != nil {
-		return
+func FindPublicMatch(context *util.Context, player *Player, matchType MatchType) (match *Match, err error) {
+	// check for existing match ticket for player
+	ticket, _ := GetMatchTicket(context, player.ID)
+
+	// check if we need to (re)create this ticket
+	if ticket == nil || ticket.Type != matchType {
+		// verify that no other pending matches exist for player
+		err = ClearMatches(context, []bson.ObjectId { player.ID }, MatchOpen, MatchActive)
+		if err != nil {
+			return
+		}
+
+		// register match ticket for player
+		ticket = &MatchTicket {
+			PlayerID: player.ID.Hex(),
+			MMR: player.MMR,
+			Type: matchType,
+			StartTime: time.Now(),
+			MatchID: "",
+		}
+	} else {
+		// check if this ticket has a match reserved
+		if ticket.MatchID != "" {
+			// get match from database
+			match, err = GetMatchById(context, bson.ObjectIdHex(ticket.MatchID))
+			if err != nil {
+				return
+			}
+
+			// make sure match still exists
+			if match != nil {
+				// clear current ticket
+				ClearMatchTicket(context, player.ID)
+				return
+			} else {
+				// clear match reservation in ticket
+				ticket.MatchID = ""
+			}
+		}
+	}
+	// add or refresh ticket
+	AddMatchTicket(context, ticket)
+
+	// calculate desired max MMR delta based on time elapsed searching for match
+	durationSearching := time.Now().Sub(ticket.StartTime)
+	secondsSearching := int(durationSearching.Seconds())
+	maxMMRDeltas := config.Config.Matches.MaxMMRDeltas
+	maxMMRDelta := 0
+	for i := 0; i < len(maxMMRDeltas); i++ {
+		deltaTime := maxMMRDeltas[i]
+		i++
+		deltaMax := maxMMRDeltas[i]
+		if secondsSearching < deltaTime {
+			break
+		}
+		maxMMRDelta = deltaMax
 	}
 
-	// find existing match
-	err = context.DB.C(MatchCollectionName).Find(bson.M {
-		"id1": bson.M {
-			"$ne": playerID,
-		},
-		"st": MatchOpen,
-		"tp": matchType,
-	}).One(&match)
+	// find matchmaking players within MMR window
+	window := 1 // NOTE FIXME? - should only have to get the players directly adjacent to requesting,
+	// since those are the closest MMRs.  Unless we have other criteria for matching beyond MMR...
+	playerPlace := context.Cache.GetRank("MMR", player.ID.Hex())
+	opponentIds := context.Cache.GetRankRange("MMR", playerPlace - window, playerPlace + window)
 
-	//log.Printf("FindPublicMatch(%v, %v, %v) => %v", playerID, matchType, match)
+	log.Printf("Found tickets: %v with max delta: %v after secs: %v", len(opponentIds), maxMMRDelta, secondsSearching)
 
-	if match != nil {
-		// match players and mark as active
-		match.GuestID = playerID
-		match.State = MatchActive
-		match.StartTime = time.Now()
-		match.Hosting = false
-	} else {
-		// queue new match
-		match = &Match {
-			HostID: playerID,
-			Type: matchType,
-			RoomID: util.GenerateUUID(),
-			Arena: data.GetRandomArena(),
-			State: MatchOpen,
-			StartTime: time.Now(),
-			Hosting: true,
+	// iterate through window to find optimal MMR opponent
+	optimalOpponentId := ""
+	optimalMMRDelta := maxMMRDelta + 1
+	for _, opponentId := range opponentIds {
+		if opponentId != player.ID.Hex() {
+			opponentMMR := context.Cache.GetScore("MMR", opponentId)
+			mmrDelta := (opponentMMR - player.MMR)
+			if mmrDelta < 0 {
+				mmrDelta = -mmrDelta
+			}
+	log.Printf("Checking ticket for: %v with MMR: %v (%v)", opponentId, opponentMMR, mmrDelta)
+			if mmrDelta < optimalMMRDelta {
+				optimalMMRDelta = mmrDelta
+				optimalOpponentId = opponentId
+			}
 		}
 	}
 
-	// update database
-	err = match.Save(context)
+	// check if opponent was found
+	if optimalOpponentId != "" {
+		matchOpponentId := bson.ObjectIdHex(optimalOpponentId)
+
+		// get opponent ticket
+		if opponentTicket, ok := GetMatchTicket(context, matchOpponentId); ok {
+			// create match
+			match = &Match {
+				HostID: player.ID,
+				GuestID: matchOpponentId,
+				Type: matchType,
+				RoomID: util.GenerateUUID(),
+				Arena: data.GetRandomArena(),
+				State: MatchActive,
+				StartTime: time.Now(),
+				Hosting: true,
+			}
+
+			// update match in database
+			err = match.Save(context)
+			if err != nil {
+				return
+			}
+
+			// clear current player ticket
+			ClearMatchTicket(context, player.ID)
+
+			// update opponent ticket reservations for match (TODO - could use sockets here too...)
+			opponentTicket.MatchID = match.ID.Hex()
+			AddMatchTicket(context, opponentTicket)
+		} else {
+			log.Errorf("Failed to find matchmaking ticket for opponent player: %v", optimalOpponentId)
+		}
+	}
+
+	// find existing match in DB
+	// err = context.DB.C(MatchCollectionName).Find(bson.M {
+	// 	"id1": bson.M {
+	// 		"$ne": playerID,
+	// 	},
+	// 	"st": MatchOpen,
+	// 	"tp": matchType,
+	// }).One(&match)
+
+	//log.Printf("FindPublicMatch(%v, %v, %v) => %v", playerID, matchType, match)
+
+	// if match != nil {
+	// 	// match players and mark as active
+	// 	match.GuestID = playerID
+	// 	match.State = MatchActive
+	// 	match.StartTime = time.Now()
+	// 	match.Hosting = false
+	// } else {
+	// 	// queue new match
+	// 	match = &Match {
+	// 		HostID: playerID,
+	// 		Type: matchType,
+	// 		RoomID: util.GenerateUUID(),
+	// 		Arena: data.GetRandomArena(),
+	// 		State: MatchOpen,
+	// 		StartTime: time.Now(),
+	// 		Hosting: true,
+	// 	}
+	// }
+
+	// // update database
+	// err = match.Save(context)
 	return
 }
 
@@ -361,7 +535,7 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 	isLoser := (outcome == MatchLoss)
 
 	// look for cached match result
-	matchResult, foundResult := GetMatchResultByMatchId(context, roomID)
+	matchResult, foundResult := GetMatchResult(context, roomID)
 
 	// assign scores
 	hostScore := playerScore

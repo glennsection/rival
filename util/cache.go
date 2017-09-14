@@ -41,15 +41,20 @@ func (source CacheStreamSource) Set(name string, value interface{}) {
 	}
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
+		PrintStack()
 	}
 }
 
 func (source CacheStreamSource) Get(name string) interface{} {
 	value, err := redis.String(source.redis.Do("GET", name))
-	if err == nil {
-		return value
+	if err != nil {
+		if err != redis.ErrNil {
+			log.Errorf("Redis error: %v", err)
+			PrintStack()
+		}
+		return ""
 	}
-	return ""
+	return value
 }
 
 func init() {
@@ -76,14 +81,14 @@ func init() {
 	// connect and create redis pool
 	redisPool = &redis.Pool {
 		// Maximum number of idle connections in the pool.
-		MaxIdle:   Env.GetInt("REDIS_MAX_IDLE", 80),
+		MaxIdle: Env.GetInt("REDIS_MAX_IDLE", 80),
 
 		// Maximum number of connections allocated by the pool at a given time.
 		// When zero, there is no limit on the number of connections in the pool.
 		MaxActive: Env.GetInt("REDIS_MAX_ACTIVE", 12000),
 
 		// function to create new connection
-		Dial:      func() (redis.Conn, error) {
+		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", redisURL.Host)
 			if err != nil {
 				return nil, err
@@ -139,25 +144,37 @@ func (cache *Cache) Close() {
 	cache.redis.Close()
 }
 
-func (cache *Cache) SetScore(group string, id string, score int) {
-	_, err := cache.redis.Do("ZADD", group, score, id)
+func (cache *Cache) Expire(name string, ttl int) {
+	var err error
+	_, err = cache.redis.Do("EXPIRE", name, ttl)
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
+		PrintStack()
 	}
 }
 
-func (cache *Cache) GetScore(group string, id string) int {
-	result, err := redis.Int(cache.redis.Do("ZSCORE", group, id))
+func (cache *Cache) SetScore(group string, name string, score int) {
+	_, err := cache.redis.Do("ZADD", group, score, name)
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
+		PrintStack()
+	}
+}
+
+func (cache *Cache) GetScore(group string, name string) int {
+	result, err := redis.Int(cache.redis.Do("ZSCORE", group, name))
+	if err != nil {
+		log.Errorf("Redis error: %v", err)
+		PrintStack()
 	}
 	return result
 }
 
-func (cache *Cache) RemoveScore(group string, id string) {
-	_, err := cache.redis.Do("ZREM", group, id)
+func (cache *Cache) RemoveScore(group string, name string) {
+	_, err := cache.redis.Do("ZREM", group, name)
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
+		PrintStack()
 	}
 }
 
@@ -165,13 +182,15 @@ func (cache *Cache) ClearScores(group string) {
 	_, err := cache.redis.Do("DEL", group)
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
+		PrintStack()
 	}
 }
 
-func (cache *Cache) GetRank(group string, id string) int {
-	result, err := redis.Int(cache.redis.Do("ZRANK", group, id))
+func (cache *Cache) GetRank(group string, name string) int {
+	result, err := redis.Int(cache.redis.Do("ZRANK", group, name))
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
+		PrintStack()
 	}
 	return result
 }
@@ -180,6 +199,7 @@ func (cache *Cache) GetRankRange(group string, start int, stop int) []string {
 	result, err := redis.Strings(cache.redis.Do("ZREVRANGE", group, start, stop))
 	if err != nil {
 		log.Errorf("Redis error: %v", err)
+		PrintStack()
 	}
 	return result
 }

@@ -44,6 +44,7 @@ type Player struct {
 	XP         				int           	`bson:"xp" json:"xp"`
 	RankPoints 				int           	`bson:"rk" json:"rankPoints"`
 	Rating     				int           	`bson:"rt" json:"rating"`
+	MMR                     int             `bson:"mmr" json:"-"`
 
 	WinCount   				int 			`bson:"wc" json:"winCount"`
 	LossCount  				int 			`bson:"lc" json:"lossCount"`
@@ -65,11 +66,10 @@ type Player struct {
 
 	Quests     				[]Quest 		`bson:"qu" json:"quests"`
 	QuestClearTime 			int64       	`bson:"qc" json:"questClearTime"`
-	
 
 	GuildID   				bson.ObjectId 	`bson:"gd,omitempty" json:"-"`
 	GuildRole 				GuildRole     	`bson:"gr,omitempty" json:"-"`
-	GuildJoinTime			time.Time		`bson:"gj" json:"-"`
+	GuildJoinTime           time.Time       `bson:"gj" json:"-"`
 
 	TutorialDisabled		bool			`bson:"td" json:"tutorialDisabled"`
 	Tutorial 				[]Tutorial 		`bson:"tl" json:"tutorial"`
@@ -93,7 +93,7 @@ type PlayerClient struct {
 
 	GuildTag                string          `json:"guildTag"`
 	GuildRole 				string  		`json:"guildRole"`
-	GuildJoinTime			time.Time		`json:"guildJoinTime"`
+	GuildJoinTime           time.Time       `json:"guildJoinTime"`
 
 	Online     				bool  			`json:"online"`
 	LastOnline 				int64 			`json:"lastOnline"`
@@ -235,6 +235,7 @@ func (player *Player) Reset(context *util.Context, development bool) (err error)
 	context.Cache.Set(fmt.Sprintf("PlayerUserId:%s", playerID), nil)
 	context.Cache.Set(fmt.Sprintf("PlayerName:%s", playerID), nil)
 	context.Cache.Set(fmt.Sprintf("UserName:%s", userID), nil)
+	context.Cache.Set(fmt.Sprintf("MatchTicket:%s", playerID), nil)
 	context.Cache.RemoveScore("Leaderboard", playerID)
 
 	player.GuildID = bson.ObjectId("")
@@ -467,6 +468,10 @@ func (player *Player) UpdatePlace(context *util.Context) {
 
 		score := winsFactor + matchesFactor + pointsFactor
 		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
+
+		// set MMR
+		player.MMR = score * 100 // TODO
+		player.Save(context)
 	}
 }
 

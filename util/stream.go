@@ -328,6 +328,8 @@ func (stream *Stream) GetJSON(name string, result interface{}) bool {
 			err := json.Unmarshal(raw, result)
 			if err == nil {
 				return true
+			} else {
+				panic(invalidStreamValue(name, stringValue, err))
 			}
 		}
 	}

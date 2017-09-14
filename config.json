@@ -21,5 +21,10 @@
 	},
 	"Logging": {
 		"Requests": "BriefLogging"
+	},
+	"Matches": {
+		"MatchTicketExpire": 30,
+		"MatchResultExpire": 60,
+		"MaxMMRDeltas": [0, 1000, 5, 5000, 10, 10000]
 	}
 }

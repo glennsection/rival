@@ -31,7 +31,7 @@ func MatchFind(context *util.Context) {
 	player := GetPlayer(context)
 
 	// find or queue match
-	match, err := models.FindPublicMatch(context, player.ID, matchType)
+	match, err := models.FindPublicMatch(context, player, matchType)
 	util.Must(err)
 
 	// respond

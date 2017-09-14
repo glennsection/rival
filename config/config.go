@@ -16,28 +16,33 @@ const (
 
 type Configuration struct {
 	Platform struct {
-		Version           string           `json:"Version"`
+		Version             string
 	}
 	Authentication struct {
-		TokenSecret       string           `json:"TokenSecret"`
-		TokenExpiration   time.Duration    `json:"TokenExpiration,int"`
+		TokenSecret         string
+		TokenExpiration     time.Duration    `json:"TokenExpiration,int"`
 
-		DebugToken        string           `json:"DebugToken"`
+		DebugToken          string
 
-		AdminUsername     string           `json:"AdminUsername"`
-		AdminPassword     string           `json:"AdminPassword"`
+		AdminUsername       string
+		AdminPassword       string
 
-		OAuthID           string           `json:"OAuthID"`
-		OAuthSecret       string           `json:"OAuthSecret"`
-		OAuthStateToken   string           `json:"OAuthStateToken"`
-	}                                      `json:"Authentication"`
+		OAuthID             string
+		OAuthSecret         string
+		OAuthStateToken     string
+	}
 	Sessions struct {
-		CookieSecret      string           `json:"CookieSecret"`
-		OfflineTimeout    time.Duration    `json:"OfflineTimeout,int"`
-	}                                      `json:"Sessions"`
+		CookieSecret        string
+		OfflineTimeout      time.Duration    `json:"OfflineTimeout,int"`
+	}
 	Logging struct {
-		Requests          LogLevel         `json:"Requests"`
-	}                                      `json:"Logging"`
+		Requests            LogLevel
+	}
+	Matches struct {
+		MatchTicketExpire   int
+		MatchResultExpire   int
+		MaxMMRDeltas        []int
+	}
 }
 
 var Config Configuration

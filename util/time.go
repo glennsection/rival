@@ -20,15 +20,20 @@ func TicksToTime(ticks int64) time.Time {
 	return time.Unix(sec, nticks * 100)
 }
 
-func TimeToTicks(time time.Time) int64 {
+func TimeToTicks(t time.Time) int64 {
 	// 1 tick = 100 nanoseconds
-	nsec := time.UnixNano()
+	nsec := t.UnixNano()
 	return nsec / 100
 }
 /*
-func DeltaTimeToTicks(time time.Time) int64 {
-	return TimeToTicks(time) - TimeToTicks(time.Now().UTC())
+func DeltaTimeToTicks(t time.Time) int64 {
+	return TimeToTicks(t) - TimeToTicks(time.Now().UTC())
 }*/
+
+func TicksSince(t time.Time) int64 {
+	duration := time.Now().Sub(t)
+	return DurationToTicks(duration)
+}
 
 func DurationToTicks(duration time.Duration) int64 {
 	// 1 tick = 100 nanoseconds
