@@ -57,17 +57,43 @@ func handleTracking() {
 
 func PostTracking(context *util.Context) {
 	// parse parameters
-	// db := context.Params.GetString("db", "mongo")
-	event := context.Params.GetRequiredString("event")
-	dataJson := context.Params.GetString("data", "")
-	expireAfterHours := context.Params.GetInt("expire", 0)
+	trackings := context.Params.GetString("trackings", "")
+	if trackings != "" {
+		var trackingsArray []bson.M
+		util.Must(json.Unmarshal([]byte(trackings), &trackingsArray))
 
-	// process data
-	var data bson.M = nil
-	if dataJson != "" {
-		util.Must(json.Unmarshal([]byte(dataJson), &data))
+		for _, trackingValues := range trackingsArray {
+			event := ""
+			if v, ok := trackingValues["event"]; ok {
+				event = v.(string)
+			}
+			var data bson.M = nil
+			if v, ok := trackingValues["data"]; ok {
+				data = v.(bson.M)
+			}
+			expireAfterHours := 0
+			if v, ok := trackingValues["expire"]; ok {
+				expireAfterHours = v.(int)
+			}
+
+			postTracking(context, event, data, expireAfterHours)
+		}
+	} else {
+		event := context.Params.GetRequiredString("event")
+		dataJson := context.Params.GetString("data", "")
+		expireAfterHours := context.Params.GetInt("expire", 0)
+
+		// process data
+		var data bson.M = nil
+		if dataJson != "" {
+			util.Must(json.Unmarshal([]byte(dataJson), &data))
+		}
+
+		postTracking(context, event, data, expireAfterHours)
 	}
+}
 
+func postTracking(context *util.Context, event string, data bson.M, expireAfterHours int) {
 	// insert tracking
 	if util.HasSQLDatabase() {
 		InsertTrackingSQL(context, event, 0, "", "", 0, 0, data)
