@@ -59,7 +59,7 @@ func handleTracking() {
 func PostTracking(context *util.Context) {
 	// parse parameters
 	// db := context.Params.GetString("db", "mongo")
-	
+
 	for i := 0; i < data.GameplayConfig.BatchLimit; i++ {
 		event := context.Params.GetString(fmt.Sprintf("event%d", i), "")
 		if event == "" { //no more events have been sent, so we can break out of our loop
@@ -80,8 +80,6 @@ func PostTracking(context *util.Context) {
 		} else {
 			InsertTracking(context, event, data, 0)
 		}
-
-		fmt.Println(fmt.Sprintf("Batched event #%d processed!", i))
 	}
 }
 
