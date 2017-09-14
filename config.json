@@ -25,6 +25,6 @@
 	"Matches": {
 		"MatchTicketExpire": 30,
 		"MatchResultExpire": 60,
-		"MaxMMRDeltas": [0, 1000, 5, 5000, 10, 10000]
+		"MaxMMRDeltas": [0, 1000, 3, 4000, 6, 7000, 9, 10000, 12, 13000, 15, 16000, 18, 19000, 21, 22000, 24, 25000]
 	}
 }

@@ -340,7 +340,7 @@ func FindPublicMatch(context *util.Context, player *Player, matchType MatchType)
 		// register match ticket for player
 		ticket = &MatchTicket {
 			PlayerID: player.ID.Hex(),
-			MMR: player.MMR,
+			MMR: player.GetMMR(),
 			Type: matchType,
 			StartTime: time.Now(),
 			MatchID: "",
@@ -389,19 +389,16 @@ func FindPublicMatch(context *util.Context, player *Player, matchType MatchType)
 	playerPlace := context.Cache.GetRank("MMR", player.ID.Hex())
 	opponentIds := context.Cache.GetRankRange("MMR", playerPlace - window, playerPlace + window)
 
-	log.Printf("Found tickets: %v with max delta: %v after secs: %v", len(opponentIds), maxMMRDelta, secondsSearching)
-
 	// iterate through window to find optimal MMR opponent
 	optimalOpponentId := ""
 	optimalMMRDelta := maxMMRDelta + 1
 	for _, opponentId := range opponentIds {
 		if opponentId != player.ID.Hex() {
 			opponentMMR := context.Cache.GetScore("MMR", opponentId)
-			mmrDelta := (opponentMMR - player.MMR)
+			mmrDelta := (opponentMMR - ticket.MMR)
 			if mmrDelta < 0 {
 				mmrDelta = -mmrDelta
 			}
-	log.Printf("Checking ticket for: %v with MMR: %v (%v)", opponentId, opponentMMR, mmrDelta)
 			if mmrDelta < optimalMMRDelta {
 				optimalMMRDelta = mmrDelta
 				optimalOpponentId = opponentId
@@ -443,39 +440,6 @@ func FindPublicMatch(context *util.Context, player *Player, matchType MatchType)
 			log.Errorf("Failed to find matchmaking ticket for opponent player: %v", optimalOpponentId)
 		}
 	}
-
-	// find existing match in DB
-	// err = context.DB.C(MatchCollectionName).Find(bson.M {
-	// 	"id1": bson.M {
-	// 		"$ne": playerID,
-	// 	},
-	// 	"st": MatchOpen,
-	// 	"tp": matchType,
-	// }).One(&match)
-
-	//log.Printf("FindPublicMatch(%v, %v, %v) => %v", playerID, matchType, match)
-
-	// if match != nil {
-	// 	// match players and mark as active
-	// 	match.GuestID = playerID
-	// 	match.State = MatchActive
-	// 	match.StartTime = time.Now()
-	// 	match.Hosting = false
-	// } else {
-	// 	// queue new match
-	// 	match = &Match {
-	// 		HostID: playerID,
-	// 		Type: matchType,
-	// 		RoomID: util.GenerateUUID(),
-	// 		Arena: data.GetRandomArena(),
-	// 		State: MatchOpen,
-	// 		StartTime: time.Now(),
-	// 		Hosting: true,
-	// 	}
-	// }
-
-	// // update database
-	// err = match.Save(context)
 	return
 }
 

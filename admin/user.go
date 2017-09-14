@@ -142,10 +142,6 @@ func EditUser(context *util.Context) {
 				player.MatchCount = matchCount
 			}
 
-			mmr := context.Params.GetInt("mmr", -1)
-			if mmr >= 0 {
-				player.MMR = mmr
-			}
 			player.Save(context)
 		}
 

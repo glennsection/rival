@@ -44,7 +44,6 @@ type Player struct {
 	XP         				int           	`bson:"xp" json:"xp"`
 	RankPoints 				int           	`bson:"rk" json:"rankPoints"`
 	Rating     				int           	`bson:"rt" json:"rating"`
-	MMR                     int             `bson:"mmr" json:"-"`
 
 	WinCount   				int 			`bson:"wc" json:"winCount"`
 	LossCount  				int 			`bson:"lc" json:"lossCount"`
@@ -454,6 +453,12 @@ func (player *Player) GetRankName() string {
 	return "Unranked"
 }
 
+func (player *Player) GetMMR() int {
+	// for now, just use rank * 1000
+	rank := player.GetRankData()
+	return rank.Level * 1000
+}
+
 func (player *Player) GetPlace(context *util.Context) int {
 	return context.Cache.GetScore("Leaderboard", player.ID.Hex())
 }
@@ -468,10 +473,6 @@ func (player *Player) UpdatePlace(context *util.Context) {
 
 		score := winsFactor + matchesFactor + pointsFactor
 		context.Cache.SetScore("Leaderboard", player.ID.Hex(), score)
-
-		// set MMR
-		player.MMR = score * 100 // TODO
-		player.Save(context)
 	}
 }
 
