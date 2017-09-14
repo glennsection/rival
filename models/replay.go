@@ -91,6 +91,13 @@ func GetReplayInfosByUser(context *util.Context, userId bson.ObjectId) (replayIn
 	return
 }
 
+func GetAllReplayInfosByUser(context *util.Context, userId bson.ObjectId) (replayInfos []*ReplayInfo, err error) {
+	// find replay infos by user ID
+	//err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).All(&replayInfos)
+	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).Sort("-t0").All(&replayInfos)
+	return
+}
+
 func GetLastReplayInfoByUser(context *util.Context, userId bson.ObjectId) (replayInfo *ReplayInfo, err error) {
 	// find last replay info by user ID
 	err = context.DB.C(ReplayInfoCollectionName).Find(bson.M { "us": userId }).Limit(1).Sort("-t0").One(&replayInfo)

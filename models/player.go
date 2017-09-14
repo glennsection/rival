@@ -224,6 +224,16 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 }
 
 func (player *Player) Reset(context *util.Context, development bool) (err error) {
+		
+	// Remove old replays
+	replayInfos, err := GetAllReplayInfosByUser(context, player.UserID)
+	util.Must(err)
+	
+	for i := len(replayInfos)-1; i > 0; i-- {
+		deleteErr := replayInfos[i].Delete(context)
+		util.Must(deleteErr);
+	}
+	
 	// reset player data values
 	err = player.loadDefaults(development)
 	if err != nil {
@@ -239,7 +249,7 @@ func (player *Player) Reset(context *util.Context, development bool) (err error)
 	context.Cache.RemoveScore("Leaderboard", playerID)
 
 	player.GuildID = bson.ObjectId("")
-
+	
 	// update database
 	return player.Save(context)
 }
