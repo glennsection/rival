@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 	"encoding/json"
 
@@ -58,21 +59,27 @@ func handleTracking() {
 func PostTracking(context *util.Context) {
 	// parse parameters
 	// db := context.Params.GetString("db", "mongo")
-	event := context.Params.GetRequiredString("event")
-	dataJson := context.Params.GetString("data", "")
-	expireAfterHours := context.Params.GetInt("expire", 0)
 
-	// process data
-	var data bson.M = nil
-	if dataJson != "" {
-		util.Must(json.Unmarshal([]byte(dataJson), &data))
-	}
+	for i := 0; i < data.GameplayConfig.BatchLimit; i++ {
+		event := context.Params.GetString(fmt.Sprintf("event%d", i), "")
+		if event == "" { //no more events have been sent, so we can break out of our loop
+			break 
+		}
 
-	// insert tracking
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, event, 0, "", "", 0, 0, data)
-	} else {
-		InsertTracking(context, event, data, expireAfterHours)
+		dataJson := context.Params.GetString(fmt.Sprintf("data%d", i), "")
+	
+		// process data
+		var data bson.M = nil
+		if dataJson != "" {
+			util.Must(json.Unmarshal([]byte(dataJson), &data))
+		}
+	
+		// insert tracking
+		if util.HasSQLDatabase() {
+			InsertTrackingSQL(context, event, 0, "", "", 0, 0, data)
+		} else {
+			InsertTracking(context, event, data, 0)
+		}
 	}
 }
 
