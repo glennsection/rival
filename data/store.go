@@ -99,6 +99,9 @@ var periodicOffers map[DataId]*StoreItemData
 // periodic offer table
 var periodicOfferTable []DataId
 
+// product ids for google and apple stores
+var productIDs []string
+
 // implement Data interface
 func (data *StoreItemData) GetDataName() string {
 	return data.Name
@@ -227,6 +230,7 @@ func LoadStore(raw []byte) {
 	storeItems = map[DataId]*StoreItemData {}
 	oneTimeOffers = map[DataId]*StoreItemData {}
 	periodicOffers = map[DataId]*StoreItemData {}
+	productIDs = make([]string, 0)
 
 	for i, storeItem := range container.Store {
 		name := storeItem.GetDataName()
@@ -234,6 +238,11 @@ func LoadStore(raw []byte) {
 		// map name to ID
 		id, err := mapDataName(name)
 		util.Must(err)
+
+		//record product id
+		if storeItem.ProductID != "" {
+			productIDs = append(productIDs, storeItem.ProductID)
+		}
 
 		// insert into appropriate table
 		switch storeItem.Category {
@@ -297,6 +306,10 @@ func GetPeriodicOfferCollection() (map[DataId]*StoreItemData) {
 
 func GetPeriodicOfferTable() []DataId {
 	return periodicOfferTable
+}
+
+func GetProductIDs() []string {
+	return productIDs
 }
 
 func StoreCategoryToString(val StoreCategory) (string, error) {
