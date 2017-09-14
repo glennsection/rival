@@ -30,7 +30,21 @@
             "leaderWinCount": 0
         },
         {
+            "cardId": "CARD_SKULL_SWARM",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
             "cardId": "CARD_HELLHOUND",
+            "level": 1,
+            "cardCount": 0,
+            "winCount": 0,
+            "leaderWinCount": 0
+        },
+        {
+            "cardId": "CARD_DWARVES",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -56,40 +70,46 @@
             "cardCount": 0,
             "winCount": 0,
             "leaderWinCount": 0
-        }  
+        } 
     ],
     "decks": [
         {
             "leaderCardId": "CARD_GOLEM",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
+                "CARD_SPELL_SPIKES",
                 "CARD_MERC_SOLDIERS",
+                "CARD_SKULL_SWARM",
                 "CARD_GREMLINS",
-                "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_MERC_CAPTAIN",
+                "CARD_DWARVES"
             ]
         },
         {
-            "leaderCardId": "CARD_GOLEM",
+            "leaderCardId": "CARD_MERC_CAPTAIN",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
+                "CARD_SPELL_SPIKES",
                 "CARD_MERC_SOLDIERS",
+                "CARD_SKULL_SWARM",
                 "CARD_GREMLINS",
-                "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_DWARVES",
+                "CARD_GOLEM"
             ]
         },
         {
-            "leaderCardId": "CARD_GOLEM",
+            "leaderCardId": "CARD_DWARVES",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
+                "CARD_SPELL_SPIKES",
                 "CARD_MERC_SOLDIERS",
+                "CARD_SKULL_SWARM",
                 "CARD_GREMLINS",
-                "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_MERC_CAPTAIN",
+                "CARD_GOLEM"
             ]
         }
     ],
@@ -125,5 +145,5 @@
     "quests": [],
     "friends": [],
     "tutorial": [],
-    "tutorialDisabled": false
+    "tutorialDisabled": true
 }

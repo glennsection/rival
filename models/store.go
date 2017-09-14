@@ -27,6 +27,8 @@ type StoreHistory struct {
 type StoreItem struct {
 	Name 						string
 
+	ProductID 					string
+
 	ItemID    					string
 	Category  					data.StoreCategory
 	RewardIDs 					[]data.DataId
@@ -45,6 +47,7 @@ func (storeItem *StoreItem) MarshalJSON() ([]byte, error) {
 	client := map[string]interface{}{}
 
 	client["id"] = storeItem.Name
+	client["productId"] = storeItem.ProductID
 	client["itemId"] = storeItem.ItemID
 	client["cost"] = storeItem.Cost
 	client["numAvailable"] = storeItem.NumAvailable
@@ -137,6 +140,7 @@ func (player *Player) GetCurrentStoreOffers(context *util.Context) []StoreItem {
 
 		currentOffers = append(currentOffers, StoreItem {
 			Name: storeItemData.Name,
+			ProductID: storeItemData.ProductID,
 			ItemID: storeItemData.ItemID,
 			Category: storeItemData.Category,
 			RewardIDs: storeItemData.RewardIDs,
@@ -210,6 +214,7 @@ func (player *Player) getSpecialOffer (currentDate int64) *StoreItem {
 			//now create a StoreItem and assign it to the current special offer field
 		player.Store.SpecialOffer = StoreItem {
 			Name: specialOfferData.Name,
+			ProductID: specialOfferData.ProductID,
 			ItemID: specialOfferData.ItemID,
 			Category: specialOfferData.Category,
 			RewardIDs: specialOfferData.RewardIDs,
@@ -322,6 +327,7 @@ func (player *Player) getStoreCard(rarity string, expirationDate int64) *StoreIt
 
 	storeCard := &StoreItem {
 		Name: card.Name,
+		ProductID: "",
 		ItemID: card.Name,
 		Category: data.StoreCategoryCards,
 		Currency: data.CurrencyStandard,
