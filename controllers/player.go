@@ -77,14 +77,14 @@ func ViewPlayerProfile(context *util.Context) {
 		util.Must(err)
 	}
 
-	var replay *models.ReplayInfo
-	replay, err = models.GetLastReplayInfoByUser(context, player.UserID)
-	util.Must(err)
+	// var replay *models.ReplayInfo
+	// replay, err = models.GetLastReplayInfoByUser(context, player.UserID)
+	// util.Must(err)
 
 	context.SetData("player", playerClient)
 	context.SetData("cards", currentDeck)
 	context.SetData("guild", guild)
-	context.SetData("replay", replay)
+	// context.SetData("replay", replay)
 }
 
 func OverwritePlayer(context *util.Context) {
