@@ -13,49 +13,56 @@
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_ARMORED_SKELETON",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_MERC_SOLDIERS",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_GREMLINS",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_MERC_CAPTAIN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_HELLHOUND",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_LIGHTNING_SWORD",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         }
     ],
     "decks": [
