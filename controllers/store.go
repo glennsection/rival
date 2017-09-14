@@ -1,6 +1,7 @@
 package controllers
 
 import ( 
+	"bloodtales/data"
 	"bloodtales/system"
 	"bloodtales/util"
 )
@@ -15,7 +16,8 @@ func GetStoreOffers(context *util.Context) {
     specialOffer := player.Store.SpecialOffer
     cards := player.Store.Cards
 
-    context.SetData("storeItems", player.GetCurrentStoreOffers(context))
+	context.SetData("storeItems", player.GetCurrentStoreOffers(context))
+	context.SetData("productIds", data.GetProductIDs())
 
     if(specialOffer.ExpirationDate != player.Store.SpecialOffer.ExpirationDate) {
         context.SetData("newSpecialOffer", player.Store.SpecialOffer.Name)
