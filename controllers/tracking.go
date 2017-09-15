@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 	"encoding/json"
 
@@ -58,21 +59,27 @@ func handleTracking() {
 func PostTracking(context *util.Context) {
 	// parse parameters
 	// db := context.Params.GetString("db", "mongo")
-	event := context.Params.GetRequiredString("event")
-	dataJson := context.Params.GetString("data", "")
-	expireAfterHours := context.Params.GetInt("expire", 0)
 
-	// process data
-	var data bson.M = nil
-	if dataJson != "" {
-		util.Must(json.Unmarshal([]byte(dataJson), &data))
-	}
+	for i := 0; i < data.GameplayConfig.BatchLimit; i++ {
+		event := context.Params.GetString(fmt.Sprintf("event%d", i), "")
+		if event == "" { //no more events have been sent, so we can break out of our loop
+			break 
+		}
 
-	// insert tracking
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, event, 0, "", "", 0, 0, data)
-	} else {
-		InsertTracking(context, event, data, expireAfterHours)
+		dataJson := context.Params.GetString(fmt.Sprintf("data%d", i), "")
+	
+		// process data
+		var data bson.M = nil
+		if dataJson != "" {
+			util.Must(json.Unmarshal([]byte(dataJson), &data))
+		}
+	
+		// insert tracking
+		if util.HasSQLDatabase() {
+			InsertTrackingSQL(context, event, 0, "", "", 0, 0, data)
+		} else {
+			InsertTracking(context, event, data, 0)
+		}
 	}
 }
 
@@ -102,7 +109,13 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 	sqlEvent := SQLevent{Data: data}
 	user := system.GetUser(context)
 	userId := user.ID.Hex()
-	eventTime := time.Now()
+	timeNs := sqlEvent.GetIntField("eventTime")
+	var eventTime time.Time
+	if timeNs > 0 {
+		eventTime = time.Unix(0,timeNs)
+	} else {
+		eventTime = time.Now()
+	}
 	//location, _ := time.LoadLocation("PST8PDT")
 	dateStr := eventTime.In(PST).Format("2006-01-02")
 	timeStr := eventTime.Format("2006-01-02 15:04:05z")
@@ -113,6 +126,14 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 	case "navigation":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
 			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+		util.Must(err)
+	case "tabChange":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
+			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+		util.Must(err)
+	case "infoPopup":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("category"), 
+			sqlEvent.GetStrField("details"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
 		util.Must(err)
 	case "tutorialPageExit":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
