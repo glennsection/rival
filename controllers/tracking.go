@@ -109,7 +109,13 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 	sqlEvent := SQLevent{Data: data}
 	user := system.GetUser(context)
 	userId := user.ID.Hex()
-	eventTime := time.Now()
+	timeNs := sqlEvent.GetIntField("eventTime")
+	var eventTime time.Time
+	if timeNs > 0 {
+		eventTime = time.Unix(0,timeNs)
+	} else {
+		eventTime = time.Now()
+	}
 	//location, _ := time.LoadLocation("PST8PDT")
 	dateStr := eventTime.In(PST).Format("2006-01-02")
 	timeStr := eventTime.Format("2006-01-02 15:04:05z")
@@ -120,6 +126,14 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 	case "navigation":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
 			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+		util.Must(err)
+	case "tabChange":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
+			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+		util.Must(err)
+	case "infoPopup":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("category"), 
+			sqlEvent.GetStrField("details"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
 		util.Must(err)
 	case "tutorialPageExit":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
