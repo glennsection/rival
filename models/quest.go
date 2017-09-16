@@ -190,8 +190,6 @@ func (player *Player) SetupQuestDefaults() {
 	if len(player.Quests) != 0 {
 		for i := range player.Quests {
 			if player.Quests[i].Active {
-				fmt.Println(fmt.Sprintf("******%S********", data.ToDataName(player.Quests[i].QuestID)))
-
 				startingQuests = append(startingQuests, StartingQuest {
 					QuestID: player.Quests[i].QuestID,
 					Index: i,
@@ -203,10 +201,6 @@ func (player *Player) SetupQuestDefaults() {
 	player.Quests = make([]Quest, 3, 3)
 
 	for i := range startingQuests {
-		if startingQuests[i].Index > len(player.Quests) {
-			continue
-		}
-
 		questData := data.GetQuestData(startingQuests[i].QuestID)
 		player.AssignQuest(startingQuests[i].Index, startingQuests[i].QuestID, questData)
 	}
@@ -364,7 +358,7 @@ func (player *Player) UpdateQuests(context *util.Context, questTypes ...data.Que
 
 		if quest.Active {
 			// check to see if the quest has expired. if so, assign a new quest
-			if currentTime > quest.ExpireTime {
+			if questData.Period != data.QuestPeriodSpecial && currentTime > quest.ExpireTime {
 				quest.Active = false
 				player.AssignRandomQuest(i)
 				continue
