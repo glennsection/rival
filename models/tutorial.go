@@ -49,6 +49,8 @@ func UpdateTutorial(context *util.Context, player *Player, name string, complete
 		player.Tutorial = append(player.Tutorial, tutorial)
 	}
 
+	_ = player.UpdateQuests(nil, data.QuestTypeTutorial)
+
 	err = player.Save(context)
 	if err != nil {
 		fmt.Println("[TUTORIAL] Save error")
@@ -112,4 +114,14 @@ func (player *Player)ClaimTutorialReward(context *util.Context, name string) (to
 	err = player.Save(context)
 
 	return
+}
+
+func (player *Player)TutorialCompleted(name string) bool {
+	for i := range player.Tutorial {
+		if player.Tutorial[i].Name == name {
+			return player.Tutorial[i].Complete
+		}
+	}
+
+	return false
 }

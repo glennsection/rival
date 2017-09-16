@@ -40,7 +40,23 @@ func (quest *Quest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(client)
 }
 
-func (quest *Quest) GetCurrentObjective() (int) {
+func (quest *Quest) UnmarshalJSON(raw []byte) error {
+	client := &QuestClient {
+		QuestClientAlias: (*QuestClientAlias)(quest),
+	}
+
+	// unmarshal to client model
+	if err := json.Unmarshal(raw, &client); err != nil {
+		return err
+	}
+
+	// server data ID
+	quest.QuestID = data.ToDataId(client.QuestID)
+
+	return nil
+}
+
+func (quest *Quest) GetCurrentObjective() (interface{}) {
 	questData := data.GetQuestData(quest.QuestID)
 	return questData.Phases[quest.Collected].Objective
 }
@@ -52,6 +68,9 @@ func (quest *Quest) Update(player *Player) {
 
 	case data.QuestTypeBattle:
 		quest.UpdateBattle(player, questData)
+
+	case data.QuestTypeTutorial:
+		quest.UpdateTutorial(player, questData)
 
 	default:
 
@@ -98,6 +117,21 @@ func (quest *Quest) UpdateBattle(player *Player, questData *data.QuestData) {
 	return
 }
 
+func (quest *Quest) UpdateTutorial(player *Player, questData *data.QuestData) {
+	progress := quest.Properties["progress"].(int)
+	currentObjective := quest.GetCurrentObjective().(string)
+
+	for i := progress; progress < len(questData.Phases); progress++ {
+		if player.TutorialCompleted(currentObjective) {
+			progress = i
+		} else {
+			break
+		}
+	}
+
+	quest.Properties["progress"] = progress
+}
+
 func checkDeckConditions(currentDeck Deck, cardId data.DataId, asLeader bool) bool { // helper func for UpdateBattleQuests
 	if asLeader {
 		if currentDeck.LeaderCardID == cardId {
@@ -119,9 +153,19 @@ func (quest *Quest) IsCollectable() bool {
 
 	steps := len(questData.Phases)
 	if quest.Collected < steps {
-		currentObjective := quest.GetCurrentObjective()
-		progress := quest.Properties["progress"].(int)
-		return progress >= currentObjective
+		switch(questData.Type) {
+
+		case data.QuestTypeBattle:
+			currentObjective := quest.GetCurrentObjective().(int)
+			progress := quest.Properties["progress"].(int)
+			return progress >= currentObjective
+
+		case data.QuestTypeTutorial:
+			progress := quest.Properties["progress"].(int)
+			return progress > quest.Collected
+
+		}
+
 	}
 	return false
 }
@@ -136,10 +180,41 @@ func (quest *Quest) IsCompleted() bool {
 // player specific quest functions below
 
 func (player *Player) SetupQuestDefaults() {
+	type StartingQuest struct {
+		QuestID 		data.DataId
+		Index 			int
+	}
+
+	startingQuests := make([]StartingQuest, 0)
+
+	if len(player.Quests) != 0 {
+		for i := range player.Quests {
+			if player.Quests[i].Active {
+				fmt.Println(fmt.Sprintf("******%S********", data.ToDataName(player.Quests[i].QuestID)))
+
+				startingQuests = append(startingQuests, StartingQuest {
+					QuestID: player.Quests[i].QuestID,
+					Index: i,
+					})
+			}
+		}
+	}
+
 	player.Quests = make([]Quest, 3, 3)
 
-	for i, _ := range player.Quests {
-		player.AssignRandomQuest(i)
+	for i := range startingQuests {
+		if startingQuests[i].Index > len(player.Quests) {
+			continue
+		}
+
+		questData := data.GetQuestData(startingQuests[i].QuestID)
+		player.AssignQuest(startingQuests[i].Index, startingQuests[i].QuestID, questData)
+	}
+
+	for i := range player.Quests {
+		if !player.Quests[i].Active {
+			player.AssignRandomQuest(i)
+		}
 	}
 }
 
@@ -243,6 +318,11 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 			cardId = questData.Properties["cardId"].(string)
 		}
 		quest.Properties["cardId"] = cardId
+		break
+
+	case data.QuestTypeTutorial:
+		quest.Properties["progress"] = 0
+		break
 
 	default:
 		
@@ -257,6 +337,9 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 	case data.QuestPeriodWeekly:
 		expirationDate := util.GetDateOfNextWeekday(player.TimeZone, time.Monday, false)
 		quest.ExpireTime = util.TimeToTicks(expirationDate)
+
+	case data.QuestPeriodSpecial:
+		quest.ExpireTime = 0 //does not expire
 
 	default: //events
 		// TODO need to identify the event and assign its expiration time to this quest slot
@@ -295,7 +378,7 @@ func (player *Player) UpdateQuests(context *util.Context, questTypes ...data.Que
 			// call individual update func and check for completion
 			quest.Update(player)
 		} else { // check to see if we're ready for a new quest
-			if currentTime > quest.ExpireTime {
+			if questData.Period != data.QuestPeriodSpecial && currentTime > quest.ExpireTime {
 				player.AssignRandomQuest(i)
 			}
 		}

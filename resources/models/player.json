@@ -129,7 +129,31 @@
     "freeTomes": 0,
     "freeTomeUnlockTime": 0,
     "questClearTime": 0,
-    "quests": [],
+    "quests":[ {
+            "id":"TUTORIAL_QUEST",
+            "active":true,
+            "expireTime":0,
+            "league":0,
+            "collected":0,
+            "properties":{}
+        },
+        {
+            "id":"Invalid",
+            "active":false,
+            "expireTime":0,
+            "league":0,
+            "collected":0,
+            "properties":{}
+        },
+        {
+            "id":"Invalid",
+            "active":false,
+            "expireTime":0,
+            "league":0,
+            "collected":0,
+            "properties":{}
+        }
+    ],
     "friends": [],
     "tutorial": [],
     "tutorialDisabled": false

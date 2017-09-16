@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"bloodtales/util"
 )
@@ -11,15 +12,17 @@ const (
 	QuestPeriodDaily QuestPeriod = iota
 	QuestPeriodWeekly
 	QuestPeriodEvent
+	QuestPeriodSpecial
 )
 
 type QuestType int
 const (
 	QuestTypeBattle QuestType = iota
+	QuestTypeTutorial
 )
 
 type QuestPhaseData struct {
-	Objective 			int						`json:"objective"`
+	Objective 			interface{}				
 	RewardID 			DataId
 }
 
@@ -37,6 +40,7 @@ type QuestData struct {
 
 type QuestPhaseDataClientAlias QuestPhaseData
 type QuestPhaseDataClient struct {
+	Objective 			string 					`json:"objective"`
 	RewardID 			string 					`json:"rewardId"`
 
 	*QuestPhaseDataClientAlias
@@ -83,16 +87,34 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
-	// quest type
+	//quest type
+	switch client.Type {
+
+	case "Battle":
+		quest.Type = QuestTypeBattle
+		break
+
+	case "Tutorial":
+		quest.Type = QuestTypeTutorial
+
+	}
+
+	// quest period
 	switch client.Period {
 
 	case "Daily":
 		quest.Period = QuestPeriodDaily
+		break
 
 	case "Weekly":
 		quest.Period = QuestPeriodWeekly
+		break
 
-	default:
+	case "Special":
+		quest.Period = QuestPeriodSpecial
+		break
+
+	case "Event":
 		quest.Period = QuestPeriodEvent
 
 	}
@@ -101,7 +123,17 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 	quest.Phases = make([]QuestPhaseData, len(client.Phases))
 	for i, _ := range client.Phases {
 		quest.Phases[i].RewardID = ToDataId(client.Phases[i].RewardID)
-		quest.Phases[i].Objective = client.Phases[i].Objective
+
+		switch quest.Type {
+
+		case QuestTypeBattle:
+			num, _ := strconv.ParseInt(client.Phases[i].Objective, 10, 64)
+			quest.Phases[i].Objective = int(num)
+			break
+
+		case QuestTypeTutorial:
+			quest.Phases[i].Objective = client.Phases[i].Objective
+		}
 	}
 
 	// assign objectives and properties
