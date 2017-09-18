@@ -66,6 +66,10 @@ func (quest *Quest) Update(player *Player) {
 
 	switch questData.Type {
 
+	case data.QuestTypeSinglePlayerBattle: //must fall through to QuestTypeBattle
+		quest.UpdateSinglePlayerBattle(player, questData)
+		fallthrough
+
 	case data.QuestTypeBattle:
 		quest.UpdateBattle(player, questData)
 
@@ -75,6 +79,46 @@ func (quest *Quest) Update(player *Player) {
 	default:
 
 	}
+}
+
+func (quest *Quest) UpdateSinglePlayerBattle(player *Player, questData *data.QuestData) {
+	//properties
+	requiresVictory := questData.Properties["requiresVictory"].(bool)
+	asLeader := questData.Properties["asLeader"].(bool)
+
+	//progress
+	progress := quest.Properties["progress"].(int)
+	totalPracticeWins := quest.Properties["totalPracticeWins"].(int)
+	totalPracticeBattles := quest.Properties["totalPracticeBattles"].(int)
+	cardId := data.ToDataId(quest.Properties["cardId"].(string)) // will be "" if quest requires no specific card
+	noCard := data.ToDataId("")
+	currentDeck := player.Decks[player.CurrentDeck]
+
+	// check update conditions and incremement progress if the conditions are met
+	if requiresVictory {
+		if totalPracticeWins < player.PracticeWinCount {
+			diff := player.PracticeWinCount - totalPracticeWins
+
+			if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
+				progress += diff
+			}
+		}
+
+	} else {
+		if totalPracticeBattles < player.PracticeMatchCount {
+			diff := player.PracticeMatchCount - totalPracticeBattles
+			
+			if cardId == noCard || checkDeckConditions(currentDeck, cardId, asLeader) {
+				progress += diff
+			}
+		}
+	}
+
+	quest.Properties["progress"] = progress
+	quest.Properties["totalPracticeWins"] = player.PracticeWinCount
+	quest.Properties["totalPracticeBattles"] = player.PracticeMatchCount
+
+	return
 }
 
 func (quest *Quest) UpdateBattle(player *Player, questData *data.QuestData) {
@@ -154,6 +198,8 @@ func (quest *Quest) IsCollectable() bool {
 	steps := len(questData.Phases)
 	if quest.Collected < steps {
 		switch(questData.Type) {
+		case data.QuestTypeSinglePlayerBattle: //must fall through to QuestTypeBattle
+			fallthrough
 
 		case data.QuestTypeBattle:
 			currentObjective := quest.GetCurrentObjective().(int)
@@ -227,6 +273,18 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 	// check if this is a progressive quest
 	if quest.IsCompleted() {
 		quest.Active = false
+
+		//permanent daily quests should expire at midnight the day after they're collected, so set their expiration date now
+		if questData.Permanent  {
+			if questData.Period == data.QuestPeriodDailyPermanent {
+				quest.ExpireTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1))
+			} else { //permanent weekly quests should expire at midnight on the next weekly reset
+				if questData.Period == data.QuestPeriodWeeklyPermanent {
+					expirationDate := util.GetDateOfNextWeekday(player.TimeZone, time.Monday, false)
+					quest.ExpireTime = util.TimeToTicks(expirationDate)
+				}
+			}
+		} 
 	}
 
 	err := player.AddRewards(reward, context)
@@ -260,6 +318,9 @@ func (player *Player) AssignRandomQuest(index int) {
 		for _, currentQuestData := range currentQuestDatas { 
 			if currentQuestData != nil && questData.Type == currentQuestData.Type {
 				switch questData.Type {
+
+				case data.QuestTypeSinglePlayerBattle: //must fall through to QuestTypeBattle
+					fallthrough
 
 				case data.QuestTypeBattle:
 					if questData.Period == currentQuestData.Period {
@@ -299,6 +360,10 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 
 	// determine the logic type of the quest and prepare its progress based on the objectives specific to its type
 	switch questData.Type {
+	case data.QuestTypeSinglePlayerBattle: //must fall through to QuestTypeBattle
+		quest.Properties["totalPracticeWins"] = player.PracticeWinCount
+		quest.Properties["totalPracticeBattles"] = player.PracticeMatchCount
+		fallthrough
 
 	case data.QuestTypeBattle:
 		quest.Properties["progress"] = 0
@@ -323,20 +388,19 @@ func (player *Player) AssignQuest(index int, questId data.DataId, questData *dat
 	}
 
 	//assign an expiration date to the slot
-	switch questData.Period {
+	if !questData.Permanent { //permanent quests do not expire until quest has been completed
+		switch questData.Period {
 
-	case data.QuestPeriodDaily:
-		quest.ExpireTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1)) //get tomorrow's date
+		case data.QuestPeriodDaily:
+			quest.ExpireTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1)) //get tomorrow's date
 
-	case data.QuestPeriodWeekly:
-		expirationDate := util.GetDateOfNextWeekday(player.TimeZone, time.Monday, false)
-		quest.ExpireTime = util.TimeToTicks(expirationDate)
+		case data.QuestPeriodWeekly:
+			expirationDate := util.GetDateOfNextWeekday(player.TimeZone, time.Monday, false)
+			quest.ExpireTime = util.TimeToTicks(expirationDate)
 
-	case data.QuestPeriodSpecial:
-		quest.ExpireTime = 0 //does not expire
-
-	default: //events
-		// TODO need to identify the event and assign its expiration time to this quest slot
+		default: //events
+			// TODO need to identify the event and assign its expiration time to this quest slot
+		}
 	}
 }
 
@@ -358,7 +422,7 @@ func (player *Player) UpdateQuests(context *util.Context, questTypes ...data.Que
 
 		if quest.Active {
 			// check to see if the quest has expired. if so, assign a new quest
-			if questData.Period != data.QuestPeriodSpecial && currentTime > quest.ExpireTime {
+			if !questData.Permanent && currentTime > quest.ExpireTime {
 				quest.Active = false
 				player.AssignRandomQuest(i)
 				continue
@@ -372,7 +436,7 @@ func (player *Player) UpdateQuests(context *util.Context, questTypes ...data.Que
 			// call individual update func and check for completion
 			quest.Update(player)
 		} else { // check to see if we're ready for a new quest
-			if questData.Period != data.QuestPeriodSpecial && currentTime > quest.ExpireTime {
+			if currentTime > quest.ExpireTime {
 				player.AssignRandomQuest(i)
 			}
 		}

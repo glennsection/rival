@@ -48,6 +48,8 @@ type Player struct {
 	WinCount   				int 			`bson:"wc" json:"winCount"`
 	LossCount  				int 			`bson:"lc" json:"lossCount"`
 	MatchCount 				int 			`bson:"mc" json:"matchCount"`
+	PracticeWinCount 		int 			`bson:"pw" json:"practiceWinCount"`
+	PracticeMatchCount 		int 			`bson:"pc" json:"practiceMatchCount"`
 
 	StandardCurrency   		int    			`bson:"cs" json:"standardCurrency"`
 	PremiumCurrency    		int    			`bson:"cp" json:"premiumCurrency"`
