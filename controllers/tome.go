@@ -17,6 +17,7 @@ func handleTome() {
 	handleGameAPI("/tome/rush", system.TokenAuthentication, RushTome)
 	handleGameAPI("/tome/free", system.TokenAuthentication, ClaimFreeTome)
 	handleGameAPI("/tome/arena", system.TokenAuthentication, ClaimArenaTome)
+	handleGameAPI("/tome/guild", system.TokenAuthentication, ClaimGuildTome)
 }
 
 func UnlockTome(context *util.Context) {
@@ -55,28 +56,13 @@ func OpenTome(context *util.Context) {
 		return
 	}
 
-	// analytics
-	currentTime := util.TimeToTicks(time.Now().UTC())
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "tomeOpened", currentTime, data.ToDataName(player.ActiveTome.DataID), 
-			"Premium", 1, 0, nil)
-	}else{
-		InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(player.ActiveTome.DataID), 
-			"gemsSpent": 0}, 0)
-	}
-
 	reward, err := player.AddTomeRewards(context, &player.ActiveTome)
 	util.Must(err)
 
+	trackTome(context, reward, data.ToDataName(player.ActiveTome.DataID), 0)
+
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
-
-	if util.HasSQLDatabase() {
-		TrackRewardsSQL(context, reward, currentTime)
-	} else{
-		TrackRewards(context, reward)
-	}
-
 }
 
 func RushTome(context *util.Context) {
@@ -109,30 +95,16 @@ func RushTome(context *util.Context) {
 		return
 	}
 
-	// analytics
-	currentTime := util.TimeToTicks(time.Now().UTC())
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "tomeOpened", currentTime, data.ToDataName(tome.DataID), 
-			"Premium", 1, float64(cost), nil)
-	}else{
-		InsertTracking(context, "tomeOpened", bson.M{"tomeId": data.ToDataName(tome.DataID), 
-			"gemsSpent": cost}, 0)
-	}
-	
-
 	player.PremiumCurrency -= cost
 
 	reward, err := player.AddTomeRewards(context, tome)
 	util.Must(err)
 
+	// analytics
+	trackTome(context, reward, data.ToDataName(tome.DataID), cost)
+
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
-
-	if util.HasSQLDatabase() {
-		TrackRewardsSQL(context, reward, currentTime)
-	} else{
-		TrackRewards(context, reward)
-	}
 }
 
 func ClaimFreeTome(context *util.Context) {
@@ -146,23 +118,10 @@ func ClaimFreeTome(context *util.Context) {
 	}
 
 	// analytics
-	currentTime := util.TimeToTicks(time.Now().UTC())
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "tomeOpened", currentTime, "Free", 
-			"Premium", 1, 0, nil)
-	}else{
-		InsertTracking(context, "tomeOpened", bson.M{"tomeId": "Free",
-			"gemsSpent": 0}, 0)
-	}
+	trackTome(context, reward, "Free", 0)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
-
-	if util.HasSQLDatabase() {
-		TrackRewardsSQL(context, reward, currentTime)
-	} else{
-		TrackRewards(context, reward)
-	}
 }
 
 func ClaimArenaTome(context *util.Context) {
@@ -176,23 +135,31 @@ func ClaimArenaTome(context *util.Context) {
 	}
 
 	// analytics
-	currentTime := util.TimeToTicks(time.Now().UTC())
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, "tomeOpened", currentTime, "Arena", 
-			"Premium", 1, 0, nil)
-	}else{
-		InsertTracking(context, "tomeOpened", bson.M{"tomeId": "Arena",
-			"gemsSpent": 0}, 0)
-	}
+	trackTome(context, reward, "Arena", 0)
 
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
 	context.SetData("reward", reward)
+}
 
-	if util.HasSQLDatabase() {
-		TrackRewardsSQL(context, reward, currentTime)
-	} else{
-		TrackRewards(context, reward)
+func ClaimGuildTome(context *util.Context) {
+	player := GetPlayer(context)
+	reward, err := player.ClaimGuildTome(context)
+	util.Must(err)
+
+	if reward == nil {
+		if !player.IsInGuild() {
+			context.Fail("You must be in a guild to claim this tome")
+		} else {
+			context.Fail("Guild tome not available")
+		}
+		return
 	}
+
+	// analytics
+	trackTome(context, reward, "Guild", 0)
+
+	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards, models.PlayerDataMask_Tomes, models.PlayerDataMask_Deck)
+	context.SetData("reward", reward)
 }
 
 func ValidateTomeRequest(context *util.Context) (index int, player *models.Player, success bool) {
@@ -211,4 +178,21 @@ func ValidateTomeRequest(context *util.Context) (index int, player *models.Playe
 
 	success = true
 	return
+}
+
+func trackTome(context *util.Context, reward *models.Reward, itemId string, cost int) {
+	currentTime := util.TimeToTicks(time.Now().UTC())
+	if util.HasSQLDatabase() {
+		InsertTrackingSQL(context, "tomeOpened", currentTime, itemId, 
+			"Premium", 1, float64(cost), nil)
+	} else {
+		InsertTracking(context, "tomeOpened", bson.M{"tomeId": itemId,
+			"gemsSpent": cost}, 0)
+	}
+
+	if util.HasSQLDatabase() {
+		TrackRewardsSQL(context, reward, currentTime)
+	} else {
+		TrackRewards(context, reward)
+	}
 }

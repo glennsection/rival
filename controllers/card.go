@@ -16,6 +16,7 @@ import (
 func handleCard() {
 	handleGameAPI("/card/upgrade", system.TokenAuthentication, UpgradeCard)
 	handleGameAPI("/card/craft", system.TokenAuthentication, CraftCard)
+	handleGameAPI("/card/viewed", system.TokenAuthentication, OnCardViewed)
 }
 
 func UpgradeCard(context *util.Context) {
@@ -183,4 +184,17 @@ func CraftCard(context *util.Context) {
 	player.Save(context)
 	player.SetDirty(models.PlayerDataMask_Currency, models.PlayerDataMask_Cards)
 	context.SetData("reward", reward)
+}
+
+func OnCardViewed(context *util.Context) {
+	// parse parameters
+	id := context.Params.GetRequiredString("cardId")
+	
+	player := GetPlayer(context)
+	card := player.GetCard(data.ToDataId(id))
+
+	card.HasInteractedWith = true;
+
+	player.Save(context)
+	//player.SetDirty(models.PlayerDataMask_Cards) //Don't do for now
 }

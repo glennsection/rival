@@ -17,9 +17,15 @@ type GameplayConfiguration struct {
 	PeriodicOfferCooldown 		int 		`json:"periodicOfferCooldown"` //days
 
 	GuildMemberLimit			int			`json:"guildMemberLimit"`
+	GuildCreationCost           int			`json:"guildCreateCost"`
+	MaxGuildNameLength          int			`json:"maxGuildNameLength"`
+	MinGuildNameLength			int			`json:"minGuildNameLength"`
+	MaxGuildDescriptionLength   int			`json:"maxGuildDescriptionLength"`
 
-	MinUsernameLength 		int 		`json:"minUsernameLength"`
-	MaxUsernameLength 		int 		`json:"maxUsernameLength"`
+	MinUsernameLength 			int 		`json:"minUsernameLength"`
+	MaxUsernameLength 			int 		`json:"maxUsernameLength"`
+
+	BatchLimit 					int			`json:"batchLimit"`
 }
 
 type GameplayConfigurationParsed struct {

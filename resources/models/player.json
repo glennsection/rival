@@ -13,49 +13,56 @@
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_ARMORED_SKELETON",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_MERC_SOLDIERS",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_GREMLINS",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_MERC_CAPTAIN",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
             "cardId": "CARD_HELLHOUND",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         },
         {
-            "cardId": "CARD_SPELL_SPIKES",
+            "cardId": "CARD_LIGHTNING_SWORD",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
-            "leaderWinCount": 0
+            "leaderWinCount": 0,
+            "interactedWith": true
         }
     ],
     "decks": [
@@ -67,7 +74,7 @@
                 "CARD_GREMLINS",
                 "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_LIGHTNING_SWORD"
             ]
         },
         {
@@ -78,7 +85,7 @@
                 "CARD_GREMLINS",
                 "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_LIGHTNING_SWORD"
             ]
         },
         {
@@ -89,7 +96,7 @@
                 "CARD_GREMLINS",
                 "CARD_MERC_CAPTAIN",
                 "CARD_HELLHOUND",
-                "CARD_SPELL_SPIKES"
+                "CARD_LIGHTNING_SWORD"
             ]
         }
     ],
@@ -122,7 +129,31 @@
     "freeTomes": 0,
     "freeTomeUnlockTime": 0,
     "questClearTime": 0,
-    "quests": [],
+    "quests":[ {
+            "id":"TUTORIAL_QUEST",
+            "active":true,
+            "expireTime":0,
+            "league":0,
+            "collected":0,
+            "properties":{}
+        },
+        {
+            "id":"Invalid",
+            "active":false,
+            "expireTime":0,
+            "league":0,
+            "collected":0,
+            "properties":{}
+        },
+        {
+            "id":"Invalid",
+            "active":false,
+            "expireTime":0,
+            "league":0,
+            "collected":0,
+            "properties":{}
+        }
+    ],
     "friends": [],
     "tutorial": [],
     "tutorialDisabled": false

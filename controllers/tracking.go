@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 	"encoding/json"
 
@@ -57,48 +58,26 @@ func handleTracking() {
 
 func PostTracking(context *util.Context) {
 	// parse parameters
-	trackings := context.Params.GetString("trackings", "")
-	if trackings != "" {
-		var trackingsArray []bson.M
-		util.Must(json.Unmarshal([]byte(trackings), &trackingsArray))
-
-		for _, trackingValues := range trackingsArray {
-			event := ""
-			if v, ok := trackingValues["event"]; ok {
-				event = v.(string)
-			}
-			var data bson.M = nil
-			if v, ok := trackingValues["data"]; ok {
-				data = v.(bson.M)
-			}
-			expireAfterHours := 0
-			if v, ok := trackingValues["expire"]; ok {
-				expireAfterHours = v.(int)
-			}
-
-			postTracking(context, event, data, expireAfterHours)
+	for i := 0; i < data.GameplayConfig.BatchLimit; i++ {
+		event := context.Params.GetString(fmt.Sprintf("event%d", i), "")
+		if event == "" { //no more events have been sent, so we can break out of our loop
+			break 
 		}
-	} else {
-		event := context.Params.GetRequiredString("event")
-		dataJson := context.Params.GetString("data", "")
-		expireAfterHours := context.Params.GetInt("expire", 0)
 
+		dataJson := context.Params.GetString(fmt.Sprintf("data%d", i), "")
+	
 		// process data
 		var data bson.M = nil
 		if dataJson != "" {
 			util.Must(json.Unmarshal([]byte(dataJson), &data))
 		}
-
-		postTracking(context, event, data, expireAfterHours)
-	}
-}
-
-func postTracking(context *util.Context, event string, data bson.M, expireAfterHours int) {
-	// insert tracking
-	if util.HasSQLDatabase() {
-		InsertTrackingSQL(context, event, 0, "", "", 0, 0, data)
-	} else {
-		InsertTracking(context, event, data, expireAfterHours)
+	
+		// insert tracking
+		if util.HasSQLDatabase() {
+			InsertTrackingSQL(context, event, 0, "", "", 0, 0, data)
+		} else {
+			InsertTracking(context, event, data, 0)
+		}
 	}
 }
 
@@ -128,7 +107,13 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 	sqlEvent := SQLevent{Data: data}
 	user := system.GetUser(context)
 	userId := user.ID.Hex()
-	eventTime := time.Now()
+	timeNs := sqlEvent.GetIntField("eventTime")
+	var eventTime time.Time
+	if timeNs > 0 {
+		eventTime = time.Unix(0,timeNs)
+	} else {
+		eventTime = time.Now()
+	}
 	//location, _ := time.LoadLocation("PST8PDT")
 	dateStr := eventTime.In(PST).Format("2006-01-02")
 	timeStr := eventTime.Format("2006-01-02 15:04:05z")
@@ -139,6 +124,14 @@ func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId
 	case "navigation":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
 			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+		util.Must(err)
+	case "tabChange":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
+			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+		util.Must(err)
+	case "infoPopup":
+		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("category"), 
+			sqlEvent.GetStrField("details"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
 		util.Must(err)
 	case "tutorialPageExit":
 		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 

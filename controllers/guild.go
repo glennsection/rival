@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bloodtales/data"
 	"bloodtales/models"
 	"bloodtales/system"
 	"bloodtales/util"
@@ -41,11 +42,24 @@ func CreateGuild(context *util.Context) {
 	player := GetPlayer(context)
 
 	//Make sure player has enough currency to purchase
-	if player.StandardCurrency < models.GuildCreationCost {
+	if player.StandardCurrency < data.GameplayConfig.GuildCreationCost {
 		context.Fail("Insufficient funds")
 		return
 	}
-	player.StandardCurrency -= models.GuildCreationCost
+
+	//Check name and description for validity
+	if (len(name) < data.GameplayConfig.MinGuildNameLength) {
+		context.Fail(fmt.Sprintf("Guild Name must be shorter than %d characters", data.GameplayConfig.MaxGuildNameLength))
+		return;
+	}
+	if (len(name) > data.GameplayConfig.MaxGuildNameLength) {
+		context.Fail(fmt.Sprintf("Guild Name must be shorter than %d characters", data.GameplayConfig.MaxGuildNameLength))
+		return;
+	}
+	if (len(description) > data.GameplayConfig.MaxGuildDescriptionLength) {
+		context.Fail(fmt.Sprintf("Guild Description must be shorter than %d characters", data.GameplayConfig.MaxGuildDescriptionLength))
+		return;
+	}
 
 	// TODO - make sure player doesn't already own a guild...
 
@@ -61,7 +75,7 @@ func CreateGuild(context *util.Context) {
 			},
 		}).All(&guilds))
 	}
-	fmt.Printf("Length of Guilds with same name: %d", len(guilds))
+
 	if len(guilds) > 0 {
 		//Return invalid name
 		err := util.NewError("Guild name is already taken. Please choose another")
@@ -72,6 +86,8 @@ func CreateGuild(context *util.Context) {
 	// create guild
 	guild, err := models.CreateGuild(context, player, name, iconId, description, private)
 	util.Must(err)
+
+	player.StandardCurrency -= data.GameplayConfig.GuildCreationCost
 
 	SendNotification(context, player, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
@@ -521,6 +537,8 @@ func respondGuildBattle(context *util.Context, notification *models.Notification
 		notification.Data["matchStarted"] = true
 		_, err := models.StartPrivateMatch(context, notification.SenderID, player.ID, models.MatchRanked, roomID, arenaName)
 		util.Must(err)
+	} else if (action == "cancel") {
+		
 	} else {
 		err := util.NewError("Guild Battle has Already Begun")
 		util.Must(err)
@@ -547,4 +565,6 @@ func UpdateGuildIcon(context *util.Context) {
 
 	err2 := models.UpdateGuildIcon(context, player, guild, iconId)
 	util.Must(err2)
+
+	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }

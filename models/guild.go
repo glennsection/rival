@@ -12,7 +12,6 @@ import (
 )
 
 const GuildCollectionName = "guilds"
-const GuildCreationCost = 1000
 
 type GuildRole int
 
@@ -57,7 +56,7 @@ func GetGuildRoleName(guildRole GuildRole) string {
 	case GuildElite:
 		return "Elite"
 	case GuildCoOwner:
-		return "CoOwner"
+		return "Co-Owner"
 	case GuildOwner:
 		return "Owner"
 	}
@@ -181,13 +180,17 @@ func CreateGuild(context *util.Context, owner *Player, name string, iconId strin
 	owner.GuildID = guild.ID
 	owner.GuildRole = GuildOwner
 	owner.GuildJoinTime = time.Now().UTC()
+
+	// set initial guild tome unlock time for owner
+	owner.GuildTomeUnlockTime = util.TimeToTicks(util.GetDateInNDays(owner.TimeZone, 1))
+
 	err = owner.Save(context)
 	if err != nil {
 		return
 	}
 
 	// set dirty for return data
-	owner.SetDirty(PlayerDataMask_Guild)
+	owner.SetDirty(PlayerDataMask_Guild, PlayerDataMask_Tomes)
 	return
 }
 
@@ -205,6 +208,9 @@ func AddMember(context *util.Context, player *Player, guild *Guild) (err error) 
 		util.Must(err)
 		return err
 	}
+
+	// set initial guild tome unlock time for owner
+	player.GuildTomeUnlockTime = util.TimeToTicks(util.GetDateInNDays(player.TimeZone, 1))
 
 	err = guild.Save(context)
 
@@ -337,4 +343,8 @@ func (guild *Guild) Delete(context *util.Context) (err error) {
 func (guild *Guild) GetLevel() int {
 	// TODO - different function for guilds?
 	return data.GetAccountLevel(guild.XP)
+}
+
+func (player *Player) IsInGuild() bool {
+	return player.GuildID != bson.ObjectId("")
 }
