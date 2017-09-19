@@ -63,6 +63,11 @@ func ClearQuest(context *util.Context) {
 
 	player.SetDirty(models.PlayerDataMask_Quests)
 
+	if !data.GetQuestData(player.Quests[index].QuestID).Disposable {
+		context.Fail("This quest cannot be cleared")
+		return
+	}
+
 	if player.QuestClearTime > util.TimeToTicks(time.Now().UTC()) {
 		context.Fail("Cannot clear any quests at this time")
 		return

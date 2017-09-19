@@ -14,6 +14,7 @@ func handleMatch() {
 	handleGameAPI("/match/find", system.TokenAuthentication, MatchFind)
 	handleGameAPI("/match/fail", system.TokenAuthentication, MatchFail)
 	handleGameAPI("/match/result", system.TokenAuthentication, MatchResult)
+	handleGameAPI("/match/practice", system.TokenAuthentication, PracticeMatchResult)
 }
 
 func MatchClear(context *util.Context) {
@@ -78,4 +79,20 @@ func MatchResult(context *util.Context) {
 			InsertTracking(context, "rankUpdate", bson.M { "newLeagueId": newLeagueId, "oldLeagueId": oldLeagueId, "oldRank": oldRank, "rankChange": rankChange }, 0)
 		}
 	}
+}
+
+func PracticeMatchResult(context *util.Context) {
+	player := GetPlayer(context)
+	outcome := models.MatchOutcome(context.Params.GetRequiredInt("outcome"))
+
+	if outcome == models.MatchWin {
+		player.PracticeWinCount += 1
+	}
+
+	player.PracticeMatchCount += 1
+
+	player.UpdateQuests(context, data.QuestTypeSinglePlayerBattle)
+	player.Save(context)
+
+	player.SetDirty(models.PlayerDataMask_Quests)
 }

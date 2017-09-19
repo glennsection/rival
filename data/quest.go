@@ -12,12 +12,14 @@ const (
 	QuestPeriodDaily QuestPeriod = iota
 	QuestPeriodWeekly
 	QuestPeriodEvent
-	QuestPeriodSpecial
+	QuestPeriodDailyPermanent
+	QuestPeriodWeeklyPermanent
 )
 
 type QuestType int
 const (
 	QuestTypeBattle QuestType = iota
+	QuestTypeSinglePlayerBattle
 	QuestTypeTutorial
 )
 
@@ -31,7 +33,7 @@ type QuestData struct {
 	Period 				QuestPeriod
 	Type 				QuestType
 	Disposable 			bool 					`json:"disposable"`		
-	Time 				int64 					`json:"time"`
+	Permanent 			bool					`json:"permanent"`
 	PercentChance		float32 				`json:"percentChance"`
 	Phases 				[]QuestPhaseData
 
@@ -94,6 +96,10 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 		quest.Type = QuestTypeBattle
 		break
 
+	case "SinglePlayerBattle":
+		quest.Type = QuestTypeSinglePlayerBattle
+		break
+
 	case "Tutorial":
 		quest.Type = QuestTypeTutorial
 
@@ -104,15 +110,9 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 
 	case "Daily":
 		quest.Period = QuestPeriodDaily
-		break
 
 	case "Weekly":
 		quest.Period = QuestPeriodWeekly
-		break
-
-	case "Special":
-		quest.Period = QuestPeriodSpecial
-		break
 
 	case "Event":
 		quest.Period = QuestPeriodEvent
@@ -125,6 +125,8 @@ func (quest *QuestData) UnmarshalJSON(raw []byte) error {
 		quest.Phases[i].RewardID = ToDataId(client.Phases[i].RewardID)
 
 		switch quest.Type {
+		case QuestTypeSinglePlayerBattle: //must fall through to QuestTypeBattle
+			fallthrough
 
 		case QuestTypeBattle:
 			num, _ := strconv.ParseInt(client.Phases[i].Objective, 10, 64)
