@@ -604,10 +604,16 @@ func CompleteMatch(context *util.Context, player *Player, roomID string, outcome
 		if isWinner {
 			matchReward.TomeIndex, matchReward.Tome = player.AddVictoryTome(context)
 			player.WinCount += 1
-			player.UpdateDeckVictoryStats()
+
+			if playerScore == 3 {
+				player.ThreeTowerWinCount += 1
+			}
 		} else if (isLoser) {
 			player.LossCount += 1
 		}
+	
+		player.UpdateDeckStats(isWinner)
+
 		player.RankPoints += playerResults.RankPoints
 		player.Rating += playerResults.Rating
 
