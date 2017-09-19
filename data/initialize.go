@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"strings"
 	"io/ioutil"
 	"net/http"
 
@@ -40,16 +41,27 @@ func init() {
 
 // load a particular file into a container
 func loadDataFile(fileName string, processor func([]byte)) {
-	// read file
+	// get file path
 	dataPath := util.Env.GetRequiredString("DATA_URL")
-	pathUrl := fmt.Sprintf("%s/%s", dataPath, fileName)
+	filePath := fmt.Sprintf("%s/%s", dataPath, fileName)
 
-	rawUrl, errUrl := http.Get(pathUrl)
-	defer rawUrl.Body.Close()
-	util.Must(errUrl)
+	var body []byte
+	var err error
 
-	body, errUrl := ioutil.ReadAll(rawUrl.Body)
-	util.Must(errUrl)
+	if strings.HasPrefix(filePath, "file://") {
+		// read file from local
+		body, err = ioutil.ReadFile(filePath)
+		util.Must(err)
+	} else {
+		// read file from URL
+		var response *http.Response
+		response, err = http.Get(filePath)
+		defer response.Body.Close()
+		util.Must(err)
+
+		body, err = ioutil.ReadAll(response.Body)
+		util.Must(err)
+	}
 
 	// process
 	processor(body)
