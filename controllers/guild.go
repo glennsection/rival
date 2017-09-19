@@ -78,7 +78,7 @@ func CreateGuild(context *util.Context) {
 
 	if len(guilds) > 0 {
 		//Return invalid name
-		err := util.NewError("Guild name is already taken. Please choose another")
+		err := util.NewError("Guild name is already taken. Please choose another") //TODO Localize
 		util.Must(err)
 		return
 	}
@@ -179,7 +179,6 @@ func RequestToJoin(context *util.Context) {
 	guildTag := context.Params.GetRequiredString("guildTag")
 	playerTag := context.Params.GetRequiredString("playerTag")
 
-	fmt.Printf("Inside of RequestToJoin")
 	player, err1 := models.GetPlayerByTag(context, playerTag)
 	util.Must(err1)
 
@@ -200,13 +199,12 @@ func InviteToGuild(context *util.Context) {
 	guildTag := context.Params.GetRequiredString("guildTag")
 	playerTag := context.Params.GetRequiredString("playerTag")
 
-	fmt.Printf("Inside of InviteToGuild")
 	receiverPlayer, err1 := models.GetPlayerByTag(context, playerTag)
 	util.Must(err1)
 
 	// TODO Use a CONFIG Variable to define level restriction
 	if (receiverPlayer.GetLevel() < 3) {
-		levelErr := util.NewError("Player is not high enough level to join guilds")
+		levelErr := util.NewError("Player must be at Level 3 or higher in order to participate in guilds") //TODO Localize
 		util.Must(levelErr)
 		return
 	}
@@ -540,7 +538,7 @@ func respondGuildBattle(context *util.Context, notification *models.Notification
 	} else if (action == "cancel") {
 		
 	} else {
-		err := util.NewError("Guild Battle has Already Begun")
+		err := util.NewError("Guild Battle has Already Begun") //TODO Localize
 		util.Must(err)
 		return
 	}
