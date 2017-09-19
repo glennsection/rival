@@ -25,6 +25,8 @@ type GameplayConfiguration struct {
 	MinUsernameLength 			int 		`json:"minUsernameLength"`
 	MaxUsernameLength 			int 		`json:"maxUsernameLength"`
 
+	QuestSlotMinLevels 		 	[]int 		`json:"questSlotMinLevels"`
+
 	BatchLimit 					int			`json:"batchLimit"`
 }
 
@@ -48,4 +50,8 @@ func LoadGameplayConfig(raw []byte) {
 func GetRandomArena() string {
 	index := util.RandomIntn(len(GameplayConfig.Arenas))
 	return GameplayConfig.Arenas[index]
+}
+
+func GetQuestSlotMinLevel(slot int) int {
+	return  GameplayConfig.QuestSlotMinLevels[slot]
 }
