@@ -114,6 +114,7 @@ func (context *Context) BeginRequest(template string) {
 
 	// initial request logging
 	switch config.Config.Logging.Requests {
+
 	case config.BriefLogging:
 		// log basic request info with truncated query
 		query := context.Request.URL.RawQuery
@@ -127,11 +128,13 @@ func (context *Context) BeginRequest(template string) {
 		}
 
 		log.Println(message)
+
 	case config.FullLogging:
 		// get formatted request dump to log
 		dump, _ := httputil.DumpRequest(context.Request, true)
 
 		log.Printf("[cyan]Request received: %q[-]", dump)
+
 	}
 }
 
@@ -205,6 +208,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 
 	// show response profiling info
 	switch config.Config.Logging.Requests {
+
 	case config.BriefLogging, config.FullLogging:
 		// get success
 		successMessage := "Success"
@@ -227,6 +231,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 		if caughtErr == nil && context.Success == false {
 			log.Errorf("Request failed with: %s", context.Messages[0])
 		}
+		
 	}
 
 	// log the error caught eariler
