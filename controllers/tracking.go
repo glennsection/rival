@@ -102,87 +102,87 @@ func InsertTracking(context *util.Context, event string, data bson.M, expireAfte
 	return
 }
 
-func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId string, 
-	description string, count int, amount float64, data bson.M) {
-	sqlEvent := SQLevent{Data: data}
-	user := system.GetUser(context)
-	userId := user.ID.Hex()
-	timeNs := sqlEvent.GetIntField("eventTime")
-	var eventTime time.Time
-	if timeNs > 0 {
-		eventTime = time.Unix(0,timeNs)
-	} else {
-		eventTime = time.Now()
-	}
-	//location, _ := time.LoadLocation("PST8PDT")
-	dateStr := eventTime.In(PST).Format("2006-01-02")
-	timeStr := eventTime.Format("2006-01-02 15:04:05z")
-	factInsertStr := "insert into facts values ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+func InsertTrackingSQL(context *util.Context, event string, timeId int64, itemId string, description string, count int, amount float64, data bson.M) {
+	if util.HasSQLDatabase() {
+		sqlEvent := SQLevent{Data: data}
+		user := system.GetUser(context)
+		userId := user.ID.Hex()
+		timeNs := sqlEvent.GetIntField("eventTime")
+		var eventTime time.Time
+		if timeNs > 0 {
+			eventTime = time.Unix(0,timeNs)
+		} else {
+			eventTime = time.Now()
+		}
+		//location, _ := time.LoadLocation("PST8PDT")
+		dateStr := eventTime.In(PST).Format("2006-01-02")
+		timeStr := eventTime.Format("2006-01-02 15:04:05z")
+		factInsertStr := "insert into facts values ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
 
-	var err error
-	switch event {
-	case "navigation":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
-			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
-		util.Must(err)
-	case "tabChange":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
-			sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
-		util.Must(err)
-	case "infoPopup":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("category"), 
-			sqlEvent.GetStrField("details"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
-		util.Must(err)
-	case "tutorialPageExit":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
-			sqlEvent.GetStrField("description"),  sqlEvent.GetIntField("pageNumber"), sqlEvent.GetFloatField("duration"))
-		util.Must(err)
-	case "playerBattleSummary":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, 
-			sqlEvent.GetIntField("time"), sqlEvent.GetStrField("leaderCardId"), sqlEvent.GetStrField("endResult"), 
-			sqlEvent.GetIntField("score"), sqlEvent.GetFloatField("durationSec"))
-		util.Must(err)
-		
-		pbsInsertStr := "insert into player_battle_summary values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
-		_, err = context.SQL.Exec(pbsInsertStr,
-			dateStr, timeStr, event, userId, sqlEvent.GetIntField("time"), 
-			sqlEvent.GetStrField("userBattleId"), sqlEvent.GetStrField("leaderCardId"), sqlEvent.GetIntField("userLevel"), 
-			sqlEvent.GetIntField("userRank"), sqlEvent.GetStrField("gameMode"), sqlEvent.GetStrField("userTeam"), 
-			sqlEvent.GetFloatField("durationSec"), sqlEvent.GetIntField("score"), sqlEvent.GetStrField("endResult"), 
-			sqlEvent.GetStrField("endPhase"))
-		util.Must(err)
-	case "cardBattleSummary":
-		// This is the only one that doesn't also go into the fact table
-		cbsInsertStr := "insert into card_battle_summary values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)"
-		_, err = context.SQL.Exec(cbsInsertStr,
-			dateStr, timeStr, event, userId, sqlEvent.GetIntField("time"), 
-			sqlEvent.GetStrField("userBattleId"), sqlEvent.GetStrField("cardId"), sqlEvent.GetIntField("level"), 
-			sqlEvent.GetIntField("manaCost"), sqlEvent.GetFloatField("damageManaValue"), sqlEvent.GetIntField("numUses"), 
-			sqlEvent.GetFloatField("characterDamage"), sqlEvent.GetIntField("characterKills"), sqlEvent.GetFloatField("towerDamage"), 
-			sqlEvent.GetIntField("towerKills"), sqlEvent.GetFloatField("totalUnitTime"), sqlEvent.GetIntField("totalUnits") )
-		util.Must(err)
-	case "tutorialCompleted":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
-			sqlEvent.GetStrField("description"),  count, amount)
-		util.Must(err)
-	case "applicationPaused":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
-			sqlEvent.GetStrField("description"),  sqlEvent.GetIntField("pageNumber"), sqlEvent.GetFloatField("duration"))
-		util.Must(err)
-	case "purchase":
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, description, count, amount)
-		util.Must(err)
-		
-		purchInsertStr := "insert into purchase values ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
-		_, err = context.SQL.Exec(purchInsertStr,
-			dateStr, timeStr, event, userId, timeId, 
-			sqlEvent.GetStrField("productId"), sqlEvent.GetStrField("currency"), sqlEvent.GetStrField("receipt"), 
-			sqlEvent.GetFloatField("price") )
-	default:
-		_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, description, count, amount)
-		util.Must(err)
+		var err error
+		switch event {
+		case "navigation":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
+				sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+			util.Must(err)
+		case "tabChange":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
+				sqlEvent.GetStrField("action"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+			util.Must(err)
+		case "infoPopup":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("category"), 
+				sqlEvent.GetStrField("details"),  sqlEvent.GetIntField("count"), sqlEvent.GetFloatField("duration"))
+			util.Must(err)
+		case "tutorialPageExit":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
+				sqlEvent.GetStrField("description"),  sqlEvent.GetIntField("pageNumber"), sqlEvent.GetFloatField("duration"))
+			util.Must(err)
+		case "playerBattleSummary":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, 
+				sqlEvent.GetIntField("time"), sqlEvent.GetStrField("leaderCardId"), sqlEvent.GetStrField("endResult"), 
+				sqlEvent.GetIntField("score"), sqlEvent.GetFloatField("durationSec"))
+			util.Must(err)
+			
+			pbsInsertStr := "insert into player_battle_summary values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
+			_, err = context.SQL.Exec(pbsInsertStr,
+				dateStr, timeStr, event, userId, sqlEvent.GetIntField("time"), 
+				sqlEvent.GetStrField("userBattleId"), sqlEvent.GetStrField("leaderCardId"), sqlEvent.GetIntField("userLevel"), 
+				sqlEvent.GetIntField("userRank"), sqlEvent.GetStrField("gameMode"), sqlEvent.GetStrField("userTeam"), 
+				sqlEvent.GetFloatField("durationSec"), sqlEvent.GetIntField("score"), sqlEvent.GetStrField("endResult"), 
+				sqlEvent.GetStrField("endPhase"))
+			util.Must(err)
+		case "cardBattleSummary":
+			// This is the only one that doesn't also go into the fact table
+			cbsInsertStr := "insert into card_battle_summary values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)"
+			_, err = context.SQL.Exec(cbsInsertStr,
+				dateStr, timeStr, event, userId, sqlEvent.GetIntField("time"), 
+				sqlEvent.GetStrField("userBattleId"), sqlEvent.GetStrField("cardId"), sqlEvent.GetIntField("level"), 
+				sqlEvent.GetIntField("manaCost"), sqlEvent.GetFloatField("damageManaValue"), sqlEvent.GetIntField("numUses"), 
+				sqlEvent.GetFloatField("characterDamage"), sqlEvent.GetIntField("characterKills"), sqlEvent.GetFloatField("towerDamage"), 
+				sqlEvent.GetIntField("towerKills"), sqlEvent.GetFloatField("totalUnitTime"), sqlEvent.GetIntField("totalUnits") )
+			util.Must(err)
+		case "tutorialCompleted":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), itemId, 
+				sqlEvent.GetStrField("description"),  count, amount)
+			util.Must(err)
+		case "applicationPaused":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, sqlEvent.GetIntField("sessionId"), sqlEvent.GetStrField("pageName"), 
+				sqlEvent.GetStrField("description"),  sqlEvent.GetIntField("pageNumber"), sqlEvent.GetFloatField("duration"))
+			util.Must(err)
+		case "purchase":
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, description, count, amount)
+			util.Must(err)
+			
+			purchInsertStr := "insert into purchase values ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+			_, err = context.SQL.Exec(purchInsertStr,
+				dateStr, timeStr, event, userId, timeId, 
+				sqlEvent.GetStrField("productId"), sqlEvent.GetStrField("currency"), sqlEvent.GetStrField("receipt"), 
+				sqlEvent.GetFloatField("price") )
+		default:
+			_, err = context.SQL.Exec(factInsertStr, dateStr, timeStr, event, userId, timeId, itemId, description, count, amount)
+			util.Must(err)
+		}
 	}
-
 	return
 }
 
