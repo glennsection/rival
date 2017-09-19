@@ -293,6 +293,10 @@ func (player *Player) CollectQuest(index int, context *util.Context) (*Reward, b
 }
 
 func (player *Player) AssignRandomQuest(index int) {
+	if player.GetLevel() < data.GetQuestSlotMinLevel(index) { //Player isn't high enough level for a quest in this slot yet
+		return
+	}
+
 	/* we need to ensure there are no duplicate quests, so build a slice of quests regardless of their current state 
 		and use it in getQuestPeriod to enforce the unique condition */
 	currentQuestDatas := make([]*data.QuestData, 0)
