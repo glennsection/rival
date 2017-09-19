@@ -95,6 +95,7 @@ type PlayerClient struct {
 	LossCount  				int 			`json:"lossCount"`
 	MatchCount 				int 			`json:"matchCount"`
 
+	CardsCollected 			int 			`json:"cardsCollected"`
 	CurrentDeck 			[]*Card 		`json:"currentDeck"`
 	MostUsedLeader 			*Card 			`json:"mostUsedLeader"`
 	MostUsedCard 			*Card 			`json:"mostUsedCard"`
@@ -225,6 +226,7 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		LossCount:  player.LossCount,
 		MatchCount: player.MatchCount,
 
+		CardsCollected: len(player.Cards),
 		CurrentDeck: currentDeck,
 		MostUsedLeader: mostUsedLeader,
 		MostUsedCard: mostUsedCard,
