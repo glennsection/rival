@@ -78,7 +78,7 @@ func CreateGuild(context *util.Context) {
 
 	if len(guilds) > 0 {
 		//Return invalid name
-		err := util.NewError("Guild name is already taken. Please choose another")
+		err := util.NewError("Guild name is already taken. Please choose another") //TODO Localize
 		util.Must(err)
 		return
 	}
@@ -179,7 +179,6 @@ func RequestToJoin(context *util.Context) {
 	guildTag := context.Params.GetRequiredString("guildTag")
 	playerTag := context.Params.GetRequiredString("playerTag")
 
-	fmt.Printf("Inside of RequestToJoin")
 	player, err1 := models.GetPlayerByTag(context, playerTag)
 	util.Must(err1)
 
@@ -193,20 +192,19 @@ func RequestToJoin(context *util.Context) {
 
 	requestData := map[string]interface{}{"requestType": "RequestToJoin", "playerTag": playerTag}
 
-	SendGuildChatNotification(context, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", requestData, time.Now().Add(time.Hour*time.Duration(168)), guild, false)
+	SendGuildChatNotification(context, nil, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", requestData, time.Now().Add(time.Hour*time.Duration(168)), guild, false)
 }
 
 func InviteToGuild(context *util.Context) {
 	guildTag := context.Params.GetRequiredString("guildTag")
 	playerTag := context.Params.GetRequiredString("playerTag")
 
-	fmt.Printf("Inside of InviteToGuild")
 	receiverPlayer, err1 := models.GetPlayerByTag(context, playerTag)
 	util.Must(err1)
 
 	// TODO Use a CONFIG Variable to define level restriction
 	if (receiverPlayer.GetLevel() < 3) {
-		levelErr := util.NewError("Player is not high enough level to join guilds")
+		levelErr := util.NewError("Player must be at Level 3 or higher in order to participate in guilds") //TODO Localize
 		util.Must(levelErr)
 		return
 	}
@@ -242,8 +240,8 @@ func AddMember(context *util.Context) {
 	buffer.WriteString(player.Name)
 	buffer.WriteString(" Has Joined the Guild")
 
-	SendGuildChatNotification(context, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
-	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
+	SendGuildChatNotification(context, nil, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
+	SendGuildChatNotification(context, nil, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
 
 func RemoveMember(context *util.Context) {
@@ -269,13 +267,13 @@ func RemoveMember(context *util.Context) {
 	buffer.WriteString(player.Name)
 	buffer.WriteString(" Has Left the Guild")
 	
-	SendGuildChatNotification(context, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
+	SendGuildChatNotification(context, nil, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
 
 	err2 := models.RemoveMember(context, player, guild)
 	util.Must(err2)
 
 	SendNotification(context, player, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
-	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
+	SendGuildChatNotification(context, nil, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
 
 func RemoveMemberDeleteGuild(context *util.Context, guild *models.Guild, player *models.Player) {
@@ -308,9 +306,9 @@ func PromoteGuildMember(context *util.Context) {
 	buffer.WriteString(" Has been Promoted to ")
 	buffer.WriteString(models.GetGuildRoleName(player.GuildRole))
 	
-	SendGuildChatNotification(context, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
+	SendGuildChatNotification(context, player, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
 
-	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
+	SendGuildChatNotification(context, nil, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
 
 func DemoteGuildMember(context *util.Context) {
@@ -335,9 +333,9 @@ func DemoteGuildMember(context *util.Context) {
 	buffer.WriteString(" Has been Demoted to ")
 	buffer.WriteString(models.GetGuildRoleName(player.GuildRole))
 	
-	SendGuildChatNotification(context, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
+	SendGuildChatNotification(context, player, "GuildChat", buffer.String(), models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
 
-	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
+	SendGuildChatNotification(context, nil, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
 
 func SendNotification(context *util.Context, receiverPlayer *models.Player, notificationType string, message string, dirtyMask util.Bits, acceptName string, acceptAction string, declineName string,
@@ -380,25 +378,19 @@ func SendNotification(context *util.Context, receiverPlayer *models.Player, noti
 	system.SocketSend(context, receiverPlayer.UserID, notificationType, socketData)
 }
 
-func SendGuildChatNotification(context *util.Context, notificationType string, message string, dirtyMask util.Bits, acceptName string, acceptAction string, declineName string,
+func SendGuildChatNotification(context *util.Context, senderPlayer *models.Player, notificationType string, message string, dirtyMask util.Bits, acceptName string, acceptAction string, declineName string,
 	declineAction string, data map[string]interface{}, expiresAt time.Time, guild *models.Guild, setDirty bool) {
-	//notificationType := "GuildChat"
+
 	// sending player
-	player := GetPlayer(context)
-	playerClient, err := player.GetPlayerClient(context)
+	if senderPlayer == nil {
+		senderPlayer = GetPlayer(context)
+	} 
+
+	playerClient, err := senderPlayer.GetPlayerClient(context)
 	util.Must(err)
 
-	// friend player (TODO - player to player chat?)
-	// friendUser, err := models.GetUserByTag(context, tag)
-	// util.Must(err)
-	// friendPlayer, err := models.GetPlayerByUser(context, friendUser.ID)
-	// util.Must(err)
-	// receiverID := friendPlayer.ID
-	//var receiverID bson.ObjectId = bson.ObjectId("")
-	//var receiverUserID bson.ObjectId = bson.ObjectId("")
-
 	if guild == nil {
-		guild2, err := models.GetGuildById(context, player.GuildID)
+		guild2, err := models.GetGuildById(context, senderPlayer.GuildID)
 		guild = guild2
 		util.Must(err)
 	}
@@ -409,8 +401,8 @@ func SendGuildChatNotification(context *util.Context, notificationType string, m
 
 	// create notification
 	notification := &models.Notification{
-		SenderID:   player.ID,
-		ReceiverID: player.GuildID,
+		SenderID:   senderPlayer.ID,
+		ReceiverID: senderPlayer.GuildID,
 		Guild:      true, // TODO - guild chat based on "channel"
 		ExpiresAt:  time.Now().Add(time.Hour * time.Duration(168)),
 		Type:       notificationType,
@@ -453,7 +445,7 @@ func GuildChat(context *util.Context) {
 	//channel := context.Params.GetString("channel", "")
 	message := context.Params.GetRequiredString("message")
 
-	SendGuildChatNotification(context, "GuildChat", message, models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
+	SendGuildChatNotification(context, nil, "GuildChat", message, models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", nil, time.Now().Add(time.Hour*time.Duration(168)), nil, false)
 }
 
 func SendReplayGuildNotification(context *util.Context, replayInfoId string, message string) {
@@ -521,7 +513,7 @@ func GuildBattle(context *util.Context) {
 
 	fmt.Printf("Creating Guild Battle Notification")
 
-	SendGuildChatNotification(context, "GuildBattle", message, models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", data, expiresAt, nil, false)
+	SendGuildChatNotification(context, nil, "GuildBattle", message, models.PlayerDataMask_Guild, "Accept", "accept", "Decline", "decline", data, expiresAt, nil, false)
 	//sendFriendNotification(context, tag, "FriendBattle", image, message, "Battle", "accept", "Decline", "decline", data, expiresAt)
 
 	context.SetData("roomId", roomID)
@@ -540,7 +532,7 @@ func respondGuildBattle(context *util.Context, notification *models.Notification
 	} else if (action == "cancel") {
 		
 	} else {
-		err := util.NewError("Guild Battle has Already Begun")
+		err := util.NewError("Guild Battle has Already Begun") //TODO Localize
 		util.Must(err)
 		return
 	}
@@ -566,5 +558,5 @@ func UpdateGuildIcon(context *util.Context) {
 	err2 := models.UpdateGuildIcon(context, player, guild, iconId)
 	util.Must(err2)
 
-	SendGuildChatNotification(context, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
+	SendGuildChatNotification(context, nil, "UpdateGuildInfo", "", models.PlayerDataMask_Guild, "", "", "", "", nil, time.Now().Add(time.Hour*time.Duration(1)), guild, true)
 }
