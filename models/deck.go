@@ -94,17 +94,25 @@ func (deck *Deck) SetLeaderCard(card data.DataId) {
 	deck.LeaderCardID = card
 }
 
-func (player *Player)UpdateDeckVictoryStats() {
+func (player *Player)UpdateDeckStats(victory bool) {
 	deck := &player.Decks[player.CurrentDeck]
 
-	if card := player.GetCard(deck.LeaderCardID); card != nil && card.Level >= (data.GetMaxLevel(card.GetData().Rarity) - 1 ) {
-		card.LeaderWinCount += 1
-		card.WinCount += 1
+	if card := player.GetCard(deck.LeaderCardID); card != nil  {
+		card.MatchCount += 1
+
+		if victory && card.Level >= (data.GetMaxLevel(card.GetData().Rarity) - 1 ) {
+			card.LeaderWinCount += 1
+			card.WinCount += 1
+		}
 	}
 
 	for _, id := range deck.CardIDs {
-		if card := player.GetCard(id); card != nil && card.Level >= (data.GetMaxLevel(card.GetData().Rarity) - 1 ) {
-			card.WinCount += 1
+		if card := player.GetCard(id); card != nil {
+			card.MatchCount += 1
+			
+			if victory && card.Level >= (data.GetMaxLevel(card.GetData().Rarity) - 1 ) {
+				card.WinCount += 1
+			}
 		}
 	}
 }

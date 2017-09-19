@@ -46,6 +46,7 @@ type Player struct {
 	Rating     				int           	`bson:"rt" json:"rating"`
 
 	WinCount   				int 			`bson:"wc" json:"winCount"`
+	ThreeTowerWinCount 		int 			`bson:"tc" json:"threeTowerWinCount"`
 	LossCount  				int 			`bson:"lc" json:"lossCount"`
 	MatchCount 				int 			`bson:"mc" json:"matchCount"`
 	PracticeWinCount 		int 			`bson:"pw" json:"practiceWinCount"`
@@ -90,8 +91,14 @@ type PlayerClient struct {
 	Rating     				int    			`json:"rating"`
 
 	WinCount   				int 			`json:"winCount"`
+	ThreeTowerWinCount 		int 			`json:"threeTowerWinCount"`
 	LossCount  				int 			`json:"lossCount"`
 	MatchCount 				int 			`json:"matchCount"`
+
+	CardsCollected 			int 			`json:"cardsCollected"`
+	CurrentDeck 			[]*Card 		`json:"currentDeck"`
+	MostUsedLeader 			*Card 			`json:"mostUsedLeader"`
+	MostUsedCard 			*Card 			`json:"mostUsedCard"`
 
 	GuildTag                string          `json:"guildTag"`
 	GuildRole 				string  		`json:"guildRole"`
@@ -203,6 +210,9 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		guildRole = GetGuildRoleName(player.GuildRole)
 	}
 
+	mostUsedLeader, mostUsedCard := player.GetMostUsedCards()
+	currentDeck := player.GetDeckCards(player.CurrentDeck)
+
 	// create player client
 	client = &PlayerClient{
 		Name:       playerUser.Name,
@@ -212,8 +222,14 @@ func (player *Player) GetPlayerClient(context *util.Context) (client *PlayerClie
 		Rating:     player.Rating,
 
 		WinCount:   player.WinCount,
+		ThreeTowerWinCount: player.ThreeTowerWinCount,
 		LossCount:  player.LossCount,
 		MatchCount: player.MatchCount,
+
+		CardsCollected: len(player.Cards),
+		CurrentDeck: currentDeck,
+		MostUsedLeader: mostUsedLeader,
+		MostUsedCard: mostUsedCard,
 
 		GuildTag:   guildTag,
 		GuildRole:  guildRole,

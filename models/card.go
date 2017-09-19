@@ -12,7 +12,9 @@ type Card struct {
 	Level          			int           `bson:"lv" json:"level"`
 	CardCount      			int           `bson:"nm" json:"cardCount"`
 	WinCount       			int           `bson:"wc" json:"winCount"`
+	MatchCount 				int 		  `bson:"mc" json:"matchCount"`
 	LeaderWinCount 			int           `bson:"wl" json:"leaderWinCount"`
+	LeaderMatchCount 		int 		  `bson:"lm" json:"leaderMatchCount"`
 	HasInteractedWith 		bool          `bson:"iw" json:"interactedWith"`
 }
 
@@ -141,4 +143,21 @@ func (player *Player) GetMapOfCardIndexes() map[data.DataId]int {
 		cardMap[card.DataID] = index
 	}
 	return cardMap
+}
+
+func (player *Player) GetMostUsedCards() (leaderCard *Card, deckCard *Card) {
+	uses := -1
+	leaderUses := -1
+
+	for _, card := range player.Cards {
+		if card.MatchCount > uses {
+			deckCard = &card
+		}
+
+		if card.LeaderMatchCount > leaderUses {
+			leaderCard = &card
+		}
+	}
+
+	return
 }

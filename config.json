@@ -20,7 +20,7 @@
 		"OfflineTimeout": 600
 	},
 	"Logging": {
-		"Requests": "NoLogging"
+		"Requests": "BriefLogging"
 	},
 	"Matches": {
 		"MatchTicketExpire": 30,

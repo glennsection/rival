@@ -65,7 +65,7 @@
             "interactedWith": true
         },
         {
-            "cardId": "CARD_HELLHOUND",
+            "cardId": "CARD_DOG_ARMORWOLF",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -209,7 +209,7 @@
             "interactedWith": true
         },
         {
-            "cardId": "CARD_BUBBLE_SHIELD",
+            "cardId": "CARD_STONE_FORM",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -267,7 +267,7 @@
                 "CARD_MERC_CAPTAIN",
                 "CARD_SPELL_SPIKES",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
+                "CARD_DOG_ARMORWOLF",
                 "CARD_DWARVES"
             ]
         },
@@ -280,7 +280,7 @@
                 "CARD_MERC_CAPTAIN",
                 "CARD_SPELL_SPIKES",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
+                "CARD_DOG_ARMORWOLF",
                 "CARD_DWARVES"
             ]
         },
@@ -293,7 +293,7 @@
                 "CARD_GOLEM",
                 "CARD_SPELL_SPIKES",
                 "CARD_SKULL_SWARM",
-                "CARD_HELLHOUND",
+                "CARD_DOG_ARMORWOLF",
                 "CARD_DWARVES"
             ]
         }

@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"bloodtales/util"
 	"bloodtales/data"
 )
@@ -53,7 +51,6 @@ func UpdateTutorial(context *util.Context, player *Player, name string, complete
 
 	err = player.Save(context)
 	if err != nil {
-		fmt.Println("[TUTORIAL] Save error")
 		return
 	}
 
@@ -92,8 +89,6 @@ func (player *Player)ClaimTutorialReward(context *util.Context, name string) (to
 	}
 
 	if tutorialReward.TomeID != nil {
-		fmt.Println(fmt.Sprintf("Tutorial %s is rewarding %s", name, data.ToDataName(*tutorialReward.TomeID)))
-
 		_, tome = player.GetEmptyTomeSlot()
 		
 		if tome != nil {
@@ -101,12 +96,12 @@ func (player *Player)ClaimTutorialReward(context *util.Context, name string) (to
 			tome.State = TomeLocked
 			tome.UnlockTime = 0
 			tome.League = data.GetLeague(data.GetRank(player.RankPoints).Level)
-		}
+		} 
 	}
 
 	if tutorialReward.RewardID != nil {
 		reward = player.GetReward(*tutorialReward.RewardID, data.LeagueZero, 1)
-		player.AddRewards(reward, nil)
+		err = player.AddRewards(reward, nil)
 	}
 
 	player.RankPoints += tutorialReward.RankPoints

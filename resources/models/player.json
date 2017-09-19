@@ -30,7 +30,7 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_HELLHOUND",
+            "cardId": "CARD_DOG_ARMORWOLF",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -66,7 +66,7 @@
                 "CARD_MERC_CAPTAIN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
-                "CARD_HELLHOUND",
+                "CARD_DOG_ARMORWOLF",
                 "CARD_LIGHTNING_SWORD"
             ]
         },
@@ -77,7 +77,7 @@
                 "CARD_MERC_CAPTAIN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
-                "CARD_HELLHOUND",
+                "CARD_DOG_ARMORWOLF",
                 "CARD_LIGHTNING_SWORD"
             ]
         },
@@ -88,7 +88,7 @@
                 "CARD_MERC_CAPTAIN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
-                "CARD_HELLHOUND",
+                "CARD_DOG_ARMORWOLF",
                 "CARD_LIGHTNING_SWORD"
             ]
         }
