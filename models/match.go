@@ -438,6 +438,9 @@ func FindPublicMatch(context *util.Context, player *Player, matchType MatchType)
 			AddMatchTicket(context, opponentTicket)
 		} else {
 			log.Errorf("Failed to find matchmaking ticket for opponent player: %v", optimalOpponentId)
+
+			// make sure this user is cleared from the cache
+			ClearMatchTicket(context, matchOpponentId)
 		}
 	}
 	return
