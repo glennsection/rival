@@ -59,37 +59,37 @@
         } 
     ],
     "decks": [
-        {
+       {
             "leaderCardId": "CARD_GOLEM",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
-                "CARD_MERC_CAPTAIN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
                 "CARD_DOG_ARMORWOLF",
-                "CARD_METEOR_HAMMER"
+                "CARD_METEOR_HAMMER",
+                "CARD_MERC_CAPTAIN"
+            ]
+        },
+       {
+            "leaderCardId": "CARD_GOLEM",
+            "cardIds": [
+                "CARD_ARMORED_SKELETON",
+                "CARD_MERC_SOLDIERS",
+                "CARD_GREMLINS",
+                "CARD_DOG_ARMORWOLF",
+                "CARD_METEOR_HAMMER",
+                "CARD_MERC_CAPTAIN"
             ]
         },
         {
             "leaderCardId": "CARD_GOLEM",
             "cardIds": [
                 "CARD_ARMORED_SKELETON",
-                "CARD_MERC_CAPTAIN",
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
                 "CARD_DOG_ARMORWOLF",
-                "CARD_METEOR_HAMMER"
-            ]
-        },
-        {
-            "leaderCardId": "CARD_GOLEM",
-            "cardIds": [
-               "CARD_ARMORED_SKELETON",
-                "CARD_MERC_CAPTAIN",
-                "CARD_MERC_SOLDIERS",
-                "CARD_GREMLINS",
-                "CARD_DOG_ARMORWOLF",
-                "CARD_METEOR_HAMMER"
+                "CARD_METEOR_HAMMER",
+                "CARD_MERC_CAPTAIN"
             ]
         }
     ],
