@@ -3,6 +3,8 @@ package config
 import (
 	"time"
 	"fmt"
+	"os"
+	"strconv"
 	"io/ioutil"
 	"encoding/json"
 )
@@ -13,6 +15,10 @@ const (
 	BriefLogging = "BriefLogging"
 	FullLogging = "FullLogging"
 )
+
+type LoggingConfiguration struct {
+		Requests            LogLevel
+}
 
 type Configuration struct {
 	Platform struct {
@@ -36,7 +42,8 @@ type Configuration struct {
 		OfflineTimeout      time.Duration    `json:"OfflineTimeout,int"`
 	}
 	Logging struct {
-		Requests            LogLevel
+		Production          LoggingConfiguration
+		Development         LoggingConfiguration
 	}
 	Matches struct {
 		MatchTicketExpire   int
@@ -45,7 +52,13 @@ type Configuration struct {
 	}
 }
 
+type Environment struct {
+	Name                    string
+	Development             bool
+}
+
 var Config Configuration
+var Env Environment
 
 func Load(path string, config *Configuration) (err error) {
 	file, err := ioutil.ReadFile(path)
@@ -63,5 +76,25 @@ func init() {
 	err := Load(configPath, &Config)
 	if err != nil {
 		panic(fmt.Sprintf("Config file (%s) failed to load: %v", configPath, err))
+	}
+
+	// initialize environment
+	developmentString := os.Getenv("DEVELOPMENT")
+	development, err := strconv.ParseBool(developmentString)
+	if err == nil {
+		Env.Development = development
+	}
+	if Env.Development {
+		Env.Name = "Development"
+	} else {
+		Env.Name = "Production"
+	}
+}
+
+func (config *Configuration) GetLogging() (logging *LoggingConfiguration) {
+	if Env.Development {
+		return &config.Logging.Development;
+	} else {
+		return &config.Logging.Production;
 	}
 }

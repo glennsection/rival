@@ -113,7 +113,7 @@ func (context *Context) BeginRequest(template string) {
 	context.Template = template
 
 	// initial request logging
-	switch config.Config.Logging.Requests {
+	switch config.Config.GetLogging().Requests {
 
 	case config.BriefLogging:
 		// log basic request info with truncated query
@@ -207,7 +207,7 @@ func (context *Context) EndRequest(startTime time.Time) {
 	}
 
 	// show response profiling info
-	switch config.Config.Logging.Requests {
+	switch config.Config.GetLogging().Requests {
 
 	case config.BriefLogging, config.FullLogging:
 		// get success
