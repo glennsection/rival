@@ -46,10 +46,14 @@ func LogError(message string, err interface{}) {
 }
 
 func PrintStack() {
-	printStack(string(debug.Stack()))
+	printStack("")
 }
 
 func printStack(stack string) {
+	if stack == "" {
+		stack = string(debug.Stack())
+	}
+
 	// get root dir
 	rootPath, _ := filepath.Abs(".")
 	rootPath = strings.ToLower(strings.Replace(rootPath, "\\", "/", -1))
@@ -57,7 +61,6 @@ func printStack(stack string) {
 
 	// process stack lines
 	stacks := strings.Split(stack, "\n")
-	stack = "[red]...[-]"
 	call := ""
 	parity := 1
 	for _, line := range stacks {
@@ -86,8 +89,9 @@ func printStack(stack string) {
 		}
 		parity = 1 - parity
 	}
-	stack += "\n[red]...[-]"
 
 	// show stack
-	log.RawPrint(stack)
+	if stack != "" {
+		log.RawPrint(fmt.Sprintf("[red]...[-]%s\n[red]...[-]", stack))
+	}
 }

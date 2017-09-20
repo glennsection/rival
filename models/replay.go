@@ -133,6 +133,9 @@ func (replayData *ReplayData) Save(context *util.Context) (err error) {
 func (replayInfo *ReplayInfo) Delete(context *util.Context) (err error) {
 	// delete replay data from database
 	err = context.DB.C(ReplayDataCollectionName).Remove(bson.M { "iid": replayInfo.ID })
+	if err == mgo.ErrNotFound {
+		err = nil
+	}
 	if err != nil {
 		return
 	}

@@ -248,7 +248,7 @@ func (player *Player) Reset(context *util.Context, development bool) (err error)
 	
 	for i := len(replayInfos)-1; i > 0; i-- {
 		deleteErr := replayInfos[i].Delete(context)
-		util.Must(deleteErr);
+		util.MustIgnoreNotFound(deleteErr);
 	}
 	
 	// reset player data values
