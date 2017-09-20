@@ -44,7 +44,7 @@
             "leaderWinCount": 0
         },
         {
-            "cardId": "CARD_LIGHTNING_SWORD",
+            "cardId": "CARD_METEOR_HAMMER",
             "level": 1,
             "cardCount": 0,
             "winCount": 0,
@@ -67,7 +67,7 @@
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
                 "CARD_DOG_ARMORWOLF",
-                "CARD_LIGHTNING_SWORD"
+                "CARD_METEOR_HAMMER"
             ]
         },
         {
@@ -78,7 +78,7 @@
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
                 "CARD_DOG_ARMORWOLF",
-                "CARD_LIGHTNING_SWORD"
+                "CARD_METEOR_HAMMER"
             ]
         },
         {
@@ -89,7 +89,7 @@
                 "CARD_MERC_SOLDIERS",
                 "CARD_GREMLINS",
                 "CARD_DOG_ARMORWOLF",
-                "CARD_LIGHTNING_SWORD"
+                "CARD_METEOR_HAMMER"
             ]
         }
     ],
